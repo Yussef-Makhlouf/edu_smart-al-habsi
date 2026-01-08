@@ -1,0 +1,152 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer base {
+  :root {
+    /* New Color Scheme: #1a3a52 (Navy) & #d4af37 (Gold) */
+
+    /* Base Layout */
+    --background: 43 30% 97%;
+    --foreground: 200 51% 15%;
+
+    /* Card & Popover */
+    --card: 0 0% 100%;
+    --card-foreground: 200 51% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 51% 15%;
+
+    /* Primary - Navy */
+    --primary: 200 51% 21%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Gold */
+    --secondary: 43 65% 53%;
+    --secondary-foreground: 200 51% 15%;
+
+    /* Muted */
+    --muted: 200 15% 92%;
+    --muted-foreground: 200 20% 45%;
+
+    /* Accent - Gold */
+    --accent: 43 65% 53%;
+    --accent-foreground: 200 51% 15%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 200 15% 85%;
+    --input: 200 15% 90%;
+    --ring: 43 65% 53%;
+
+    --radius: 0.5rem;
+
+    /* Custom Luxury Palette */
+    /* Gold: #d4af37 -> HSL 43, 65%, 53% */
+    --gold: 43 65% 53%;
+    --gold-dim: 43 60% 45%;
+    --gold-light: 43 70% 84%;
+
+    /* Navy: #1a3a52 -> HSL 200, 51%, 21% */
+    --navy: 200 51% 21%;
+    --navy-light: 200 46% 33%;
+    --navy-dark: 200 55% 15%;
+
+    /* Paper/Off-white */
+    --paper: 43 30% 97%;
+
+    /* Text colors for utilities */
+    --text-readable: 200 51% 15%;
+    --text-readable-light: 200 20% 40%;
+  }
+
+  .dark {
+    --background: 200 55% 10%;
+    --foreground: 43 30% 95%;
+
+    --card: 200 55% 12%;
+    --card-foreground: 43 30% 95%;
+
+    --popover: 200 55% 12%;
+    --popover-foreground: 43 30% 95%;
+
+    --primary: 43 65% 53%;
+    --primary-foreground: 200 55% 10%;
+
+    --secondary: 200 46% 25%;
+    --secondary-foreground: 43 30% 95%;
+
+    --muted: 200 46% 20%;
+    --muted-foreground: 200 20% 65%;
+
+    --accent: 43 65% 53%;
+    --accent-foreground: 200 55% 10%;
+
+    --destructive: 0 62% 35%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 46% 20%;
+    --input: 200 46% 20%;
+    --ring: 43 65% 53%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--paper));
+    color: hsl(var(--foreground));
+    font-family: "Segoe UI", Tahoma, "Arial", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-family: var(--font-handicrafts), "Segoe UI", Tahoma, system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-gold {
+    background-color: hsl(var(--gold));
+    color: white;
+    transition: all 0.5s;
+    border-radius: 0;
+  }
+
+  .btn-gold:hover {
+    background-color: hsl(var(--gold-dim));
+  }
+
+  /* Text clarity utilities */
+  .text-readable {
+    color: hsl(var(--text-readable));
+  }
+
+  .text-readable-light {
+    color: hsl(var(--text-readable-light));
+  }
+}
