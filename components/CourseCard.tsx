@@ -14,7 +14,7 @@ interface CourseCardProps {
 
 export function CourseCard({ title, description, image, category, price, href }: CourseCardProps) {
     return (
-        <div className="group relative bg-white border border-gray-100 hover:border-gold/30 transition-all duration-500 overflow-hidden flex flex-col h-full shadow-sm hover:shadow-xl hover:shadow-gold/10">
+        <div className="group relative bg-white border border-gray-100 hover:border-gold/30 transition-all duration-500 overflow-hidden flex flex-col h-full  hover:shadow-gold/10">
             {/* Image Container with Zoom Effect */}
             <div className="relative h-64 overflow-hidden">
                 <div className="absolute top-4 right-4 z-10 bg-navy/90 backdrop-blur-md px-3 py-1 text-xs font-bold uppercase tracking-wider text-gold border border-gold/20">

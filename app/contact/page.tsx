@@ -34,8 +34,8 @@ export default function ContactPage() {
                 </div>
 
                 {/* Decorative Elements */}
-                <div className="absolute bottom-10 left-10 w-24 h-24 border-l-2 border-b-2 border-gold/10" />
-                <div className="absolute top-10 right-10 w-24 h-24 border-r-2 border-t-2 border-gold/10" />
+                <div className="absolute bottom-10 left-4 md:left-10 w-24 h-24 border-l-2 border-b-2 border-gold/10" />
+                <div className="absolute top-24 md:top-10 right-10 w-24 h-24 border-r-2 border-t-2 border-gold/10" />
             </section>
 
             {/* Content Section */}
@@ -80,7 +80,7 @@ export default function ContactPage() {
                         {/* Contact Form */}
                         <div className="lg:col-span-2">
                             <motion.div
-                                className="bg-white p-8 md:p-12 rounded-lg shadow-xl shadow-navy/5 border border-gray-100"
+                                className="bg-white p-8 md:p-12 rounded-lg shadow-navy/5 border border-gray-100"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -164,7 +164,7 @@ export default function ContactPage() {
 function ContactCard({ icon, title, value, detail }: { icon: React.ReactNode, title: string, value: string, detail: string }) {
     return (
         <motion.div
-            className="bg-white p-6 rounded-lg shadow-lg shadow-navy/5 border border-gray-100 group hover:border-gold/30 transition-all duration-300"
+            className="bg-white p-6 rounded-lg shadow-navy/5 border border-gray-100 group hover:border-gold/30 transition-all duration-300"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}

@@ -92,7 +92,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Decorative Elements */}
-                <div className="absolute bottom-10 left-10 w-32 h-32 border-l-2 border-b-2 border-gold/20" />
+                <div className="absolute bottom-10 left-4 md:left-10 w-32 h-32 border-l-2 border-b-2 border-gold/20" />
                 <div className="absolute top-20 right-10 w-32 h-32 border-r-2 border-t-2 border-gold/20" />
             </section>
 
@@ -140,7 +140,7 @@ export default function AboutPage() {
                                     src="/habsi.jpeg"
                                     alt="محمد الحبسي - المؤسس والمدرب الرئيسي"
                                     fill
-                                    className="object-cover rounded-lg shadow-2xl"
+                                    className="object-cover rounded-lg "
                                 />
                                 {/* Decorative Frame */}
                                 <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-gold/30 rounded-lg -z-10" />
@@ -293,7 +293,7 @@ export default function AboutPage() {
                                 </Button>
                             </Link>
                             <Link href="/contact">
-                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-white border-white/30 hover:bg-white/10">
+                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-black border-white/30 hover:bg-white/10 hover:text-white">
                                     تواصل معنا <ArrowLeft className="mr-2 w-5 h-5" />
                                 </Button>
                             </Link>
