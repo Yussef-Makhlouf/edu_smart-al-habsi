@@ -61,7 +61,7 @@ export function VideoPreviewModal({ isOpen, onClose, videoUrl, title }: VideoPre
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="relative w-full max-w-4xl bg-navy rounded-2xl overflow-hidden shadow-2xl"
+                        className="relative w-full max-w-4xl bg-navy rounded-2xl overflow-hidden "
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
