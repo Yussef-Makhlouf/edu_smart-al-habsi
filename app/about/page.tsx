@@ -3,20 +3,28 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { TimelineItem, TimelineItemMobile } from "@/components/TimelineItem";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Target, Lightbulb, Users, Award, BookOpen, TrendingUp, GraduationCap, ArrowLeft } from "lucide-react";
+import {
+    Target,
+    Lightbulb,
+    Users,
+    Award,
+    BookOpen,
+    TrendingUp,
+    GraduationCap,
+    ArrowLeft,
+    Linkedin,
+    Twitter
+} from "lucide-react";
 
 // Animation variants
 const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
-};
-
-const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 1 } }
 };
 
 const staggerContainer = {
@@ -26,10 +34,10 @@ const staggerContainer = {
 
 // Statistics data
 const stats = [
-    { icon: Users, value: "10,000+", label: "متدرب ناجح" },
-    { icon: BookOpen, value: "50+", label: "دورة متخصصة" },
-    { icon: Award, value: "15+", label: "سنة خبرة" },
-    { icon: TrendingUp, value: "95%", label: "نسبة الرضا" },
+    { icon: Users, target: 10000, prefix: "+", suffix: "", label: "متدرب ناجح" },
+    { icon: BookOpen, target: 50, prefix: "+", suffix: "", label: "دورة متخصصة" },
+    { icon: Award, target: 15, prefix: "+", suffix: "", label: "سنة خبرة" },
+    { icon: TrendingUp, target: 95, prefix: "", suffix: "%", label: "نسبة الرضا" },
 ];
 
 // Core values data
@@ -51,6 +59,68 @@ const coreValues = [
     },
 ];
 
+// Timeline data
+const timelineData = [
+    {
+        year: "2015",
+        icon: "🌱",
+        title: "البداية",
+        description: "بدأت الرحلة بملاحظة فجوة كبيرة في المحتوى التعليمي العربي الموجه للقادة ورواد الأعمال."
+    },
+    {
+        year: "2018",
+        icon: "🎯",
+        title: "أول 1,000 متدرب",
+        description: "وصلنا للألف متدرب الأول مع دورة القيادة الاستراتيجية التي حققت نجاحاً كبيراً."
+    },
+    {
+        year: "2020",
+        icon: "🚀",
+        title: "إطلاق المنصة الرقمية",
+        description: "تحولنا لمنصة رقمية متكاملة مع تجربة تعليمية فريدة وتفاعلية."
+    },
+    {
+        year: "2022",
+        icon: "🏆",
+        title: "+5,000 متدرب",
+        description: "حققنا نسبة رضا 95% ونمو متسارع في المنطقة العربية."
+    },
+    {
+        year: "2024",
+        icon: "🌍",
+        title: "توسع إقليمي",
+        description: "انطلقنا للأسواق الخليجية والعربية بطموحات أكبر لخدمة المزيد من القادة."
+    },
+];
+
+// Team data
+const teamMembers = [
+    {
+        name: "محمد الحبسي",
+        title: "المؤسس والمدرب الرئيسي",
+        description: "+15 سنة خبرة في القيادة وريادة الأعمال",
+        initial: "م",
+    },
+    {
+        name: "أحمد العمري",
+        title: "مدير المحتوى التعليمي",
+        description: "خبير في تصميم المناهج التدريبية",
+        initial: "أ",
+    },
+    {
+        name: "سارة الحارثي",
+        title: "مديرة تجربة المتدربين",
+        description: "متخصصة في UX التعليمي",
+        initial: "س",
+    },
+    {
+        name: "خالد النعيمي",
+        title: "المدير التقني",
+        description: "خبير في منصات التعليم الرقمي",
+        initial: "خ",
+    },
+];
+
 export default function AboutPage() {
     return (
         <main className="bg-navy min-h-screen text-white overflow-hidden">
@@ -62,9 +132,18 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-navy-dark via-navy to-navy z-0" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-40" />
 
+                {/* Pattern */}
+                <div
+                    className="absolute inset-0 opacity-5"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 50% 50%, #d4af37 1px, transparent 1px)`,
+                        backgroundSize: "32px 32px",
+                    }}
+                />
+
                 <div className="container relative z-10 mx-auto px-6 text-center">
                     <motion.span
-                        className="inline-block py-1.5 px-4 border border-gold/50 rounded-full text-gold text-xs font-bold tracking-widest uppercase mb-6"
+                        className="inline-block py-2 px-5 border border-gold/50 rounded-full text-gold text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-sm bg-gold/5"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
@@ -99,25 +178,18 @@ export default function AboutPage() {
             {/* Statistics Section */}
             <section className="py-20 relative bg-navy-dark/50">
                 <div className="container mx-auto px-6">
-                    <motion.div
-                        className="grid grid-cols-2 md:grid-cols-4 gap-8"
-                        variants={staggerContainer}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                    >
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                         {stats.map((stat, index) => (
-                            <motion.div
+                            <AnimatedCounter
                                 key={index}
-                                className="text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-gold/30 transition-all duration-300"
-                                variants={fadeInUp}
-                            >
-                                <stat.icon className="w-10 h-10 text-gold mx-auto mb-4" />
-                                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
-                                <div className="text-gray-400 text-sm">{stat.label}</div>
-                            </motion.div>
+                                icon={stat.icon}
+                                target={stat.target}
+                                prefix={stat.prefix}
+                                suffix={stat.suffix}
+                                label={stat.label}
+                            />
                         ))}
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
@@ -185,8 +257,61 @@ export default function AboutPage() {
                 </div>
             </section>
 
+            {/* Timeline Section */}
+            <section className="py-24 bg-navy-dark/30 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
+
+                <div className="container relative z-10 mx-auto px-6">
+                    <motion.div
+                        className="text-center mb-20"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">رحلتنا</span>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                            مسيرة <span className="text-gold">الإنجازات</span>
+                        </h2>
+                        <p className="max-w-2xl mx-auto text-gray-400 text-lg">
+                            من فكرة بسيطة إلى منصة تخدم الآلاف من القادة ورواد الأعمال
+                        </p>
+                    </motion.div>
+
+                    {/* Desktop Timeline */}
+                    <div className="hidden md:block space-y-8">
+                        {timelineData.map((item, index) => (
+                            <TimelineItem
+                                key={index}
+                                year={item.year}
+                                icon={item.icon}
+                                title={item.title}
+                                description={item.description}
+                                isLast={index === timelineData.length - 1}
+                                index={index}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Mobile Timeline */}
+                    <div className="md:hidden">
+                        {timelineData.map((item, index) => (
+                            <TimelineItemMobile
+                                key={index}
+                                year={item.year}
+                                icon={item.icon}
+                                title={item.title}
+                                description={item.description}
+                                isLast={index === timelineData.length - 1}
+                                index={index}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Core Values Section */}
-            <section className="py-24 bg-navy-dark/30 relative">
+            <section className="py-24 relative">
                 <div className="container mx-auto px-6">
                     <motion.div
                         className="text-center mb-16"
@@ -225,6 +350,59 @@ export default function AboutPage() {
                             </motion.div>
                         ))}
                     </motion.div>
+                </div>
+            </section>
+
+            {/* Team Section */}
+            <section className="py-24 bg-navy-dark/30 relative">
+                <div className="container mx-auto px-6">
+                    <motion.div
+                        className="text-center mb-16"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">فريق العمل</span>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                            الفريق <span className="text-gold">خلف النجاح</span>
+                        </h2>
+                        <p className="max-w-2xl mx-auto text-gray-400 text-lg">
+                            نخبة من الخبراء والمتخصصين يعملون معاً لتقديم أفضل تجربة تعليمية
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {teamMembers.map((member, index) => (
+                            <motion.div
+                                key={index}
+                                className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-gold/30 transition-all duration-300 group text-center"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                            >
+                                {/* Avatar */}
+                                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-navy border-2 border-gold/30 flex items-center justify-center text-gold text-3xl font-bold group-hover:border-gold transition-colors">
+                                    {member.initial}
+                                </div>
+
+                                <h3 className="text-xl font-bold text-white mb-1">{member.name}</h3>
+                                <p className="text-gold text-sm font-medium mb-3">{member.title}</p>
+                                <p className="text-gray-400 text-sm">{member.description}</p>
+
+                                {/* Social links */}
+                                <div className="flex justify-center gap-3 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gold hover:text-navy transition-colors">
+                                        <Linkedin size={14} />
+                                    </button>
+                                    <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gold hover:text-navy transition-colors">
+                                        <Twitter size={14} />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -293,7 +471,7 @@ export default function AboutPage() {
                                 </Button>
                             </Link>
                             <Link href="/contact">
-                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-black border-white/30 hover:bg-white/10 hover:text-white">
+                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-white border-white/30 hover:bg-white/10 hover:text-white">
                                     تواصل معنا <ArrowLeft className="mr-2 w-5 h-5" />
                                 </Button>
                             </Link>
