@@ -106,15 +106,6 @@ export function Hero() {
               <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="lg"
-            shape="sharp"
-            className="min-w-[200px] text-white border-white/30 hover:bg-white/10 hover:border-white/50 group"
-          >
-            <Play className="ml-2 w-4 h-4 group-hover:scale-110 transition-transform" />
-            شاهد قصتنا
-          </Button>
         </motion.div>
 
         {/* Trust indicators */}
