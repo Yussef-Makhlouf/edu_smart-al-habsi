@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,9 @@ import {
   Download,
 } from "lucide-react";
 import Link from "next/link";
+import { useStore } from "@/lib/store";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Sample course data - in real app this would come from database/API
 const coursesData: Record<
@@ -253,13 +258,38 @@ const coursesData: Record<
 // Default course for unknown slugs
 const defaultCourse = coursesData["leadership-secrets"];
 
-export default async function CoursePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const course = coursesData[slug] || defaultCourse;
+export default function CoursePage() {
+  const params = useParams();
+  const slug = params?.slug as string || "leadership-secrets";
+  // Fallback to defaultCourse if slug is found but data missing (unlikely if typed correctly) or first render behavior
+  const courseDetails = coursesData[slug] || defaultCourse;
+
+  const { courses, isEnrolled, user, addToCart } = useStore();
+  const router = useRouter();
+
+  // Find the basic course object from the store using slug
+  const storeCourse = courses.find((c) => c.slug === slug);
+  const enrolled = storeCourse ? isEnrolled(storeCourse.id) : false;
+
+  const handleSubscribe = () => {
+    if (!user) {
+      router.push("/login?redirect=/courses/" + slug);
+      return;
+    }
+    if (storeCourse) {
+      addToCart(storeCourse);
+      router.push("/checkout");
+    }
+  };
+
+  const handleGoToCourse = () => {
+    // Check if we have a specific 'learn' page or just stay here with 'enrolled' view
+    // User requirement: "Student view course in course page alone" -> This suggests this page might transform or link to a viewer.
+    // For now, let's assume there is a /learn sub-route or we just refresh.
+    // Let's implement a simple alert for now as '/learn' page might not exist yet.
+    alert("الانتقال إلى مشغل الدورة...");
+    // router.push(`/courses/${slug}/learn`);
+  };
 
   return (
     <main className="bg-paper min-h-screen">
@@ -273,28 +303,28 @@ export default async function CoursePage({
             {/* Course Info */}
             <div>
               <span className="inline-block bg-gold/20 text-gold px-4 py-1 text-sm font-bold mb-6">
-                {course.category}
+                {courseDetails.category}
               </span>
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                {course.title}
+                {courseDetails.title}
               </h1>
               <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-                {course.longDescription}
+                {courseDetails.longDescription}
               </p>
 
               {/* Stats */}
               <div className="flex flex-wrap gap-6 mb-8">
                 <div className="flex items-center gap-2 text-gray-300">
                   <Clock size={18} className="text-gold" />
-                  <span>{course.duration}</span>
+                  <span>{courseDetails.duration}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Users size={18} className="text-gold" />
-                  <span>{course.students.toLocaleString()} طالب</span>
+                  <span>{courseDetails.students.toLocaleString()} طالب</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Star size={18} className="text-gold fill-gold" />
-                  <span>{course.rating} (تقييم)</span>
+                  <span>{courseDetails.rating} (تقييم)</span>
                 </div>
               </div>
 
@@ -304,7 +334,7 @@ export default async function CoursePage({
                   م
                 </div>
                 <div>
-                  <p className="text-white font-bold">{course.instructor}</p>
+                  <p className="text-white font-bold">{courseDetails.instructor}</p>
                   <p className="text-gray-400 text-sm">المدرب والمؤسس</p>
                 </div>
               </div>
@@ -323,34 +353,44 @@ export default async function CoursePage({
               </div>
 
               <div className="text-4xl font-bold text-navy mb-2">
-                {course.price}
+                {enrolled ? "أنت مشترك ✅" : courseDetails.price}
               </div>
-              <p className="text-gray-500 mb-6">دفعة واحدة • وصول مدى الحياة</p>
+              <p className="text-gray-500 mb-6">{enrolled ? "تم تفعيل الوصول للدورة" : "دفعة واحدة • وصول مدى الحياة"}</p>
 
-              <Link href="/checkout">
+              {enrolled ? (
                 <Button
                   variant="gold"
                   size="lg"
                   className="w-full text-navy font-bold text-lg py-6 mb-4"
+                  onClick={handleGoToCourse}
                 >
-                  اشترك الآن
+                  متابعة الدورة
                 </Button>
-              </Link>
-              <Link href={`/courses/${slug}/learn`}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full border-navy text-navy hover:bg-navy hover:text-white"
-                >
-                  تجربة مجانية
-                </Button>
-              </Link>
+              ) : (
+                <>
+                  <Button
+                    variant="gold"
+                    size="lg"
+                    className="w-full text-navy font-bold text-lg py-6 mb-4"
+                    onClick={handleSubscribe}
+                  >
+                    اشترك الآن
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full border-navy text-navy hover:bg-navy hover:text-white"
+                  >
+                    تجربة مجانية
+                  </Button>
+                </>
+              )}
 
               {/* Features */}
               <div className="mt-8 pt-6 border-t border-gray-100">
                 <h4 className="font-bold text-navy mb-4">تتضمن الدورة:</h4>
                 <ul className="space-y-3">
-                  {course.features.map((feature, idx) => (
+                  {courseDetails.features.map((feature, idx) => (
                     <li
                       key={idx}
                       className="flex items-center gap-3 text-gray-600"
@@ -378,7 +418,7 @@ export default async function CoursePage({
               </h2>
 
               <div className="space-y-4">
-                {course.sections.map((section, sIdx) => (
+                {courseDetails.sections.map((section, sIdx) => (
                   <div
                     key={sIdx}
                     className="bg-white rounded-lg border border-gray-100 overflow-hidden"
@@ -399,7 +439,7 @@ export default async function CoursePage({
                           className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <PlayCircle size={18} className="text-gray-400" />
+                            <PlayCircle size={18} className={`text-gray-400 ${enrolled ? 'text-gold' : ''}`} />
                             <span className="text-gray-700">
                               {lesson.title}
                             </span>
@@ -426,7 +466,7 @@ export default async function CoursePage({
                       <Clock size={16} className="text-gold" /> المدة
                     </span>
                     <span className="font-bold text-navy">
-                      {course.duration}
+                      {courseDetails.duration}
                     </span>
                   </li>
                   <li className="flex items-center justify-between text-gray-600">
@@ -434,7 +474,7 @@ export default async function CoursePage({
                       <BookOpen size={16} className="text-gold" /> الدروس
                     </span>
                     <span className="font-bold text-navy">
-                      {course.sections.reduce(
+                      {courseDetails.sections.reduce(
                         (acc, s) => acc + s.lessons.length,
                         0
                       )}
@@ -445,7 +485,7 @@ export default async function CoursePage({
                       <Users size={16} className="text-gold" /> الطلاب
                     </span>
                     <span className="font-bold text-navy">
-                      {course.students.toLocaleString()}
+                      {courseDetails.students.toLocaleString()}
                     </span>
                   </li>
                   <li className="flex items-center justify-between text-gray-600">
@@ -470,42 +510,12 @@ export default async function CoursePage({
                   variant="gold"
                   size="sm"
                   className="w-full text-navy font-bold"
+                  disabled={!enrolled}
                 >
-                  سجل للوصول
+                  {enrolled ? "تحميل الموارد" : "سجل للوصول"}
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-20 bg-navy text-center">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            هل أنت مستعد <span className="text-gold">للبدء؟</span>
-          </h2>
-          <p className="text-gray-300 mb-8 max-w-xl mx-auto">
-            انضم إلى آلاف الطلاب الذين غيروا مسار حياتهم المهنية
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="gold"
-              size="lg"
-              className="text-navy font-bold px-8"
-            >
-              التسجيل الآن - {course.price}
-            </Button>
-            <Link href="/courses">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-black hover:text-white hover:bg-white/10 px-8"
-              >
-                <ArrowRight className="ml-2" size={18} />
-                تصفح دورات أخرى
-              </Button>
-            </Link>
           </div>
         </div>
       </div>

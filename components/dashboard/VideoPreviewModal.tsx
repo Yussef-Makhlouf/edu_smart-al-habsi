@@ -33,8 +33,8 @@ function getVideoEmbed(url: string): { type: "youtube" | "vimeo" | "direct"; emb
         };
     }
 
-    // Direct video URL
-    if (url.match(/\.(mp4|webm|ogg)$/i)) {
+    // Direct video URL or Blob URL
+    if (url.match(/\.(mp4|webm|ogg)$/i) || url.startsWith('blob:')) {
         return {
             type: "direct",
             embedUrl: url

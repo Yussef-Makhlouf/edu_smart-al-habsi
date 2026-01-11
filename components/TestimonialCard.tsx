@@ -37,6 +37,17 @@ export function TestimonialCard({
                 <Quote className="w-10 h-10 text-gold/20 group-hover:text-gold/40 transition-colors" />
             </div>
 
+            {/* Author */}
+            <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center text-gold font-bold text-lg">
+                    {name.charAt(0)}
+                </div>
+                <div>
+                    <div className="font-bold text-navy">{name}</div>
+                    <div className="text-sm text-gold">{title}</div>
+                </div>
+            </div>
+
             {/* Rating stars */}
             <div className="flex gap-1 mb-6">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -51,20 +62,9 @@ export function TestimonialCard({
             </div>
 
             {/* Quote text */}
-            <blockquote className="text-lg text-navy leading-relaxed mb-8 italic">
+            <blockquote className="text-lg text-navy leading-relaxed italic">
                 "{quote}"
             </blockquote>
-
-            {/* Author */}
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center text-gold font-bold text-lg">
-                    {name.charAt(0)}
-                </div>
-                <div>
-                    <div className="font-bold text-navy">{name}</div>
-                    <div className="text-sm text-gold">{title}</div>
-                </div>
-            </div>
         </motion.div>
     );
 }

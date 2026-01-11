@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { StoreProvider } from "@/lib/store";
 
 const handicrafts = localFont({
   src: "./fonts/TheYearofHandicrafts-Regular.otf",
@@ -11,6 +12,7 @@ const handicrafts = localFont({
 export const metadata: Metadata = {
   title: "Al-Habsi Platform | منصة الحبسي التعليمية",
   description: "المنصة التعليمية الفاخرة للقادة والمتميزين.",
+  
 };
 
 export default function RootLayout({
@@ -23,7 +25,9 @@ export default function RootLayout({
       <body
         className={`${handicrafts.variable} antialiased selection:bg-gold/30`}
       >
-        {children}
+        <StoreProvider>
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );

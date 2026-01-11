@@ -1,11 +1,33 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import Link from "next/link";
-import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Mail, Lock, Eye, EyeOff, Info } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useStore } from "@/lib/store";
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { login } = useStore();
+    const [email, setEmail] = useState("student@edusmart.com"); // Pre-filled for demo
+    const [password, setPassword] = useState("123456"); // Pre-filled for demo
+    const [role, setRole] = useState<"student" | "admin">("student");
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        login(email, role);
+
+        if (role === "admin") {
+            router.push("/dashboard");
+        } else {
+            router.push("/my-courses");
+        }
+    };
+
     return (
         <main className="min-h-screen bg-navy flex">
             {/* Left Side - Branding */}
@@ -56,7 +78,25 @@ export default function LoginPage() {
                     </div>
 
                     {/* Login Form */}
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* Role Selection Toggle */}
+                        <div className="flex bg-gray-100 p-1 rounded-lg mb-6">
+                            <button
+                                type="button"
+                                onClick={() => setRole("student")}
+                                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${role === "student" ? "bg-white text-navy shadow-sm" : "text-gray-500 hover:text-navy"}`}
+                            >
+                                طالب
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setRole("admin")}
+                                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${role === "admin" ? "bg-white text-navy shadow-sm" : "text-gray-500 hover:text-navy"}`}
+                            >
+                                مسؤول المنصة
+                            </button>
+                        </div>
+
                         {/* Email Field */}
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-navy font-bold">
@@ -67,6 +107,8 @@ export default function LoginPage() {
                                 <Input
                                     id="email"
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="example@email.com"
                                     className="pr-12 py-6 bg-white border-gray-200 focus:border-gold focus:ring-gold/20 text-left"
                                     dir="ltr"
@@ -89,17 +131,15 @@ export default function LoginPage() {
                                 <Input
                                     id="password"
                                     type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
                                     className="pr-12 py-6 bg-white border-gray-200 focus:border-gold focus:ring-gold/20 text-left"
                                     dir="ltr"
                                 />
-                                <button type="button" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-navy">
-                                    <EyeOff size={18} />
-                                </button>
                             </div>
                         </div>
 
-                        {/* Remember Me */}
                         <div className="flex items-center gap-2">
                             <input
                                 type="checkbox"
@@ -120,30 +160,30 @@ export default function LoginPage() {
                         >
                             تسجيل الدخول
                         </Button>
+                    </form>
 
-                        {/* Divider */}
-                        <div className="relative my-8">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-paper text-gray-500">أو</span>
+                    {/* Info Box - Replaces Registration Link for Students */}
+                    {role === "student" && (
+                        <div className="mt-8 bg-blue-50 text-blue-800 p-4 rounded-lg flex gap-3 text-sm border border-blue-100">
+                            <Info className="shrink-0 mt-0.5 text-blue-600" size={18} />
+                            <div>
+                                <p className="font-bold mb-1 text-blue-900">كيف يمكنني التسجيل؟</p>
+                                <p className="leading-relaxed">
+                                    حسابات الطلاب يتم إنشاؤها بعد مراجعة الطلب. يمكنك{" "}
+                                    <Link href="/contact" className="font-bold underline hover:text-blue-900">
+                                        تقديم طلب التحاق هنا
+                                    </Link>
+                                    .
+                                </p>
                             </div>
                         </div>
+                    )}
 
-                        {/* Social Login Placeholder */}
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="lg"
-                            className="w-full border-gray-200 text-navy hover:bg-gray-50 py-6"
-                        >
-                            <svg className="w-5 h-5 ml-2" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
-                            </svg>
-                            الدخول بحساب Google
-                        </Button>
-                    </form>
+                    {role === "admin" && (
+                        <div className="mt-8 text-center text-sm text-gray-400">
+                            الوصول للوحة التحكم مخصص للمسؤولين فقط.
+                        </div>
+                    )}
 
                     {/* Back to Home */}
                     <div className="mt-8 text-center">

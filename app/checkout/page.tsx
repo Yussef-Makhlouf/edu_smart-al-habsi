@@ -1,17 +1,74 @@
+"use client";
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle2, ShieldCheck } from "lucide-react";
-import Image from "next/image";
+import { Lock, CreditCard, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Image from "next/image";
 
 export default function CheckoutPage() {
+  const { cartCourse, user, enroll, clearCart } = useStore();
+  const router = useRouter();
+
+  // Protect Route
+  useEffect(() => {
+    if (!user) {
+      // If not logged in, redirect to login with return url
+      // For now just redirect to login
+      router.push("/login");
+    } else if (user.role === "admin") {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
+
+  const handlePayment = () => {
+    if (cartCourse) {
+      enroll(cartCourse.id);
+      clearCart();
+      router.push("/my-courses");
+    }
+  };
+
+  if (!user) return null; // Or loading spinner
+
+  if (!cartCourse) {
+    return (
+      <main className="bg-paper min-h-screen flex flex-col">
+        <Navbar lightVariant={true} />
+        <div className="flex-1 container mx-auto px-6 py-24 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <CreditCard className="text-gray-400" size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-navy mb-4">السلة فارغة</h1>
+          <p className="text-gray-500 mb-8">لم تقم باختيار أي دورة للشراء.</p>
+          <Link href="/courses">
+            <Button variant="gold" className="font-bold text-navy">
+              تصفح الدورات
+            </Button>
+          </Link>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  const tax = cartCourse.priceValue * 0.15; // 15% VAT
+  const total = cartCourse.priceValue + tax;
+
   return (
     <main className="bg-paper min-h-screen flex flex-col">
       <Navbar lightVariant={true} />
 
       <div className="flex-1 container mx-auto px-6 py-24">
         <div className="max-w-6xl mx-auto">
+          <Link href={`/courses/${cartCourse.slug}`} className="inline-flex items-center gap-2 text-gray-500 hover:text-navy mb-8 transition-colors">
+            <ArrowRight size={16} />
+            العودة لتفاصيل الدورة
+          </Link>
           <h1 className="text-3xl font-bold text-navy mb-8">إتمام الطلب</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -23,16 +80,13 @@ export default function CheckoutPage() {
                 {/* Course Item */}
                 <div className="flex gap-4 mb-6 pb-6 border-b border-gray-100">
                   <div className="w-20 h-20 bg-navy/5 rounded-lg flex-shrink-0 relative overflow-hidden">
-                    {/* Placeholder Image */}
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] text-navy/30 font-bold">
-                      IMG
-                    </div>
+                    <Image src={cartCourse.image} alt={cartCourse.title} fill className="object-cover" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-bold text-navy text-sm line-clamp-2 leading-relaxed">
-                      أسرار القيادة الاستراتيجية: الطريق إلى القمة
+                      {cartCourse.title}
                     </h4>
-                    <p className="text-gold font-bold mt-2">1200 ر.س</p>
+                    <p className="text-gold font-bold mt-2">{cartCourse.price}</p>
                   </div>
                 </div>
 
@@ -40,15 +94,15 @@ export default function CheckoutPage() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-gray-500">
                     <span>سعر الدورة</span>
-                    <span>1200 ر.س</span>
+                    <span>{cartCourse.priceValue} ر.س</span>
                   </div>
                   <div className="flex justify-between text-gray-500">
                     <span>الضريبة (15%)</span>
-                    <span>180 ر.س</span>
+                    <span>{tax} ر.س</span>
                   </div>
                   <div className="flex justify-between font-bold text-navy text-lg pt-4 border-t border-gray-100 mt-2">
                     <span>الإجمالي</span>
-                    <span>1380 ر.س</span>
+                    <span>{total} ر.س</span>
                   </div>
                 </div>
 
@@ -73,14 +127,14 @@ export default function CheckoutPage() {
                 </h3>
                 <div className="flex gap-4 items-center bg-gray-50 p-4 rounded-lg">
                   <div className="w-12 h-12 rounded-full bg-navy text-gold flex items-center justify-center font-bold text-lg">
-                    م
+                    {user.name.charAt(0)}
                   </div>
                   <div>
                     <p className="font-bold text-navy">
-                      مسجل الدخول باسم: محمد علي
+                      مسجل الدخول باسم: {user.name}
                     </p>
                     <p className="text-sm text-gray-500">
-                      mohammed@example.com
+                      {user.email}
                     </p>
                   </div>
                 </div>
@@ -158,12 +212,13 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="pt-6">
-                    <Link href="/my-courses">
-                      <Button className="w-full h-14 text-lg bg-gold hover:bg-gold-dim text-navy font-bold shadow-lg gap-2">
-                        <Lock size={18} />
-                        إتمام الدفع (1380 ر.س)
-                      </Button>
-                    </Link>
+                    <Button
+                      onClick={handlePayment}
+                      className="w-full h-14 text-lg bg-gold hover:bg-gold-dim text-navy font-bold shadow-lg gap-2"
+                    >
+                      <Lock size={18} />
+                      إتمام الدفع ({total} ر.س)
+                    </Button>
                     <p className="text-center text-xs text-gray-400 mt-4">
                       بإتمام الطلب، أنت توافق على شروط وأحكام المنصة.
                     </p>

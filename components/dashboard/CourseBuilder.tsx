@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Video, Clock, Link2, Play } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Video, Clock, Link2, Play, Upload } from "lucide-react";
 import { VideoPreviewModal } from "./VideoPreviewModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -101,6 +101,14 @@ export function CourseBuilder() {
             }
             return s;
         }));
+    };
+
+    const handleFileUpload = (sectionId: string, lessonId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            updateLesson(sectionId, lessonId, "videoUrl", url);
+        }
     };
 
     const totalVideos = sections.reduce((acc, s) => acc + s.videoCount, 0);
@@ -229,6 +237,20 @@ export function CourseBuilder() {
                                                         placeholder="رابط الفيديو (YouTube, Vimeo, أو رابط مباشر)"
                                                         dir="ltr"
                                                     />
+                                                    <input
+                                                        type="file"
+                                                        id={`video-upload-${lesson.id}`}
+                                                        className="hidden"
+                                                        accept="video/*"
+                                                        onChange={(e) => handleFileUpload(section.id, lesson.id, e)}
+                                                    />
+                                                    <label
+                                                        htmlFor={`video-upload-${lesson.id}`}
+                                                        className="p-1.5 rounded-md bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer transition-colors"
+                                                        title="رفع فيديو"
+                                                    >
+                                                        <Upload size={14} />
+                                                    </label>
                                                     {lesson.videoUrl && (
                                                         <button
                                                             onClick={() => setVideoPreview({ isOpen: true, url: lesson.videoUrl, title: lesson.title })}
