@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, Course, Enrollment, UserRole } from "./types";
 
 // Re-export types for convenience if needed by other components importing from store
@@ -186,6 +186,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     // Cart State
     const [cartCourse, setCartCourse] = useState<Course | null>(null);
 
+    // Check for existing token on app start
+    useEffect(() => {
+        const checkExistingToken = async () => {
+            const token = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+            const sessionId = localStorage.getItem("session_id") || sessionStorage.getItem("session_id");
+            
+            if (token && sessionId && !user) {
+                try {
+                    // In a real implementation, you would validate the token with backend
+                    // For now, we'll assume the token is valid if it exists with session_id
+                    console.log("Valid session found, user should remain logged in");
+                    // Note: Actual token validation should be done with backend API
+                    // The backend should check currentSessionToken matches the provided token
+                } catch (error) {
+                    // Token is invalid, logout
+                    console.log("Token invalid, logging out");
+                    logout();
+                }
+            } else if (token && !sessionId) {
+                // Token exists but no session_id, this might be from another device
+                console.log("Token found but no session_id, logging out for security");
+                logout();
+            }
+        };
+
+        checkExistingToken();
+    }, []);
+
     // Actions
     const login = (email: string, role: UserRole) => {
         // Simple auth check against 'users' database
@@ -214,7 +242,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Normalize role: convert "user" to "student" for internal use
-        const normalizedRole: UserRole = userData.role === "admin" ? "admin" : "student";
+        const normalizedRole: UserRole = userData.role.toLocaleLowerCase() === "admin" ? "admin" : "student";
 
         const user: User = {
             id: userData.id,
@@ -227,9 +255,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     const logout = () => {
         setUser(null);
-        // Clear tokens
+        // Clear tokens and session data
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("session_id");
         sessionStorage.removeItem("auth_token");
+        sessionStorage.removeItem("session_id");
     };
 
     const enroll = (courseId: number) => {

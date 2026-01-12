@@ -70,6 +70,14 @@ export function useProfile() {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "حدث خطأ أثناء جلب بيانات المستخدم";
+      
+      // Auto logout on unauthorized
+      if (errorMessage.includes("غير مصرح") || errorMessage.includes("401")) {
+        logout();
+        setError("انتهت صلاحية جلستك، يرجى تسجيل الدخول مرة أخرى");
+        return;
+      }
+      
       setError(errorMessage);
     } finally {
       setIsFetching(false);
@@ -215,6 +223,18 @@ export function useProfile() {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "حدث خطأ أثناء تحديث الملف الشخصي";
+      
+      // Auto logout on unauthorized
+      if (errorMessage.includes("غير مصرح") || errorMessage.includes("401")) {
+        logout();
+        setError("انتهت صلاحية جلستك، يرجى تسجيل الدخول مرة أخرى");
+        form.setError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
+        return;
+      }
+      
       setError(errorMessage);
       form.setError("root", {
         type: "manual",

@@ -1,6 +1,6 @@
 // API Configuration
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Helper function to get auth headers
 export const getAuthHeaders = (token?: string | null): HeadersInit => {
@@ -78,6 +78,16 @@ export const handleResponse = async <T>(response: Response): Promise<T> => {
     
     const message = errorData?.message || response.statusText || `Request failed with status ${response.status}`;
     const arabicMessage = translateErrorMessage(message, response.status);
+    
+    // Auto logout on 401 Unauthorized
+    if (response.status === 401) {
+      // Clear tokens and user data
+      localStorage.removeItem("auth_token");
+      sessionStorage.removeItem("auth_token");
+      // Note: We can't directly call logout here due to circular dependency
+      // The logout will be handled by the components that catch this error
+    }
+    
     throw new Error(arabicMessage);
   }
   return response.json() as Promise<T>;

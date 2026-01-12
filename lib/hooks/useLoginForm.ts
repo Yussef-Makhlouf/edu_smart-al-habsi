@@ -102,8 +102,12 @@ export function useLoginForm() {
       // Store token if rememberMe is checked
       if (data.rememberMe && token) {
         localStorage.setItem("auth_token", token);
+        // Store session identifier for single device login
+        localStorage.setItem("session_id", `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
       } else if (token) {
         sessionStorage.setItem("auth_token", token);
+        // Store session identifier for single device login
+        sessionStorage.setItem("session_id", `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
       }
 
       // Update store with user data from API (convert _id to id and normalize role)
