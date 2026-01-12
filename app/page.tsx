@@ -195,7 +195,7 @@ export default function Home() {
                   variant="outline"
                   size="lg"
                   shape="sharp"
-                  className="min-w-[200px] text-white border-white/30 hover:bg-white/10 hover:border-white/50"
+                  className="min-w-[200px] text-navy border-white/30 hover:bg-white/10 hover:border-white/50"
                 >
                   تواصل معنا
                 </Button>
