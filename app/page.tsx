@@ -159,52 +159,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 8. Final CTA Section */}
-      <section className="py-24 bg-navy relative overflow-hidden text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold/15 via-transparent to-transparent opacity-60" />
-
-        {/* Decorative elements */}
-        <div className="absolute bottom-10 left-10 w-32 h-32 border-l-2 border-b-2 border-gold/20" />
-        <div className="absolute top-10 right-10 w-32 h-32 border-r-2 border-t-2 border-gold/20" />
-
-        <FadeIn direction="up">
-          <div className="container relative z-10 px-6 max-w-3xl mx-auto">
-            <span className="text-gold font-bold tracking-widest uppercase text-sm mb-6 block">
-              ابدأ الآن
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              هل أنت مستعد <span className="text-gold">للتغيير؟</span>
-            </h2>
-            <p className="text-gray-300 mb-10 text-lg md:text-xl leading-relaxed">
-              انضم إلى الآلاف من القادة الذين غيروا مسار حياتهم المهنية والمالية
-              من خلال برامجنا. رحلتك نحو التميز تبدأ بخطوة واحدة.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/courses">
-                <Button
-                  variant="gold"
-                  size="lg"
-                  shape="sharp"
-                  className="min-w-[200px] px-12 py-6 text-lg text-navy font-bold transition-all duration-300"
-                >
-                  ابدأ رحلتك الآن
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  shape="sharp"
-                  className="min-w-[200px] text-navy border-white/30 hover:bg-white/10 hover:border-white/50"
-                >
-                  تواصل معنا
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
       <Footer />
     </main>
   );

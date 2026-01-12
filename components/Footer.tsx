@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Facebook,
@@ -8,242 +10,212 @@ import {
   Mail,
   MapPin,
   Phone,
+  Send,
+  ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
-import Image from "next/image";
+import { useState } from "react";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [isHovered, setIsHovered] = useState<string | null>(null);
+
+  const currentYear = new Date().getFullYear();
+
+  const courses = [
+    { name: "دورة الملك الحقيقي", href: "/courses" },
+    { name: "دورة المستوى الاحترافي للأعمال - 2", href: "/courses" },
+    { name: "دورة المستوى الاحترافي للأعمال", href: "/courses" },
+    { name: "البرنامج الداخلي للأعمال والثراء", href: "/courses" },
+  ];
+
+  const quickLinks = [
+    { name: "عن المؤسس", href: "/about" },
+    { name: "جميع الدورات", href: "/courses" },
+    { name: "تسجيل الدخول", href: "/login" },
+    { name: "اتصل بنا", href: "/contact" },
+  ];
+
+  const socialLinks = [
+    { icon: Linkedin, href: "#", label: "LinkedIn", color: "#0077B5" },
+    { icon: Youtube, href: "#", label: "YouTube", color: "#FF0000" },
+    { icon: Instagram, href: "#", label: "Instagram", color: "#E4405F" },
+    { icon: Twitter, href: "#", label: "Twitter", color: "#1DA1F2" },
+    { icon: Facebook, href: "#", label: "Facebook", color: "#1877F2" },
+  ];
+
   return (
-    <footer className="bg-white border-t border-gray-100 font-sans" dir="rtl">
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-right">
-          {/* Column 1: Courses */}
-          <div className="space-y-4">
-            <h4 className="text-gray-700 font-bold mb-4 border-b-2 border-transparent inline-block">
-              الدورات
-            </h4>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  دورة الملك الحقيقي
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  دورة المستوى الاحترافي للأعمال - 2 | كتاب نسختك الأفضل
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  دورة المستوى الاحترافي للأعمال
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  البرنامج الداخلي للأعمال والثراء
-                </Link>
-              </li>
-            </ul>
-          </div>
+    <footer className="relative bg-navy text-white overflow-hidden" dir="rtl">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Gradient Orbs */}
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gold/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gold/5 rounded-full blur-3xl" />
 
-          {/* Column 2: Books */}
-          <div className="space-y-4">
-            <h4 className="text-gray-700 font-bold mb-4 border-b-2 border-transparent inline-block">
-              الكتب
-            </h4>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  كتاب الأسرار ال 7 للثراء
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="hover:text-gold transition-colors block"
-                >
-                  كتاب نسختك الأفضل
-                </Link>
-              </li>
-            </ul>
-          </div>
+        {/* Subtle Grid Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(212, 175, 55, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(212, 175, 55, 0.3) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
+          }}
+        />
+      </div>
 
-          {/* Column 3: Events & Other Links */}
-          <div className="space-y-4">
-            {/* Events */}
-            <div className="mb-8">
-              <h4 className="text-gray-700 font-bold mb-4 border-b-2 border-transparent inline-block">
-                الأحداث
-              </h4>
-              <ul className="space-y-3 text-sm text-gray-500">
-                <li>
-                  <Link
-                    href="#"
-                    className="hover:text-gold transition-colors block"
-                  >
-                    حفل توقيع كتاب الأسرار ال 7 للثراء
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            {/* Other Links */}
+
+
+
+      {/* Main Footer Content */}
+      <div className="relative container mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+
+          {/* Column 1: Brand & About */}
+          <div className="lg:col-span-1 space-y-6">
             <div>
-              <h4 className="text-gray-700 font-bold mb-4 border-b-2 border-transparent inline-block">
-                روابط أخرى
-              </h4>
-              <ul className="space-y-3 text-sm text-gray-500">
-                <li>
-                  <Link
-                    href="/about"
-                    className="hover:text-gold transition-colors block"
-                  >
-                    عن الدكتور
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/login"
-                    className="hover:text-gold transition-colors block"
-                  >
-                    تسجيل الدخول
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact"
-                    className="hover:text-gold transition-colors block"
-                  >
-                    اتصل بنا
-                  </Link>
-                </li>
-              </ul>
+              <h2 className="text-2xl font-bold tracking-tight mb-2">
+                <span className="text-gold">MOHAMMED</span> ALHABSI
+              </h2>
+              <div className="w-12 h-1 bg-gradient-to-l from-gold to-gold/30 rounded-full" />
+            </div>
+            <p className="text-white/60 leading-relaxed text-sm">
+              منصة تعليمية رائدة تهدف إلى تمكين القادة ورواد الأعمال من خلال معرفة استثنائية وأدوات عملية لبناء المستقبل.
+            </p>
+
+            {/* Contact Info */}
+            <div className="space-y-3 pt-2">
+              <a href="mailto:info@alhabsi.com" className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-gold/10 transition-colors">
+                  <Mail size={14} className="text-gold" />
+                </div>
+                <span>info@alhabsi.com</span>
+              </a>
+              <a href="tel:+966500000000" className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-gold/10 transition-colors">
+                  <Phone size={14} className="text-gold" />
+                </div>
+                <span dir="ltr">+966 50 000 0000</span>
+              </a>
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                  <MapPin size={14} className="text-gold" />
+                </div>
+                <span>الرياض، المملكة العربية السعودية</span>
+              </div>
             </div>
           </div>
 
-          {/* Column 4: App Download */}
-          <div className="space-y-4 flex flex-col items-end md:items-start">
-            <h4 className="text-gray-700 font-bold mb-4 w-full text-right">
-              حمل التطبيق الآن
-            </h4>
-            <div className="flex flex-col gap-3 w-full items-end md:items-start">
-              <Link
-                href="#"
-                className="block w-40 hover:opacity-90 transition-opacity"
-              >
-                {/* Placeholder for Google Play Badge */}
-                <div className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 border border-black cursor-pointer">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-6 h-6 fill-current text-white"
+          {/* Column 2: Courses */}
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-lg font-bold text-white mb-2">الدورات</h4>
+              <div className="w-8 h-0.5 bg-gold/50 rounded-full" />
+            </div>
+            <ul className="space-y-3">
+              {courses.map((course, index) => (
+                <li key={index}>
+                  <Link
+                    href={course.href}
+                    className="group flex items-center gap-2 text-white/60 hover:text-gold transition-all duration-300 text-sm"
+                    onMouseEnter={() => setIsHovered(`course-${index}`)}
+                    onMouseLeave={() => setIsHovered(null)}
                   >
-                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.3,12.5L17.38,15.42L15.12,13.17L20.3,8L21.35,9.5C21.69,10 21.69,10.69 21.35,11.22L20.3,12.5M16.81,8.88L14.54,11.15L6.05,2.66L16.81,8.88Z" />
-                  </svg>
-                  <div className="flex flex-col items-start leading-none">
-                    <span className="text-[9px] uppercase">Get it on</span>
-                    <span className="text-sm font-bold">Google Play</span>
-                  </div>
-                </div>
-              </Link>
+                    <ArrowUpRight
+                      size={14}
+                      className={`transition-all duration-300 ${isHovered === `course-${index}` ? 'opacity-100 -translate-y-0.5 translate-x-0.5' : 'opacity-0'}`}
+                    />
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">{course.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-              <Link
-                href="#"
-                className="block w-40 hover:opacity-90 transition-opacity"
-              >
-                {/* Placeholder for App Store Badge */}
-                <div className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 border border-black cursor-pointer">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-6 h-6 fill-current text-white"
+          {/* Column 3: Quick Links */}
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-lg font-bold text-white mb-2">روابط سريعة</h4>
+              <div className="w-8 h-0.5 bg-gold/50 rounded-full" />
+            </div>
+            <ul className="space-y-3">
+              {quickLinks.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="group flex items-center gap-2 text-white/60 hover:text-gold transition-all duration-300 text-sm"
+                    onMouseEnter={() => setIsHovered(`link-${index}`)}
+                    onMouseLeave={() => setIsHovered(null)}
                   >
-                    <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z" />
-                  </svg>
-                  <div className="flex flex-col items-start leading-none">
-                    <span className="text-[9px]">Download on the</span>
-                    <span className="text-sm font-bold">App Store</span>
-                  </div>
-                </div>
-              </Link>
+                    <ArrowUpRight
+                      size={14}
+                      className={`transition-all duration-300 ${isHovered === `link-${index}` ? 'opacity-100 -translate-y-0.5 translate-x-0.5' : 'opacity-0'}`}
+                    />
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Social & Extra */}
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-lg font-bold text-white mb-2">تابعنا</h4>
+              <div className="w-8 h-0.5 bg-gold/50 rounded-full" />
+            </div>
+
+            {/* Social Icons */}
+            <div className="flex flex-wrap gap-3">
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.href}
+                  aria-label={social.label}
+                  className="group w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-white/60 hover:bg-gold hover:text-navy transition-all duration-300 hover:scale-110"
+                >
+                  <social.icon size={18} />
+                </a>
+              ))}
+            </div>
+
+            {/* Extra Info Card */}
+            <div className="bg-white/5 rounded-xl p-5 border border-white/5">
+              <h5 className="text-sm font-bold text-gold mb-2">ساعات العمل</h5>
+              <p className="text-white/60 text-xs leading-relaxed">
+                الأحد - الخميس: 9 صباحاً - 6 مساءً
+                <br />
+                الجمعة والسبت: مغلق
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-100 bg-white py-6">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          {/* Social Media & Links */}
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex gap-4">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-navy transition-colors"
-              >
-                <Linkedin size={18} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-navy transition-colors"
-              >
-                <Youtube size={18} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-navy transition-colors"
-              >
-                <Instagram size={18} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-navy transition-colors"
-              >
-                <Twitter size={18} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-navy transition-colors"
-              >
-                <Facebook size={18} />
-              </a>
-            </div>
-
-            <span className="hidden md:inline h-4 w-px bg-gray-300"></span>
-
-            <div className="flex gap-6">
+      <div className="relative border-t border-white/10">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Legal Links */}
+            <div className="flex items-center gap-6 text-sm">
               <Link
                 href="/privacy"
-                className="hover:text-navy font-bold transition-colors"
+                className="text-white/50 hover:text-gold transition-colors"
               >
-                الخصوصية
+                سياسة الخصوصية
               </Link>
+              <span className="w-1 h-1 rounded-full bg-white/20" />
               <Link
                 href="/terms"
-                className="hover:text-navy font-bold transition-colors"
+                className="text-white/50 hover:text-gold transition-colors"
               >
-                الشروط
+                الشروط والأحكام
               </Link>
             </div>
-          </div>
 
-          {/* Copyright */}
-          <div
-            className="text-center md:text-left text-gray-400 font-light"
-            dir="ltr"
-          >
-            Copyright {new Date().getFullYear()} - All Rights Reserved
+            {/* Copyright */}
+            <div className="text-white/40 text-sm" dir="ltr">
+              © {currentYear} Mohammed AlHabsi. All Rights Reserved.
+            </div>
           </div>
         </div>
       </div>
