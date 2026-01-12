@@ -129,7 +129,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                     "text-sm font-bold",
                     scrolled ? "text-white" : lightVariant ? "text-navy" : "text-white"
                   )}>
-                   محمد علي
+                    {user?.name || "المستخدم"}
                   </span>
                 </button>
 

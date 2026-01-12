@@ -152,6 +152,7 @@ interface StoreState {
     user: User | null;
     users: User[]; // List of all users for admin
     login: (email: string, role: UserRole) => boolean; // Return success/fail
+    setUserFromAPI: (userData: { id: string; userName: string; email: string; role: "user" | "admin"; image?: string }) => void; // Set user from API response
     logout: () => void;
 
     courses: Course[];
@@ -205,8 +206,30 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const setUserFromAPI = (userData: { id: string; userName: string; email: string; role: "user" | "admin"; image?: string }) => {
+        // Validate userData before setting
+        if (!userData || !userData.id || !userData.email) {
+            console.error("Invalid user data received:", userData);
+            throw new Error("بيانات المستخدم غير صحيحة");
+        }
+
+        // Normalize role: convert "user" to "student" for internal use
+        const normalizedRole: UserRole = userData.role === "admin" ? "admin" : "student";
+
+        const user: User = {
+            id: userData.id,
+            name: userData.userName || userData.email.split("@")[0], // Fallback to email prefix if userName is missing
+            email: userData.email,
+            role: normalizedRole,
+        };
+        setUser(user);
+    };
+
     const logout = () => {
         setUser(null);
+        // Clear tokens
+        localStorage.removeItem("auth_token");
+        sessionStorage.removeItem("auth_token");
     };
 
     const enroll = (courseId: number) => {
@@ -257,6 +280,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             user,
             users,
             login,
+            setUserFromAPI,
             logout,
             courses,
             enrolledCourses: enrolledCourseList,
