@@ -1,81 +1,144 @@
+"use client";
+
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { SectionHeading } from "@/components/SectionHeading";
-import { CourseCard } from "@/components/CourseCard";
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+import { CourseRowAlternating } from "@/components/course/CourseRowAlternating";
+import { CoursesPagination } from "@/components/course/CoursesPagination";
 
 // Sample courses data with slugs
-const courses = [
-    { id: 1, slug: "leadership-secrets", category: "القيادة", title: "أسرار القيادة الاستراتيجية", description: "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.", price: "1200 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 2, slug: "crisis-management", category: "القيادة", title: "فن إدارة الأزمات الكبرى", description: "دورة مكثفة تأخذك في رحلة عميقة لفهم كيفية إدارة الأزمات واتخاذ قرارات مصيرية.", price: "1100 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 3, slug: "digital-startup", category: "ريادة الأعمال", title: "تأسيس المشاريع الرقمية", description: "الدليل الشامل لبناء شركة ناشئة قابلة للنمو، من الفكرة إلى أول مليون ريال.", price: "950 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 4, slug: "emerging-markets", category: "المالية", title: "الاستثمار في الأسواق الناشئة", description: "فهم ديناميكيات الأسواق الناشئة وكيفية الاستثمار فيها بذكاء.", price: "1300 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 5, slug: "wealth-mindset", category: "التطوير الشخصي", title: "عقلية الثراء والحكمة", description: "أعد برمجة عقلك للتعامل مع المال والفرص بطريقة الأثرياء الحكماء.", price: "750 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 6, slug: "personal-branding", category: "التسويق", title: "بناء العلامة الشخصية", description: "كيف تبني حضورًا رقميًا قويًا يجعلك مرجعًا في مجالك.", price: "850 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 7, slug: "crisis-management", category: "القيادة", title: "فن إدارة الأزمات الكبرى", description: "دورة مكثفة تأخذك في رحلة عميقة لفهم كيفية إدارة الأزمات واتخاذ قرارات مصيرية.", price: "1100 SAR" ,image: "/images/Mockup.jpg"},
-    { id: 8, slug: "digital-startup", category: "ريادة الأعمال", title: "تأسيس المشاريع الرقمية", description: "الدليل الشامل لبناء شركة ناشئة قابلة للنمو، من الفكرة إلى أول مليون ريال.", price: "950 SAR" ,image: "/images/Mockup.jpg"},
-  
+const allCourses = [
+    {
+        id: 1,
+        slug: "professional-business",
+        title: "كورس أسرار عالم البزنس الإلكتروني",
+        description:
+            "استثمارك بخبرة وتجربة ناجحة المسرة لأختصار المسافة",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 2,
+        slug: "real-king",
+        title: "دورة الملك الحقيقي",
+        description:
+            "دورة حصرية للمبدعين في عالم الأعمال وتطوير الذات مع أفضل المدربين",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 3,
+        slug: "business-secrets-2",
+        title: "كورس أسرار عالم البزنس الإلكتروني ٢",
+        description:
+            "استثمارك بخبرة وتجربة ناجحة المسرة لأختصار المسافة",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 4,
+        slug: "business-secrets-3",
+        title: "كورس أسرار عالم البزنس الإلكتروني ٣",
+        description:
+            "استثمارك بخبرة وتجربة ناجحة المسرة لأختصار المسافة",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 5,
+        slug: "business-secrets-4",
+        title: "كورس أسرار عالم البزنس الإلكتروني ٤",
+        description:
+            "استثمارك بخبرة وتجربة ناجحة المسرة لأختصار المسافة",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 6,
+        slug: "business-secrets-5",
+        title: "٢- كورس أسرار عالم البزنس الإلكتروني",
+        description:
+            "استثمارك لمسة وتجربة ناجحة المسرة لأختصار المسافة",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 7,
+        slug: "effective-marketing",
+        title: "شفرة التسويق الفعال",
+        description:
+            "تعلم أسرار التسويق الفعال وكيفية الوصول لجمهورك المستهدف",
+        image: "/images/Mockup.jpg",
+    },
+    {
+        id: 8,
+        slug: "achievement-magic",
+        title: "كورس سحر الإنجاز ٤",
+        description:
+            "تعلم كيف تنجز أهدافك بسرعة وفعالية مع هذه الدورة المميزة",
+        image: "/images/Mockup.jpg",
+    },
 ];
 
+const COURSES_PER_PAGE = 6;
+
 export default function CoursesPage() {
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil(allCourses.length / COURSES_PER_PAGE);
+    const startIndex = (currentPage - 1) * COURSES_PER_PAGE;
+    const currentCourses = allCourses.slice(
+        startIndex,
+        startIndex + COURSES_PER_PAGE
+    );
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // Scroll to top of courses section
+        window.scrollTo({ top: 400, behavior: "smooth" });
+    };
+
     return (
-        <main className="bg-navy min-h-screen">
+        <main className="bg-paper min-h-screen">
             <Navbar />
 
             {/* Hero Section */}
-            <div className="relative h-[55vh] flex items-center justify-center pt-32 pb-20 bg-navy">
+            <div className="relative flex items-center justify-center pt-32 pb-16 bg-primary">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-50" />
                 <div className="container mx-auto px-6 relative z-10 text-center">
-                    <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">استثمر في عقلك</span>
-                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">مكتبة الدورات</h1>
-                    <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-                        اختر من بين مجموعة متنوعة من الدورات المصممة لتطوير مهاراتك وتحقيق أهدافك
+                    <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">
+                        المزيد عن الدورات
+                    </span>
+                    <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                        خطوتك الأولى نحو النجاح تبدأ من هنا
+                    </h1>
+                    <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto leading-relaxed">
+                        يقدم الدكتور محمد الحبسي خلال هذه الدورة محتوى ثري ومكثف من التجارب
+                        والخبرات العملية التي اكتسبها من خلال سنوات من العمل في مجال الأعمال
+                        والتنمية البشرية
                     </p>
                 </div>
             </div>
 
-            {/* Courses Section */}
-            <div className="relative py-16 bg-paper">
-                <div className="container mx-auto px-6">
-                    {/* Filter Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-16 border-b border-gray-200 pb-6">
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            <Button variant="gold" shape="sharp" size="sm" className="font-bold text-navy">الكل</Button>
-                            <Button variant="ghost" shape="sharp" size="sm" className="text-gray-500 hover:text-navy hover:bg-navy/5">القيادة</Button>
-                            <Button variant="ghost" shape="sharp" size="sm" className="text-gray-500 hover:text-navy hover:bg-navy/5">المالية</Button>
-                            <Button variant="ghost" shape="sharp" size="sm" className="text-gray-500 hover:text-navy hover:bg-navy/5">التسويق</Button>
-                            <Button variant="ghost" shape="sharp" size="sm" className="text-gray-500 hover:text-navy hover:bg-navy/5">ريادة الأعمال</Button>
-                        </div>
-                        <Button variant="outline" size="sm" className="gap-2 border-navy/20 text-navy hover:bg-navy/5">
-                            <Filter size={14} /> تصفية النتائج
-                        </Button>
-                    </div>
+            {/* Courses Section - Alternating Layout */}
+            <div className="relative">
+                {currentCourses.map((course, index) => (
+                    <CourseRowAlternating
+                        key={course.id}
+                        title={course.title}
+                        description={course.description}
+                        image={course.image}
+                        href={`/courses/${course.slug}`}
+                        isReversed={false}
+                        isDark={index % 2 !== 0}
+                    />
+                ))}
+            </div>
 
-                    {/* Courses Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {courses.map((course) => (
-                            <CourseCard
-                                key={course.id}
-                                category={course.category}
-                                title={course.title}
-                                description={course.description}
-                                price={course.price}
-                                image={course.image}
-                                href={`/courses/${course.slug}`}
-                            />
-                        ))}
-                    </div>
-
-                    <div className="mt-20 text-center">
-                        <Button variant="outline" size="lg" className="border-gold text-gold hover:bg-gold hover:text-navy font-bold px-8">
-                            تحميل المزيد
-                        </Button>
-                    </div>
-                </div>
+            {/* Pagination */}
+            <div className="bg-paper">
+                <CoursesPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
 
             <Footer />
         </main>
-    )
+    );
 }
