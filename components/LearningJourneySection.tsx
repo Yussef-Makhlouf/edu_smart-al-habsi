@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, PlayCircle, Briefcase, Award } from "lucide-react";
+import { Search, PlayCircle, Briefcase, Award, ArrowLeft } from "lucide-react";
 
 const steps = [
     {
@@ -32,101 +32,131 @@ const steps = [
 
 export function LearningJourneySection() {
     return (
-        <section className="py-24 bg-navy relative overflow-hidden">
-            {/* Background effects */}
-            <div className="absolute inset-0 bg-gradient-to-b from-navy-dark to-navy z-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-50" />
+        <section className="py-28 bg-navy relative overflow-hidden">
+            {/* Diagonal accent stripe */}
+            <div
+                className="absolute top-0 left-0 w-full h-full opacity-5"
+                style={{
+                    background: 'repeating-linear-gradient(-45deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)'
+                }}
+            />
 
             <div className="container relative z-10 mx-auto px-6">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
-                >
-                    <span className="text-gold font-bold tracking-widest uppercase text-sm mb-4 block">
-                        كيف تبدأ
-                    </span>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                        رحلة <span className="text-gold">التعلم</span>
-                    </h2>
-                    <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-                        أربع خطوات بسيطة تفصلك عن تحقيق أهدافك المهنية
-                    </p>
-                </motion.div>
+                {/* Header with unique layout */}
+                <div className="grid lg:grid-cols-12 gap-8 mb-20">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="lg:col-span-6"
+                    >
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-3 h-3 bg-gold" />
+                            <div className="w-12 h-px bg-gold" />
+                            <span className="text-gold text-sm font-bold tracking-widest uppercase">الخطوات</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                            رحلة
+                            <span className="text-gold"> التعلم</span>
+                        </h2>
+                    </motion.div>
 
-                {/* Desktop Layout */}
-                <div className="hidden md:grid grid-cols-4 gap-8 relative">
-                    {/* Connecting line */}
-                    <div className="absolute top-16 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-gold/20 via-gold to-gold/20" />
-
-                    {steps.map((step, index) => (
-                        <motion.div
-                            key={index}
-                            className="relative text-center"
-                            initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: index * 0.15 }}
-                        >
-                            {/* Step circle */}
-                            <div className="w-32 h-32 mx-auto mb-6 relative">
-                                <div className="absolute inset-0 bg-gold/20 rounded-full blur-xl" />
-                                <div className="relative w-full h-full bg-navy border-2 border-gold rounded-full flex items-center justify-center group hover:bg-gold transition-colors duration-300">
-                                    <step.icon className="w-10 h-10 text-gold group-hover:text-navy transition-colors duration-300" />
-                                </div>
-                                {/* Number badge */}
-                                <div className="absolute -top-2 -right-2 w-10 h-10 bg-gold rounded-full flex items-center justify-center text-navy font-bold text-sm ">
-                                    {step.number}
-                                </div>
-                            </div>
-
-                            <h3 className="text-xl font-bold text-white mb-3">
-                                {step.title}
-                            </h3>
-                            <p className="text-gray-400 text-sm leading-relaxed px-2">
-                                {step.description}
-                            </p>
-                        </motion.div>
-                    ))}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        className="lg:col-span-4 lg:col-start-9 flex items-end"
+                    >
+                        <p className="text-gray-400 text-lg leading-relaxed">
+                            أربع خطوات بسيطة تفصلك عن تحقيق أهدافك المهنية
+                        </p>
+                    </motion.div>
                 </div>
 
-                {/* Mobile Layout */}
-                <div className="md:hidden space-y-6">
-                    {steps.map((step, index) => (
-                        <motion.div
-                            key={index}
-                            className="flex gap-4"
-                            initial={{ opacity: 0, x: -30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                        >
-                            {/* Left side - number and line */}
-                            <div className="flex flex-col items-center">
-                                <div className="w-14 h-14 bg-gold rounded-full flex items-center justify-center text-navy font-bold shrink-0">
-                                    {step.number}
-                                </div>
-                                {index < steps.length - 1 && (
-                                    <div className="w-0.5 flex-1 bg-gradient-to-b from-gold to-gold/20 mt-2" />
-                                )}
-                            </div>
+                {/* Steps - Horizontal Timeline Design */}
+                <div className="hidden lg:block relative">
+                    {/* Main horizontal line */}
+                    <div className="absolute top-24 left-0 right-0 h-px bg-white/10" />
 
-                            {/* Right side - content */}
-                            <div className="flex-1 pb-6">
-                                <div className="p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <step.icon className="w-5 h-5 text-gold" />
-                                        <h3 className="text-lg font-bold text-white">{step.title}</h3>
+                    <div className="grid grid-cols-4 gap-0">
+                        {steps.map((step, index) => (
+                            <motion.div
+                                key={index}
+                                className="relative"
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: index * 0.15 }}
+                            >
+                                {/* Large number watermark */}
+                                <div className="mb-4">
+                                    <span className="text-8xl font-bold text-white/[0.03]">{step.number}</span>
+                                </div>
+
+                                {/* Connection point */}
+                                <div className="absolute top-24 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                    <div className="w-4 h-4 bg-navy border-2 border-gold rotate-45" />
+                                </div>
+
+                                {/* Arrow to next (except last) */}
+                                {index < steps.length - 1 && (
+                                    <div className="absolute top-24 right-0 translate-x-1/2 -translate-y-1/2 text-gold/30">
+                                        <ArrowLeft size={20} className="rotate-180" />
                                     </div>
-                                    <p className="text-gray-400 text-sm leading-relaxed">
+                                )}
+
+                                {/* Content card */}
+                                <div className="mt-16 pr-8">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 border border-gold/50 flex items-center justify-center">
+                                            <step.icon className="w-5 h-5 text-gold" />
+                                        </div>
+                                        <span className="text-gold font-bold text-sm">{step.number}</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-3">
+                                        {step.title}
+                                    </h3>
+                                    <p className="text-gray-500 text-sm leading-relaxed">
                                         {step.description}
                                     </p>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Mobile Layout - Vertical Timeline */}
+                <div className="lg:hidden relative pr-8">
+                    {/* Vertical line */}
+                    <div className="absolute right-3 top-0 bottom-0 w-px bg-white/10" />
+
+                    <div className="space-y-12">
+                        {steps.map((step, index) => (
+                            <motion.div
+                                key={index}
+                                className="relative"
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.4, delay: index * 0.1 }}
+                            >
+                                {/* Timeline dot */}
+                                <div className="absolute right-0 top-0 w-6 h-6 bg-navy border-2 border-gold rotate-45 -translate-x-1/2" />
+
+                                {/* Content */}
+                                <div className="mr-8">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <span className="text-gold font-bold">{step.number}</span>
+                                        <step.icon className="w-5 h-5 text-gold" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
+                                    <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>

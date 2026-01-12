@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Quote, Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 interface TestimonialCardProps {
   quote: string;
@@ -11,6 +11,7 @@ interface TestimonialCardProps {
   rating?: number;
   className?: string;
   delay?: number;
+  featured?: boolean;
 }
 
 export function TestimonialCard({
@@ -20,51 +21,82 @@ export function TestimonialCard({
   rating = 5,
   className,
   delay = 0,
+  featured = false,
 }: TestimonialCardProps) {
   return (
     <motion.div
       className={cn(
-        "p-8 bg-white border border-gray-100 rounded-lg hover:border-gold/30 transition-all duration-500 group relative",
+        "group relative transition-all duration-300",
+        featured ? "bg-navy text-white" : "bg-white border border-gray-100 hover:border-gold/40",
         className
       )}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
     >
-      {/* Quote icon */}
-      <div className="absolute top-6 right-6">
-        <Quote className="w-10 h-10 text-gold/20 group-hover:text-gold/40 transition-colors" />
+      {/* Decorative quote mark */}
+      <div className={cn(
+        "absolute -top-4 -right-4 w-12 h-12 flex items-center justify-center",
+        featured ? "bg-gold" : "bg-navy"
+      )}>
+        <Quote className={cn("w-5 h-5", featured ? "text-navy" : "text-gold")} />
       </div>
 
-      {/* Author */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center text-gold font-bold text-lg">
-          {name.charAt(0)}
+      {/* Content */}
+      <div className="p-8 pt-12">
+        {/* Rating */}
+        <div className="flex gap-1 mb-6">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={cn(
+                "w-4 h-4",
+                i < rating
+                  ? "text-gold fill-gold"
+                  : featured ? "text-white/20" : "text-gray-200"
+              )}
+            />
+          ))}
         </div>
-        <div>
-          <div className="font-bold text-navy">{name}</div>
-          <div className="text-sm text-gold">{title}</div>
+
+        {/* Quote */}
+        <blockquote className={cn(
+          "text-lg leading-relaxed mb-8",
+          featured ? "text-white/90" : "text-navy"
+        )}>
+          "{quote}"
+        </blockquote>
+
+        {/* Author */}
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div className={cn(
+            "w-12 h-12 flex items-center justify-center font-bold text-lg",
+            featured ? "bg-gold text-navy" : "bg-navy text-gold"
+          )}>
+            {name.charAt(0)}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1">
+            <div className={cn(
+              "font-bold",
+              featured ? "text-white" : "text-navy"
+            )}>{name}</div>
+            <div className={cn(
+              "text-sm",
+              featured ? "text-gold" : "text-gray-500"
+            )}>{title}</div>
+          </div>
+
+          {/* Decorative line */}
+          <div className={cn(
+            "w-8 h-px",
+            featured ? "bg-gold/30" : "bg-gray-200"
+          )} />
         </div>
       </div>
-
-      {/* Rating stars */}
-      <div className="flex gap-1 mb-6">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={cn(
-              "w-5 h-5",
-              i < rating ? "text-gold fill-gold" : "text-gray-200"
-            )}
-          />
-        ))}
-      </div>
-
-      {/* Quote text */}
-      <blockquote className="text-lg text-navy leading-relaxed italic">
-        "{quote}"
-      </blockquote>
     </motion.div>
   );
 }

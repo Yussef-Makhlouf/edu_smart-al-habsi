@@ -29,16 +29,34 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <div className="relative max-w-5xl mx-auto px-4">
+    <div className="relative">
+      {/* Custom Navigation Buttons */}
+      <div className="flex justify-end gap-4 mb-8">
+        <button
+          onClick={() => swiperRef.current?.slidePrev()}
+          className="w-12 h-12 border border-white/20 flex items-center justify-center text-white hover:bg-gold hover:text-navy hover:border-gold transition-all"
+          aria-label="Previous"
+        >
+          <ChevronRight size={20} />
+        </button>
+        <button
+          onClick={() => swiperRef.current?.slideNext()}
+          className="w-12 h-12 border border-white/20 flex items-center justify-center text-white hover:bg-gold hover:text-navy hover:border-gold transition-all"
+          aria-label="Next"
+        >
+          <ChevronLeft size={20} />
+        </button>
+      </div>
+
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={12}
+        spaceBetween={24}
         slidesPerView={1}
-        centeredSlides={true}
+        centeredSlides={false}
         pagination={{
           clickable: true,
-          bulletClass: "swiper-pagination-bullet !bg-white/40",
-          bulletActiveClass: "swiper-pagination-bullet-active !bg-gold !w-12",
+          bulletClass: "swiper-pagination-bullet !bg-white/30 !w-2 !h-2 !rounded-none !rotate-45",
+          bulletActiveClass: "swiper-pagination-bullet-active !bg-gold !w-3 !h-3",
         }}
         autoplay={{
           delay: 5000,
@@ -49,18 +67,15 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
         breakpoints={{
           640: {
             slidesPerView: 1,
-            spaceBetween: 12,
-            centeredSlides: true,
+            spaceBetween: 16,
           },
           768: {
             slidesPerView: 2,
-            spaceBetween: 12,
-            centeredSlides: true,
+            spaceBetween: 24,
           },
           1024: {
             slidesPerView: 3,
-            spaceBetween: 12,
-            centeredSlides: true,
+            spaceBetween: 24,
           },
         }}
         onBeforeInit={(swiper) => {
@@ -69,7 +84,7 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
         className="!pb-16"
       >
         {courses.map((course) => (
-          <SwiperSlide key={course.id} className="!flex !justify-center">
+          <SwiperSlide key={course.id}>
             <CourseCard
               title={course.title}
               description={course.description}
@@ -80,43 +95,6 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
           </SwiperSlide>
         ))}
       </Swiper>
-
-      {/* Custom Navigation Buttons */}
-      {/* <button
-        onClick={() => swiperRef.current?.slidePrev()}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group"
-        aria-label="Previous slide"
-      >
-        <ChevronRight
-          size={24}
-          className="text-navy group-hover:text-gold transition-colors"
-        />
-      </button>
-      <button
-        onClick={() => swiperRef.current?.slideNext()}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group"
-        aria-label="Next slide"
-      >
-        <ChevronLeft
-          size={24}
-          className="text-navy group-hover:text-gold transition-colors"
-        />
-      </button> */}
-
-      {/* Custom Styles */}
-      <style jsx global>{`
-        .swiper-pagination {
-          bottom: 0 !important;
-        }
-        .swiper-pagination-bullet {
-          width: 12px !important;
-          height: 12px !important;
-          transition: all 0.3s ease !important;
-        }
-        .swiper-pagination-bullet-active {
-          border-radius: 6px !important;
-        }
-      `}</style>
     </div>
   );
 }

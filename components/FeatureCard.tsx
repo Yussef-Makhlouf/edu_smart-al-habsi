@@ -8,6 +8,7 @@ interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
+  number?: string;
   className?: string;
   delay?: number;
 }
@@ -16,37 +17,46 @@ export function FeatureCard({
   icon: Icon,
   title,
   description,
+  number = "01",
   className,
   delay = 0,
 }: FeatureCardProps) {
   return (
-    <motion.div
+    <div
       className={cn(
-        "p-8 bg-white border border-gray-100 rounded-lg hover:border-gold/30 transition-all duration-500 group relative overflow-hidden",
+        "group relative bg-white border border-gray-100 hover:border-gold/50 transition-colors duration-200",
         className
       )}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
     >
-      {/* Background decoration */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-gold/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* Corner accent */}
+      <div className="absolute top-0 left-0 w-0 h-0 border-t-[40px] border-t-gold border-r-[40px] border-r-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="relative z-10">
-        <div className="w-14 h-14 bg-navy/5 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gold/10 transition-colors duration-300">
-          <Icon className="w-7 h-7 text-navy group-hover:text-gold transition-colors duration-300" />
+      {/* Number badge - Top right */}
+      <div className="absolute -top-3 -right-3 w-14 h-14 bg-navy flex items-center justify-center">
+        <span className="text-gold font-bold text-sm">{number}</span>
+      </div>
+
+      {/* Content */}
+      <div className="p-8 pt-10">
+        {/* Icon */}
+        <div className="mb-6">
+          <Icon className="w-8 h-8 text-gold" strokeWidth={1.5} />
         </div>
 
-        <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-gold transition-colors duration-300">
+        {/* Title */}
+        <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-gold transition-colors duration-200">
           {title}
         </h3>
 
+        {/* Description */}
         <p className="text-gray-600 leading-relaxed text-sm">{description}</p>
-      </div>
 
-      {/* Bottom accent line */}
-      <div className="absolute bottom-0 left-0 w-0 h-1 bg-gold group-hover:w-full transition-all duration-500 ease-out" />
-    </motion.div>
+        {/* Bottom accent line */}
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-100 group-hover:bg-gold/30 transition-colors" />
+          <Icon className="w-4 h-4 text-gray-300 group-hover:text-gold transition-colors" />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -12,7 +12,7 @@ import { useStore } from "@/lib/store";
 
 const navItems = [
   { name: "الرئيسية", href: "/" },
-  { name: "عن الدكتور", href: "/about" },
+  // { name: "عن الدكتور", href: "/about" },
   { name: "الدورات", href: "/courses" },
   { name: "تواصل معنا", href: "/contact" },
 ];
@@ -37,7 +37,6 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -54,14 +53,11 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
 
   return (
     <>
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+      <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
           scrolled
-            ? "bg-navy/95 backdrop-blur-md py-3 border-b border-white/5"
+            ? "bg-navy py-3 border-b border-white/10"
             : "bg-transparent py-5 lg:py-6"
         )}
       >
@@ -70,40 +66,34 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
           <Link href="/" className="relative z-50">
             <Logo
               className={cn(
-                "transition-colors duration-300",
+                "transition-colors duration-200",
                 scrolled
                   ? "text-white"
                   : lightVariant
-                  ? "text-navy"
-                  : "text-white"
+                    ? "text-navy"
+                    : "text-white"
               )}
             />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-10">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative text-sm font-bold tracking-wide uppercase transition-colors duration-300 group",
+                  "relative text-sm font-bold tracking-wide uppercase transition-colors duration-200 underline-expand",
                   pathname === item.href
                     ? "text-gold"
                     : scrolled
-                    ? "text-white/90 hover:text-gold"
-                    : lightVariant
-                    ? "text-navy hover:text-gold"
-                    : "text-white/90 hover:text-gold"
+                      ? "text-white/90 hover:text-gold"
+                      : lightVariant
+                        ? "text-navy hover:text-gold"
+                        : "text-white/90 hover:text-gold"
                 )}
               >
                 {item.name}
-                <span
-                  className={cn(
-                    "absolute -bottom-1 left-0 h-0.5 bg-gold transition-all duration-300",
-                    pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
-                  )}
-                />
               </Link>
             ))}
           </nav>
@@ -112,18 +102,17 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
-                  className="flex justify-center items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gold/40 hover:border-gold transition-all bg-navy/40 hover:bg-navy/60 backdrop-blur-sm"
+                  className="flex justify-center items-center gap-2 px-5 py-2.5 rounded-md border border-gold/40 hover:border-gold transition-all bg-navy/40 hover:bg-navy/60"
                 >
-                  <ChevronDown 
-                    size={16} 
+                  <ChevronDown
+                    size={16}
                     className={cn(
-                      "transition-transform",
-                      dropdownOpen && "rotate-180",
-                      scrolled ? "text-gold" : lightVariant ? "text-gold" : "text-gold"
-                    )} 
+                      "transition-transform text-gold",
+                      dropdownOpen && "rotate-180"
+                    )}
                   />
                   <span className={cn(
                     "text-sm font-bold",
@@ -140,26 +129,26 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50"
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-0 mt-2 w-48 bg-white rounded-md border border-gray-100 overflow-hidden z-50"
                     >
                       <Link
                         href="/profile"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
                       >
                         <User size={18} className="text-gold" />
                         <span className="font-semibold">الملف الشخصي</span>
                       </Link>
                       <Link
                         href="/my-courses"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
                       >
                         <BookOpen size={18} className="text-gold" />
                         <span className="font-semibold">دوراتي</span>
                       </Link>
                       <Link
                         href="/my-certificates"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
                       >
                         <Award size={18} className="text-gold" />
                         <span className="font-semibold">شهاداتي</span>
@@ -178,13 +167,13 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
             ) : (
               <Link href="/login">
                 <Button
-                  variant="outline"
+                  variant="luxury-outline"
                   className={cn(
-                    "border-gold text-gold hover:bg-gold hover:text-navy transition-all px-6 rounded-full font-bold",
+                    "px-6 font-bold",
                     !scrolled && !lightVariant ? "bg-transparent" : ""
                   )}
                 >
-                  تسجيل الدخول / تسجيل
+                  تسجيل الدخول
                 </Button>
               </Link>
             )}
@@ -197,69 +186,44 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
               scrolled
                 ? "text-white"
                 : lightVariant
-                ? "text-navy"
-                : "text-white"
+                  ? "text-navy"
+                  : "text-white"
             )}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <AnimatePresence mode="wait">
-              {mobileMenuOpen ? (
-                <motion.div
-                  key="close"
-                  initial={{ opacity: 0, rotate: -90 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  exit={{ opacity: 0, rotate: 90 }}
-                >
-                  <X size={28} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="menu"
-                  initial={{ opacity: 0, rotate: 90 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  exit={{ opacity: 0, rotate: -90 }}
-                >
-                  <Menu size={28} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
-      </motion.header>
+      </header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: "-100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "-100%" }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="fixed inset-0 z-40 bg-navy flex flex-col items-center justify-center gap-8 md:hidden"
           >
-            {/* Background Pattern */}
-            <div
-              className="absolute inset-0 opacity-5 pointer-events-none"
-              style={{
-                backgroundImage: `radial-gradient(circle at 50% 50%, #d4af37 1px, transparent 1px)`,
-                backgroundSize: "24px 24px",
-              }}
-            />
+            {/* Geometric accent */}
+            <div className="absolute top-20 right-10 w-32 h-32 border border-gold/10 rotate-45" />
+            <div className="absolute bottom-20 left-10 w-24 h-24 border border-gold/5 rotate-45" />
 
-            <nav className="flex flex-col items-center gap-3 md:gap-6 relative z-10 w-full px-10">
+            <nav className="flex flex-col items-center gap-4 relative z-10 w-full px-10">
               {navItems.map((item, index) => (
                 <motion.div
                   key={item.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + index * 0.1 }}
                   className="w-full text-center"
                 >
                   <Link
                     href={item.href}
                     className={cn(
-                      "block text-2xl font-bold transition-colors py-2",
+                      "block text-2xl font-bold transition-colors py-3",
                       pathname === item.href
                         ? "text-gold"
                         : "text-white/80 hover:text-gold"
@@ -275,7 +239,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="w-full mt-6 pt-6 border-t border-white/10"
+                className="w-full mt-8 pt-8 border-t border-white/10"
               >
                 {user ? (
                   <div className="px-4">
@@ -283,36 +247,36 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                       <Link
                         href="/profile"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                        className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <User size={24} className="text-gold" />
                         <span className="text-xs font-bold text-white">الملف الشخصي</span>
                       </Link>
-                      
+
                       <Link
                         href="/my-courses"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                        className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <BookOpen size={24} className="text-gold" />
                         <span className="text-xs font-bold text-white">دوراتي</span>
                       </Link>
-                      
+
                       <Link
                         href="/my-certificates"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                        className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <Award size={24} className="text-gold" />
                         <span className="text-xs font-bold text-white">شهاداتي</span>
                       </Link>
-                      
+
                       <button
                         onClick={() => {
                           handleLogout();
                           setMobileMenuOpen(false);
                         }}
-                        className="flex flex-col items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 transition-colors rounded-lg p-4 border border-red-500/30"
+                        className="flex flex-col items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 transition-colors rounded-md p-4 border border-red-500/30"
                       >
                         <LogOut size={24} className="text-red-400" />
                         <span className="text-xs font-bold text-red-400">خروج</span>

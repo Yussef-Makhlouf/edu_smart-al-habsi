@@ -4,7 +4,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
-import { TimelineItem, TimelineItemMobile } from "@/components/TimelineItem";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,17 +20,6 @@ import {
     Twitter
 } from "lucide-react";
 
-// Animation variants
-const fadeInUp = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
-};
-
-const staggerContainer = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.15 } }
-};
-
 // Statistics data
 const stats = [
     { icon: Users, target: 10000, prefix: "+", suffix: "", label: "متدرب ناجح" },
@@ -45,80 +33,38 @@ const coreValues = [
     {
         icon: Target,
         title: "التميز والإتقان",
-        description: "نؤمن بأن الجودة ليست خيارًا بل ضرورة. كل محتوى نقدمه يمر بمراجعات دقيقة لضمان تقديم أفضل تجربة تعليمية."
+        description: "نؤمن بأن الجودة ليست خيارًا بل ضرورة. كل محتوى نقدمه يمر بمراجعات دقيقة.",
+        number: "01"
     },
     {
         icon: Lightbulb,
         title: "الابتكار المستمر",
-        description: "نواكب أحدث التطورات في عالم الأعمال والقيادة، ونعيد صياغة المفاهيم التقليدية بأساليب عصرية فعّالة."
+        description: "نواكب أحدث التطورات في عالم الأعمال والقيادة بأساليب عصرية فعّالة.",
+        number: "02"
     },
     {
         icon: GraduationCap,
         title: "التعلم التطبيقي",
-        description: "لا نكتفي بالنظريات. كل درس مرتبط بتطبيقات عملية وتجارب حقيقية من السوق العربي والعالمي."
+        description: "كل درس مرتبط بتطبيقات عملية وتجارب حقيقية من السوق العربي والعالمي.",
+        number: "03"
     },
 ];
 
 // Timeline data
 const timelineData = [
-    {
-        year: "2015",
-        icon: "🌱",
-        title: "البداية",
-        description: "بدأت الرحلة بملاحظة فجوة كبيرة في المحتوى التعليمي العربي الموجه للقادة ورواد الأعمال."
-    },
-    {
-        year: "2018",
-        icon: "🎯",
-        title: "أول 1,000 متدرب",
-        description: "وصلنا للألف متدرب الأول مع دورة القيادة الاستراتيجية التي حققت نجاحاً كبيراً."
-    },
-    {
-        year: "2020",
-        icon: "🚀",
-        title: "إطلاق المنصة الرقمية",
-        description: "تحولنا لمنصة رقمية متكاملة مع تجربة تعليمية فريدة وتفاعلية."
-    },
-    {
-        year: "2022",
-        icon: "🏆",
-        title: "+5,000 متدرب",
-        description: "حققنا نسبة رضا 95% ونمو متسارع في المنطقة العربية."
-    },
-    {
-        year: "2024",
-        icon: "🌍",
-        title: "توسع إقليمي",
-        description: "انطلقنا للأسواق الخليجية والعربية بطموحات أكبر لخدمة المزيد من القادة."
-    },
+    { year: "2015", title: "البداية", description: "بدأت الرحلة بملاحظة فجوة كبيرة في المحتوى التعليمي العربي." },
+    { year: "2018", title: "أول 1,000 متدرب", description: "وصلنا للألف متدرب الأول مع دورة القيادة الاستراتيجية." },
+    { year: "2020", title: "إطلاق المنصة الرقمية", description: "تحولنا لمنصة رقمية متكاملة مع تجربة تعليمية فريدة." },
+    { year: "2022", title: "+5,000 متدرب", description: "حققنا نسبة رضا 95% ونمو متسارع في المنطقة العربية." },
+    { year: "2024", title: "توسع إقليمي", description: "انطلقنا للأسواق الخليجية والعربية بطموحات أكبر." },
 ];
 
 // Team data
 const teamMembers = [
-    {
-        name: "محمد الحبسي",
-        title: "المؤسس والمدرب الرئيسي",
-        description: "+15 سنة خبرة في القيادة وريادة الأعمال",
-        initial: "م",
-    },
-    {
-        name: "أحمد العمري",
-        title: "مدير المحتوى التعليمي",
-        description: "خبير في تصميم المناهج التدريبية",
-        initial: "أ",
-    },
-    {
-        name: "سارة الحارثي",
-        title: "مديرة تجربة المتدربين",
-        description: "متخصصة في UX التعليمي",
-        initial: "س",
-    },
-    {
-        name: "خالد النعيمي",
-        title: "المدير التقني",
-        description: "خبير في منصات التعليم الرقمي",
-        initial: "خ",
-    },
+    { name: "محمد الحبسي", title: "المؤسس والمدرب الرئيسي", initial: "م" },
+    { name: "أحمد العمري", title: "مدير المحتوى التعليمي", initial: "أ" },
+    { name: "سارة الحارثي", title: "مديرة تجربة المتدربين", initial: "س" },
+    { name: "خالد النعيمي", title: "المدير التقني", initial: "خ" },
 ];
 
 export default function AboutPage() {
@@ -126,362 +72,386 @@ export default function AboutPage() {
         <main className="bg-navy min-h-screen text-white overflow-hidden">
             <Navbar />
 
-            {/* Hero Section */}
-            <section className="relative pt-40 pb-24 overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-gradient-to-b from-navy-dark via-navy to-navy z-0" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-40" />
+            {/* Hero Section - Creative Diagonal Split */}
+            <section className="relative pt-40 pb-28 overflow-hidden">
+                {/* Diagonal split background */}
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-navy" />
+                    <div
+                        className="absolute top-0 right-0 w-2/3 h-full bg-navy-dark"
+                        style={{ clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 0% 100%)' }}
+                    />
+                </div>
 
-                {/* Pattern */}
+                {/* Diagonal stripe */}
                 <div
-                    className="absolute inset-0 opacity-5"
+                    className="absolute top-0 left-0 w-full h-full opacity-5"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 50% 50%, #d4af37 1px, transparent 1px)`,
-                        backgroundSize: "32px 32px",
+                        background: 'repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)'
                     }}
                 />
 
-                <div className="container relative z-10 mx-auto px-6 text-center">
-                    <motion.span
-                        className="inline-block py-2 px-5 border border-gold/50 rounded-full text-gold text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-sm bg-gold/5"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        القصة وراء المنصة
-                    </motion.span>
-
-                    <motion.h1
-                        className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                    >
-                        إرث من <span className="text-gold">المعرفة</span> والتميز
-                    </motion.h1>
-
-                    <motion.p
-                        className="max-w-3xl mx-auto text-xl text-white/70 leading-relaxed"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                    >
-                        لم نبدأ كمنصة تعليمية عادية، بل بدأنا برؤية واضحة: ماذا لو كان التعليم العربي في مجال الأعمال والقيادة بمستوى عالمي؟ هذا ما نسعى لتحقيقه كل يوم.
-                    </motion.p>
+                {/* Large decorative text */}
+                <div className="absolute bottom-0 right-0 pointer-events-none select-none">
+                    <span className="text-[200px] font-bold text-white/[0.02] leading-none">القصة</span>
                 </div>
 
-                {/* Decorative Elements */}
-                <div className="absolute bottom-10 left-4 md:left-10 w-32 h-32 border-l-2 border-b-2 border-gold/20" />
-                <div className="absolute top-20 right-10 w-32 h-32 border-r-2 border-t-2 border-gold/20" />
+                <div className="container relative z-10 mx-auto px-6">
+                    <div className="grid lg:grid-cols-12 gap-12">
+                        <motion.div
+                            className="lg:col-span-7"
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-3 h-3 bg-gold" />
+                                <div className="w-12 h-px bg-gold" />
+                                <span className="text-gold text-sm font-bold tracking-widest uppercase">من نحن</span>
+                            </div>
+
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
+                                إرث من
+                                <br />
+                                <span className="text-gold">المعرفة</span> والتميز
+                            </h1>
+
+                            <div className="relative pr-6 border-r-2 border-gold/30 max-w-xl">
+                                <p className="text-xl text-white/70 leading-relaxed">
+                                    لم نبدأ كمنصة تعليمية عادية، بل بدأنا برؤية واضحة: ماذا لو كان التعليم العربي في مجال الأعمال والقيادة بمستوى عالمي؟
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+
+                {/* Corner decorative elements */}
+                <div className="absolute bottom-10 left-10 w-px h-24 bg-gradient-to-t from-gold/50 to-transparent" />
+                <div className="absolute bottom-10 left-10 w-24 h-px bg-gradient-to-r from-gold/50 to-transparent" />
             </section>
 
-            {/* Statistics Section */}
+            {/* Statistics Section - Unique Card Design */}
             <section className="py-20 relative bg-navy-dark/50">
                 <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {stats.map((stat, index) => (
-                            <AnimatedCounter
+                            <motion.div
                                 key={index}
-                                icon={stat.icon}
-                                target={stat.target}
-                                prefix={stat.prefix}
-                                suffix={stat.suffix}
-                                label={stat.label}
-                            />
+                                className="relative group"
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                            >
+                                {/* Corner accent */}
+                                <div className="absolute top-0 right-0 w-0 h-0 border-t-[30px] border-t-gold border-l-[30px] border-l-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                <div className="p-6 border border-white/10 group-hover:border-gold/40 transition-colors">
+                                    <stat.icon className="w-8 h-8 text-gold mb-4" />
+                                    <div className="text-xl font-bold text-white mb-2">
+                                        {stat.prefix}<AnimatedCounter label="" target={stat.target} />{stat.suffix}
+                                    </div>
+                                    <div className="text-white/60 text-sm">{stat.label}</div>
+                                </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* Founder Story Section */}
-            <section className="py-24 relative">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <section className="py-28 relative overflow-hidden">
+                {/* Background decorative text */}
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 pointer-events-none select-none">
+                    <span className="text-[250px] font-bold text-white/[0.02] leading-none">الحبسي</span>
+                </div>
 
+                <div className="container mx-auto px-6 relative z-10">
+                    <div className="grid lg:grid-cols-6 gap-16 items-center">
                         {/* Image Side */}
                         <motion.div
-                            className="flex-1 relative"
+                            className="lg:col-span-3"
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
                         >
-                            <div className="relative aspect-[3/4] max-w-md mx-auto">
-                                <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent rounded-lg" />
-                                <Image
-                                    src="/habsi.jpeg"
-                                    alt="محمد الحبسي - المؤسس والمدرب الرئيسي"
-                                    fill
-                                    className="object-cover rounded-lg "
-                                />
-                                {/* Decorative Frame */}
-                                <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-gold/30 rounded-lg -z-10" />
+                            <div className="relative">
+                                {/* Background decorative square */}
+                                <div className="absolute -top-6 -right-6 w-full h-full bg-gold/10" />
+
+                                {/* Main image */}
+                                <div className="relative aspect-[3/4] overflow-hidden">
+                                    <Image
+                                        src="/habsi.jpeg"
+                                        alt="محمد الحبسي"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                    {/* Corner cutout */}
+                                    <div className="absolute top-0 left-0 w-0 h-0 border-t-[60px] border-t-navy border-r-[60px] border-r-transparent" />
+                                </div>
+
+                                {/* Floating stats */}
+                                <div className="absolute -bottom-6 -left-6 bg-gold p-6">
+                                    <div className="flex gap-8">
+                                        <div className="text-center">
+                                            <span className="block text-3xl font-bold text-navy">+15</span>
+                                            <span className="text-navy/70 text-sm">سنة خبرة</span>
+                                        </div>
+                                        <div className="w-px bg-navy/20" />
+                                        <div className="text-center">
+                                            <span className="block text-3xl font-bold text-navy">+10K</span>
+                                            <span className="text-navy/70 text-sm">متدرب</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
 
                         {/* Content Side */}
                         <motion.div
-                            className="flex-1 space-y-10"
-                            variants={staggerContainer}
-                            initial="hidden"
-                            whileInView="visible"
+                            className="lg:col-span-6 lg:col-start-7"
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
                         >
-                            <motion.div variants={fadeInUp}>
-                                <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">قصة البداية</span>
-                                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                                    من فكرة إلى <span className="text-gold">منصة رائدة</span>
-                                </h2>
-                            </motion.div>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-3 h-3 bg-gold" />
+                                <div className="w-12 h-px bg-gold" />
+                                <span className="text-gold text-sm font-bold tracking-widest uppercase">قصة البداية</span>
+                            </div>
 
-                            <motion.p variants={fadeInUp} className="text-gray-300 text-lg leading-loose">
-                                في عام 2015، لاحظت فجوة كبيرة في المحتوى التعليمي العربي الموجه للقادة ورواد الأعمال. كانت الدورات المتاحة إما أكاديمية جافة تفتقر للتطبيق العملي، أو سطحية جداً لا تقدم قيمة حقيقية. كان الهدف واضحاً: خلق مساحة تجمع بين العمق الأكاديمي والتطبيق العملي المعاصر.
-                            </motion.p>
+                            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+                                من فكرة إلى
+                                <br />
+                                <span className="text-gold">منصة رائدة</span>
+                            </h2>
 
-                            <motion.p variants={fadeInUp} className="text-gray-300 text-lg leading-loose">
-                                اليوم، أصبحت منصة الحبسي وجهة آلاف القادة ورواد الأعمال الذين يسعون للتميز والتطور المستمر. نفخر بتقديم محتوى استثنائي يجمع بين الخبرة العملية والمعرفة النظرية الرصينة.
-                            </motion.p>
+                            <div className="relative pr-6 border-r-2 border-gold/30 mb-8">
+                                <p className="text-gray-300 text-lg leading-loose">
+                                    في عام 2015، لاحظت فجوة كبيرة في المحتوى التعليمي العربي. كان الهدف واضحاً: خلق مساحة تجمع بين العمق الأكاديمي والتطبيق العملي المعاصر.
+                                </p>
+                            </div>
 
                             {/* Quote Block */}
-                            <motion.div
-                                variants={fadeInUp}
-                                className="p-8 bg-gold/5 border-r-4 border-gold backdrop-blur-sm rounded-lg"
-                            >
-                                <p className="text-white italic text-xl leading-relaxed mb-4">
-                                    &ldquo;نحن لا نبيع معلومات، نحن نصنع تحولاً حقيقياً في طريقة التفكير والعمل. هدفنا أن يخرج كل متدرب وهو مختلف عمّا كان عليه.&rdquo;
-                                </p>
-                                <span className="block font-bold text-gold">— محمد الحبسي، المؤسس</span>
-                            </motion.div>
+                            <div className="relative">
+                                {/* Quote badge */}
+                                <div className="absolute -top-4 -right-4 w-12 h-12 bg-gold flex items-center justify-center">
+                                    <span className="text-navy text-2xl font-bold">"</span>
+                                </div>
+
+                                <div className="p-8 bg-white/5 border-r-2 border-gold">
+                                    <p className="text-white italic text-xl leading-relaxed mb-4">
+                                        نحن لا نبيع معلومات، نحن نصنع تحولاً حقيقياً في طريقة التفكير والعمل.
+                                    </p>
+                                    <span className="block font-bold text-gold">— محمد الحبسي، المؤسس</span>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
             </section>
 
-            {/* Timeline Section */}
-            <section className="py-24 bg-navy-dark/30 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
-
+            {/* Timeline Section - Creative Horizontal Design */}
+            <section className="py-28 bg-navy-dark/30 relative overflow-hidden">
                 <div className="container relative z-10 mx-auto px-6">
+                    {/* Header */}
                     <motion.div
-                        className="text-center mb-20"
-                        initial={{ opacity: 0, y: 30 }}
+                        className="grid lg:grid-cols-12 gap-8 mb-20"
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">رحلتنا</span>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                            مسيرة <span className="text-gold">الإنجازات</span>
-                        </h2>
-                        <p className="max-w-2xl mx-auto text-gray-400 text-lg">
-                            من فكرة بسيطة إلى منصة تخدم الآلاف من القادة ورواد الأعمال
-                        </p>
+                        <div className="lg:col-span-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-3 h-3 bg-gold" />
+                                <div className="w-12 h-px bg-gold" />
+                                <span className="text-gold text-sm font-bold tracking-widest uppercase">رحلتنا</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-bold text-white">
+                                مسيرة <span className="text-gold">الإنجازات</span>
+                            </h2>
+                        </div>
                     </motion.div>
 
-                    {/* Desktop Timeline */}
-                    <div className="hidden md:block space-y-8">
-                        {timelineData.map((item, index) => (
-                            <TimelineItem
-                                key={index}
-                                year={item.year}
-                                icon={item.icon}
-                                title={item.title}
-                                description={item.description}
-                                isLast={index === timelineData.length - 1}
-                                index={index}
-                            />
-                        ))}
-                    </div>
+                    {/* Timeline */}
+                    <div className="relative">
+                        {/* Horizontal line */}
+                        <div className="hidden md:block absolute top-8 left-0 right-0 h-px bg-white/10" />
 
-                    {/* Mobile Timeline */}
-                    <div className="md:hidden">
-                        {timelineData.map((item, index) => (
-                            <TimelineItemMobile
-                                key={index}
-                                year={item.year}
-                                icon={item.icon}
-                                title={item.title}
-                                description={item.description}
-                                isLast={index === timelineData.length - 1}
-                                index={index}
-                            />
-                        ))}
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                            {timelineData.map((item, index) => (
+                                <motion.div
+                                    key={index}
+                                    className="relative"
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                                >
+                                    {/* Diamond marker */}
+                                    <div className="hidden md:flex absolute top-8 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-navy border-2 border-gold rotate-45" />
+
+                                    <div className="mt-16 md:mt-20">
+                                        <span className="text-gold font-bold text-2xl block mb-2">{item.year}</span>
+                                        <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                                        <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* Core Values Section */}
-            <section className="py-24 relative">
+            <section className="py-28 relative overflow-hidden">
                 <div className="container mx-auto px-6">
+                    {/* Header */}
                     <motion.div
-                        className="text-center mb-16"
-                        initial={{ opacity: 0, y: 30 }}
+                        className="grid lg:grid-cols-12 gap-8 mb-20"
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">ما يميزنا</span>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                            قيمنا <span className="text-gold">الأساسية</span>
-                        </h2>
-                        <p className="max-w-2xl mx-auto text-gray-400 text-lg">
-                            هذه المبادئ تشكل أساس كل ما نقدمه وتوجه قراراتنا في تطوير المحتوى والتجربة التعليمية.
-                        </p>
+                        <div className="lg:col-span-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-3 h-3 bg-gold" />
+                                <div className="w-12 h-px bg-gold" />
+                                <span className="text-gold text-sm font-bold tracking-widest uppercase">ما يميزنا</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-bold text-white">
+                                قيمنا <span className="text-gold">الأساسية</span>
+                            </h2>
+                        </div>
                     </motion.div>
 
-                    <motion.div
-                        className="grid grid-cols-1 md:grid-cols-3 gap-8"
-                        variants={staggerContainer}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                    >
+                    {/* Values Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {coreValues.map((value, index) => (
                             <motion.div
                                 key={index}
-                                className="p-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-gold/40 hover:bg-white/10 transition-all duration-300 group"
-                                variants={fadeInUp}
+                                className="relative group"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
-                                <div className="w-16 h-16 bg-gold/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gold/20 transition-colors">
-                                    <value.icon className="w-8 h-8 text-gold" />
+                                {/* Number badge */}
+                                <div className="absolute -top-3 -right-3 w-14 h-14 bg-gold flex items-center justify-center z-10">
+                                    <span className="text-navy font-bold">{value.number}</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-4">{value.title}</h3>
-                                <p className="text-gray-400 leading-relaxed">{value.description}</p>
+
+                                {/* Card */}
+                                <div className="p-8 pt-10 bg-white/5 border border-white/10 group-hover:border-gold/40 transition-colors">
+                                    <value.icon className="w-10 h-10 text-gold mb-6" strokeWidth={1.5} />
+                                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-gold transition-colors">{value.title}</h3>
+                                    <p className="text-gray-400 leading-relaxed">{value.description}</p>
+                                </div>
                             </motion.div>
                         ))}
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
             {/* Team Section */}
-            <section className="py-24 bg-navy-dark/30 relative">
+            <section className="py-28 bg-navy-dark/30 relative">
                 <div className="container mx-auto px-6">
+                    {/* Header */}
                     <motion.div
-                        className="text-center mb-16"
-                        initial={{ opacity: 0, y: 30 }}
+                        className="grid lg:grid-cols-12 gap-8 mb-20"
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">فريق العمل</span>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                            الفريق <span className="text-gold">خلف النجاح</span>
-                        </h2>
-                        <p className="max-w-2xl mx-auto text-gray-400 text-lg">
-                            نخبة من الخبراء والمتخصصين يعملون معاً لتقديم أفضل تجربة تعليمية
-                        </p>
+                        <div className="lg:col-span-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-3 h-3 bg-gold" />
+                                <div className="w-12 h-px bg-gold" />
+                                <span className="text-gold text-sm font-bold tracking-widest uppercase">فريق العمل</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-bold text-white">
+                                الفريق <span className="text-gold">خلف النجاح</span>
+                            </h2>
+                        </div>
                     </motion.div>
 
+                    {/* Team Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {teamMembers.map((member, index) => (
                             <motion.div
                                 key={index}
-                                className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-gold/30 transition-all duration-300 group text-center"
+                                className="group text-center"
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 {/* Avatar */}
-                                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-navy border-2 border-gold/30 flex items-center justify-center text-gold text-3xl font-bold group-hover:border-gold transition-colors">
-                                    {member.initial}
+                                <div className="relative w-24 h-24 mx-auto mb-6">
+                                    <div className="w-full h-full bg-navy border-2 border-gold/30 flex items-center justify-center text-gold text-3xl font-bold group-hover:border-gold group-hover:bg-gold group-hover:text-navy transition-all">
+                                        {member.initial}
+                                    </div>
+                                    {/* Corner accent */}
+                                    <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-gold/50" />
                                 </div>
 
                                 <h3 className="text-xl font-bold text-white mb-1">{member.name}</h3>
-                                <p className="text-gold text-sm font-medium mb-3">{member.title}</p>
-                                <p className="text-gray-400 text-sm">{member.description}</p>
-
-                                {/* Social links */}
-                                <div className="flex justify-center gap-3 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gold hover:text-navy transition-colors">
-                                        <Linkedin size={14} />
-                                    </button>
-                                    <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gold hover:text-navy transition-colors">
-                                        <Twitter size={14} />
-                                    </button>
-                                </div>
+                                <p className="text-gold text-sm font-medium">{member.title}</p>
                             </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Philosophy Section */}
-            <section className="py-24 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
-
-                <div className="container relative z-10 mx-auto px-6">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <span className="text-gold text-sm font-bold tracking-widest uppercase mb-4 block">فلسفتنا</span>
-                            <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
-                                الرفاهية الحقيقية في <span className="text-gold">جودة الأفكار</span>
-                            </h2>
-                        </motion.div>
-
-                        <motion.p
-                            className="text-xl text-gray-300 leading-loose mb-8"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: 0.3 }}
-                        >
-                            نؤمن بأن الرفاهية ليست في الممتلكات المادية فحسب، بل في جودة الأفكار التي نستهلكها والمعرفة التي نكتسبها. لذلك صممنا منصة الحبسي لتكون واحة فكرية للقادة والطموحين، حيث يجتمع العمق مع العصرية، والنظرية مع التطبيق.
-                        </motion.p>
-
-                        <motion.p
-                            className="text-xl text-gray-300 leading-loose"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                        >
-                            كل دورة نقدمها هي نتاج سنوات من الخبرة والبحث والتجربة الميدانية. لا نقدم محتوى منسوخاً أو مترجماً، بل نصنع تجربة تعليمية أصيلة مصممة خصيصاً للسوق العربي وتحدياته الفريدة.
-                        </motion.p>
-                    </div>
-                </div>
-            </section>
-
             {/* CTA Section */}
-            <section className="py-24 bg-gradient-to-b from-navy to-navy-dark relative overflow-hidden text-center">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-50" />
+            <section className="py-28 relative overflow-hidden">
+                {/* Diagonal stripe */}
+                <div
+                    className="absolute inset-0 opacity-5"
+                    style={{
+                        background: 'repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(212,175,55,0.3) 60px, rgba(212,175,55,0.3) 61px)'
+                    }}
+                />
 
-                <div className="container relative z-10 px-6 max-w-3xl mx-auto">
+                <div className="container relative z-10 px-6 max-w-3xl mx-auto text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
+                        <div className="flex items-center justify-center gap-4 mb-8">
+                            <div className="w-12 h-px bg-gold" />
+                            <div className="w-3 h-3 bg-gold" />
+                            <div className="w-12 h-px bg-gold" />
+                        </div>
+
                         <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                             هل أنت مستعد <span className="text-gold">للانطلاق؟</span>
                         </h2>
                         <p className="text-gray-300 mb-10 text-xl leading-relaxed">
-                            انضم إلى آلاف القادة ورواد الأعمال الذين غيروا مسار حياتهم المهنية والمالية من خلال برامجنا التعليمية المتميزة.
+                            انضم إلى آلاف القادة ورواد الأعمال الذين غيروا مسار حياتهم المهنية
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link href="/courses">
-                                <Button variant="gold" size="lg" shape="sharp" className="min-w-[200px] text-navy font-bold text-lg">
+                                <Button variant="gold" size="lg" className="min-w-[200px] text-navy font-bold">
                                     تصفح الدورات
                                 </Button>
                             </Link>
                             <Link href="/contact">
-                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-navy border-white/30 hover:bg-white/10 hover:text-white">
+                                <Button variant="luxury-outline" size="lg" className="min-w-[200px]">
                                     تواصل معنا <ArrowLeft className="mr-2 w-5 h-5" />
                                 </Button>
                             </Link>
                         </div>
                     </motion.div>
                 </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute bottom-10 left-10 w-24 h-24 border-l-2 border-b-2 border-gold/20" />
-                <div className="absolute top-10 right-10 w-24 h-24 border-r-2 border-t-2 border-gold/20" />
             </section>
 
             <Footer />

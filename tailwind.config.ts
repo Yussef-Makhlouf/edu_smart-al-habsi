@@ -17,7 +17,7 @@ const config: Config = {
         },
         extend: {
             fontFamily: {
-                sans: ["Segoe UI", "Tahoma", "Arial", "system-ui", "sans-serif"],
+                sans: ["var(--font-handicrafts)", "Segoe UI", "Tahoma", "Arial", "system-ui", "sans-serif"],
                 heading: ["var(--font-handicrafts)", "Segoe UI", "system-ui", "sans-serif"],
             },
             colors: {
@@ -90,6 +90,27 @@ const config: Config = {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
                 "fade-in-up": "fade-in-up 1s ease-out forwards",
+            },
+            fontSize: {
+                display: "var(--text-display)",
+                "heading-1": "var(--text-heading-1)",
+                "heading-2": "var(--text-heading-2)",
+                "heading-3": "var(--text-heading-3)",
+                "body-lg": "var(--text-body-lg)",
+                body: "var(--text-body)",
+                ui: "var(--text-ui)",
+                caption: "var(--text-caption)",
+            },
+            spacing: {
+                section: "var(--space-section)",
+                block: "var(--space-block)",
+                element: "var(--space-element)",
+                tight: "var(--space-tight)",
+            },
+            maxWidth: {
+                narrow: "var(--width-narrow)",
+                content: "var(--width-content)",
+                wide: "var(--width-wide)",
             },
         },
     },
