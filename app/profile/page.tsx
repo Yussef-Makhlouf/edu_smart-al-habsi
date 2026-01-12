@@ -11,21 +11,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { User, Mail, Lock, Save, Camera, Loader2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProfileSidebar } from "@/components/ProfileSidebar";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { Toaster } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentProfilePage() {
-  const { user } = useStore();
+  const { user } = useSelector((state: RootState) => state.auth);
   const {
     form,
     onSubmit,
     isLoading,
     isFetching,
+    isDirty,
     error,
     success,
     profileImage,
@@ -48,7 +51,7 @@ export default function StudentProfilePage() {
           <div className="absolute inset-0 bg-navy" />
           <div
             className="absolute top-0 right-0 w-2/3 h-full bg-navy-dark"
-            style={{ clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 0% 100%)' }}
+            style={{ clipPath: "polygon(40% 0, 100% 0, 100% 100%, 0% 100%)" }}
           />
         </div>
 
@@ -56,13 +59,16 @@ export default function StudentProfilePage() {
         <div
           className="absolute inset-0 opacity-5"
           style={{
-            background: 'repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)'
+            background:
+              "repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)",
           }}
         />
 
         {/* Large decorative text */}
         <div className="absolute bottom-0 right-0 pointer-events-none select-none">
-          <span className="text-[160px] font-bold text-white/[0.02] leading-none">الملف</span>
+          <span className="text-[160px] font-bold text-white/[0.02] leading-none">
+            الملف
+          </span>
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -74,15 +80,27 @@ export default function StudentProfilePage() {
             <div className="flex items-center gap-4 mb-6">
               <div className="w-3 h-3 bg-gold" />
               <div className="w-12 h-px bg-gold" />
-              <span className="text-gold text-sm font-bold tracking-widest uppercase">إدارة الحساب</span>
+              <span className="text-gold text-sm font-bold tracking-widest uppercase">
+                إدارة الحساب
+              </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              الملف <span className="text-gold">الشخصي</span>
-            </h1>
-            <p className="text-white/70 text-lg">
-              أهلا بك، {userName || "محمد"}. قم بإدارة بياناتك ومسارك التعليمي.
-            </p>
+            {isFetching ? (
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-48 bg-white/10" />
+                <Skeleton className="h-6 w-72 bg-white/5" />
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  الملف <span className="text-gold">الشخصي</span>
+                </h1>
+                <p className="text-white/70 text-lg">
+                  أهلا بك، {userName || "محمد"}. قم بإدارة بياناتك ومسارك
+                  التعليمي.
+                </p>
+              </>
+            )}
           </motion.div>
         </div>
 
@@ -125,145 +143,179 @@ export default function StudentProfilePage() {
                 <h3 className="font-bold text-navy text-lg">البطاقة الشخصية</h3>
               </div>
 
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Profile Image */}
-                  <div className="flex flex-col items-center mb-8">
-                    <div className="relative group">
-                      {profileImage ? (
-                        <div className="w-28 h-28 overflow-hidden border-4 border-gold/20">
-                          <img
-                            src={profileImage}
-                            alt={userName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-28 h-28 bg-navy flex items-center justify-center text-4xl text-gold font-bold border-4 border-gold/20">
-                          {getInitial(userName)}
-                        </div>
-                      )}
-                      <label
-                        htmlFor="image-upload"
-                        className={`absolute -bottom-2 -left-2 bg-gold p-2.5 text-navy cursor-pointer group-hover:scale-110 transition-transform ${isLoading || isFetching ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <Camera size={16} />
-                        <input
-                          id="image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          disabled={isLoading || isFetching}
-                        />
-                      </label>
+              {isFetching ? (
+                <div className="space-y-8">
+                  <div className="flex flex-col items-center">
+                    <Skeleton className="w-28 h-28 rounded-none border-4 border-gold/20" />
+                    <Skeleton className="h-4 w-32 mt-4" />
+                  </div>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-12 w-full" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-3">
-                      اضغط على أيقونة الكاميرا لرفع صورة
-                    </p>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="userName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-navy">
-                            اسم المستخدم
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold bg-gray-50"
-                              disabled={isLoading || isFetching}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-navy">
-                            البريد الإلكتروني
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="email"
-                              className="w-full h-12 px-4 border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
-                              readOnly
-                              dir="ltr"
-                              disabled
-                            />
-                          </FormControl>
-                          <p className="text-xs text-gray-400 mr-1">
-                            لا يمكن تغيير البريد الإلكتروني المسجل.
-                          </p>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Security Section */}
                   <div className="pt-6 border-t border-gray-100">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-navy flex items-center justify-center">
-                        <Lock size={18} className="text-gold" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
+                    {/* Profile Image */}
+                    <div className="flex flex-col items-center mb-8">
+                      <div className="relative group">
+                        {profileImage ? (
+                          <div className="w-28 h-28 overflow-hidden border-4 border-gold/20">
+                            <img
+                              src={profileImage}
+                              alt={userName}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-28 h-28 bg-navy flex items-center justify-center text-4xl text-gold font-bold border-4 border-gold/20">
+                            {getInitial(userName)}
+                          </div>
+                        )}
+                        <label
+                          htmlFor="image-upload"
+                          className={`absolute -bottom-2 -left-2 bg-gold p-2.5 text-navy cursor-pointer group-hover:scale-110 transition-transform ${
+                            isLoading || isFetching
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
+                        >
+                          <Camera size={16} />
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            disabled={isLoading || isFetching}
+                          />
+                        </label>
                       </div>
-                      <h3 className="font-bold text-navy text-lg">تغيير كلمة المرور</h3>
+                      <p className="text-xs text-gray-500 mt-3">
+                        اضغط على أيقونة الكاميرا لرفع صورة
+                      </p>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-navy">
-                            كلمة المرور الجديدة
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="password"
-                              placeholder="اتركه فارغاً إذا لم ترد تغيير كلمة المرور"
-                              className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold"
-                              disabled={isLoading || isFetching}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="userName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-bold text-navy">
+                              اسم المستخدم
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold bg-gray-50"
+                                disabled={isLoading || isFetching}
+                              />
+                            </FormControl>
+                            <FormMessage className="text-right" />
+                          </FormItem>
+                        )}
+                      />
 
-                  {/* Action Button */}
-                  <div className="flex justify-end pt-4">
-                    <Button
-                      type="submit"
-                      disabled={isLoading || isFetching}
-                      className="h-12 px-8 bg-gold hover:bg-gold-dim text-navy font-bold gap-2 disabled:opacity-50"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 size={18} className="animate-spin" />
-                          جاري الحفظ...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={18} />
-                          حفظ التغييرات
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-bold text-navy">
+                              البريد الإلكتروني
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="email"
+                                className="w-full h-12 px-4 border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
+                                readOnly
+                                dir="ltr"
+                                disabled
+                              />
+                            </FormControl>
+                            <p className="text-xs text-gray-400 mr-1">
+                              لا يمكن تغيير البريد الإلكتروني المسجل.
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Security Section */}
+                    <div className="pt-6 border-t border-gray-100">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 bg-navy flex items-center justify-center">
+                          <Lock size={18} className="text-gold" />
+                        </div>
+                        <h3 className="font-bold text-navy text-lg">
+                          تغيير كلمة المرور
+                        </h3>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-bold text-navy">
+                              كلمة المرور الجديدة
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="password"
+                                placeholder="اتركه فارغاً إذا لم ترد تغيير كلمة المرور"
+                                className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold"
+                                disabled={isLoading || isFetching}
+                              />
+                            </FormControl>
+                            <FormMessage className="text-right" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="flex justify-end pt-4">
+                      <Button
+                        type="submit"
+                        disabled={isLoading || isFetching || !isDirty}
+                        className="h-12 px-8 bg-gold hover:bg-gold-dim text-navy font-bold gap-2 disabled:opacity-50"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" />
+                            جاري الحفظ...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={18} />
+                            حفظ التغييرات
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              )}
             </div>
           </motion.div>
         </div>

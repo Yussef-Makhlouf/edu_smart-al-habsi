@@ -4,19 +4,20 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { User, BookOpen, Briefcase, Lock, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStore } from "@/lib/store";
+import { useDispatch } from "react-redux";
+import { logout } from "@/lib/redux/slices/authSlice";
 
 export function ProfileSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useStore();
+  const dispatch = useDispatch();
 
   const isActive = (path: string) => {
     return pathname === path;
   };
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     router.push("/");
   };
 
@@ -55,22 +56,25 @@ export function ProfileSidebar() {
             : " hover:from-[#5D1826]/10"
         )}
       >
-        <span className={cn(
-          "text-base",
-          isActive("/profile") ? "font-bold" : "font-bold text-gray-800"
-        )}>
+        <span
+          className={cn(
+            "text-base",
+            isActive("/profile") ? "font-bold" : "font-bold text-gray-800"
+          )}
+        >
           الملف الشخصي
         </span>
-        <User size={20} className={cn(
-          isActive("/profile") ? "text-white" : "text-[#DAA520]"
-        )} />
+        <User
+          size={20}
+          className={cn(isActive("/profile") ? "text-white" : "text-[#DAA520]")}
+        />
       </Link>
 
       <nav className="flex flex-col">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
-          
+
           return (
             <Link
               key={item.href}
@@ -90,9 +94,10 @@ export function ProfileSidebar() {
               >
                 {item.label}
               </span>
-              <Icon size={20} className={cn(
-                active ? "text-white" : "text-[#DAA520]"
-              )} />
+              <Icon
+                size={20}
+                className={cn(active ? "text-white" : "text-[#DAA520]")}
+              />
             </Link>
           );
         })}

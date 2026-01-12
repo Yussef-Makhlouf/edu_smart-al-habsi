@@ -3,37 +3,51 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
+import {
+  Lock,
+  CreditCard,
+  CheckCircle2,
+  ShieldCheck,
+  ArrowRight,
+} from "lucide-react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { enrollInCourse, clearCart } from "@/lib/redux/slices/enrollmentSlice";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
 
 export default function CheckoutPage() {
-  const { cartCourse, user, enroll, clearCart } = useStore();
+  const { user, isInitializing } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const { cartCourse } = useSelector((state: RootState) => state.enrollment);
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  // Protect Route
+  // Protect Route - wait for initialization
   useEffect(() => {
-    if (!user) {
-      // If not logged in, redirect to login with return url
-      // For now just redirect to login
-      router.push("/login");
-    } else if (user.role === "admin") {
-      router.push("/dashboard");
+    if (!isInitializing) {
+      if (!user) {
+        // If not logged in, redirect to login with return url
+        router.push("/login");
+      } else if (user.role === "admin") {
+        router.push("/dashboard");
+      }
     }
-  }, [user, router]);
+  }, [user, isInitializing, router]);
 
   const handlePayment = () => {
     if (cartCourse) {
-      enroll(cartCourse.id);
-      clearCart();
+      dispatch(enrollInCourse(cartCourse.id));
+      dispatch(clearCart());
       router.push("/my-courses");
     }
   };
 
-  if (!user) return null; // Or loading spinner
+  // Show loading while initializing
+  if (isInitializing || !user) return null;
 
   if (!cartCourse) {
     return (
@@ -65,7 +79,10 @@ export default function CheckoutPage() {
 
       <div className="flex-1 container mx-auto px-6 py-24">
         <div className="max-w-6xl mx-auto">
-          <Link href={`/courses/${cartCourse.slug}`} className="inline-flex items-center gap-2 text-gray-500 hover:text-navy mb-8 transition-colors">
+          <Link
+            href={`/courses/${cartCourse.slug}`}
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-navy mb-8 transition-colors"
+          >
             <ArrowRight size={16} />
             العودة لتفاصيل الدورة
           </Link>
@@ -80,13 +97,20 @@ export default function CheckoutPage() {
                 {/* Course Item */}
                 <div className="flex gap-4 mb-6 pb-6 border-b border-gray-100">
                   <div className="w-20 h-20 bg-navy/5 rounded-lg flex-shrink-0 relative overflow-hidden">
-                    <Image src={cartCourse.image} alt={cartCourse.title} fill className="object-cover" />
+                    <Image
+                      src={cartCourse.image}
+                      alt={cartCourse.title}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-bold text-navy text-sm line-clamp-2 leading-relaxed">
                       {cartCourse.title}
                     </h4>
-                    <p className="text-gold font-bold mt-2">{cartCourse.price}</p>
+                    <p className="text-gold font-bold mt-2">
+                      {cartCourse.price}
+                    </p>
                   </div>
                 </div>
 
@@ -133,9 +157,7 @@ export default function CheckoutPage() {
                     <p className="font-bold text-navy">
                       مسجل الدخول باسم: {user.name}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      {user.email}
-                    </p>
+                    <p className="text-sm text-gray-500">{user.email}</p>
                   </div>
                 </div>
               </div>

@@ -6,9 +6,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, BookOpen, Award, User, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  BookOpen,
+  Award,
+  User,
+  LogOut,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useStore } from "@/lib/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { logout } from "@/lib/redux/slices/authSlice";
 
 const navItems = [
   { name: "الرئيسية", href: "/" },
@@ -27,7 +37,8 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useStore();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,7 +57,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
   }, [mobileMenuOpen]);
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     setDropdownOpen(false);
     router.push("/");
   };
@@ -70,8 +81,8 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                 scrolled
                   ? "text-white"
                   : lightVariant
-                    ? "text-navy"
-                    : "text-white"
+                  ? "text-navy"
+                  : "text-white"
               )}
             />
           </Link>
@@ -87,10 +98,10 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                   pathname === item.href
                     ? "text-gold"
                     : scrolled
-                      ? "text-white/90 hover:text-gold"
-                      : lightVariant
-                        ? "text-navy hover:text-gold"
-                        : "text-white/90 hover:text-gold"
+                    ? "text-white/90 hover:text-gold"
+                    : lightVariant
+                    ? "text-navy hover:text-gold"
+                    : "text-white/90 hover:text-gold"
                 )}
               >
                 {item.name}
@@ -114,10 +125,16 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                       dropdownOpen && "rotate-180"
                     )}
                   />
-                  <span className={cn(
-                    "text-sm font-bold",
-                    scrolled ? "text-white" : lightVariant ? "text-navy" : "text-white"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-sm font-bold",
+                      scrolled
+                        ? "text-white"
+                        : lightVariant
+                        ? "text-navy"
+                        : "text-white"
+                    )}
+                  >
                     {user?.name || "المستخدم"}
                   </span>
                 </button>
@@ -186,8 +203,8 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
               scrolled
                 ? "text-white"
                 : lightVariant
-                  ? "text-navy"
-                  : "text-white"
+                ? "text-navy"
+                : "text-white"
             )}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
@@ -250,7 +267,9 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                         className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <User size={24} className="text-gold" />
-                        <span className="text-xs font-bold text-white">الملف الشخصي</span>
+                        <span className="text-xs font-bold text-white">
+                          الملف الشخصي
+                        </span>
                       </Link>
 
                       <Link
@@ -259,7 +278,9 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                         className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <BookOpen size={24} className="text-gold" />
-                        <span className="text-xs font-bold text-white">دوراتي</span>
+                        <span className="text-xs font-bold text-white">
+                          دوراتي
+                        </span>
                       </Link>
 
                       <Link
@@ -268,7 +289,9 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                         className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
                         <Award size={24} className="text-gold" />
-                        <span className="text-xs font-bold text-white">شهاداتي</span>
+                        <span className="text-xs font-bold text-white">
+                          شهاداتي
+                        </span>
                       </Link>
 
                       <button
@@ -279,7 +302,9 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                         className="flex flex-col items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 transition-colors rounded-md p-4 border border-red-500/30"
                       >
                         <LogOut size={24} className="text-red-400" />
-                        <span className="text-xs font-bold text-red-400">خروج</span>
+                        <span className="text-xs font-bold text-red-400">
+                          خروج
+                        </span>
                       </button>
                     </div>
                   </div>

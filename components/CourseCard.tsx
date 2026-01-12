@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Star, Clock } from "lucide-react";
@@ -78,7 +80,10 @@ export function CourseCard({
               className="flex items-center gap-2 text-navy font-bold text-sm hover:text-gold transition-colors"
             >
               التفاصيل
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft
+                size={16}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
             </Link>
           </div>
         </div>

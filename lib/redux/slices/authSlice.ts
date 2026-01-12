@@ -1,123 +1,90 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
-import type { User } from "@/lib/types";
-import { authAPI } from "@/lib/api/auth/api";
-import type { LoginPayload, RegisterPayload } from "@/lib/api/auth/types";
-
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  error: string | null;
-}
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { User, AuthState } from "@/lib/types";
 
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  loading: false,
-  error: null,
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isLoading: true, // Start as true until hydration completes
+    error: null,
 };
 
-export const loginUser = createAsyncThunk<
-  { user: User; token: string },
-  LoginPayload,
-  { rejectValue: string }
->("auth/loginUser", async (payload, { rejectWithValue }) => {
-  try {
-    const data = await authAPI.login(payload);
-    return {
-      token: data.token,
-      user: data.user as User,
-    };
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : "Network error while logging in"
-    );
-  }
-});
-
-export const registerUser = createAsyncThunk<
-  void,
-  RegisterPayload,
-  { rejectValue: string }
->("auth/registerUser", async (payload, { rejectWithValue }) => {
-  try {
-    await authAPI.register(payload);
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error
-        ? error.message
-        : "Network error while registering"
-    );
-  }
-});
-
-export const logoutUser = createAsyncThunk<
-  void,
-  void,
-  { state: RootState; rejectValue: string }
->("auth/logoutUser", async (_payload, { getState, rejectWithValue }) => {
-  const token = getState().auth.token;
-  if (!token) return;
-
-  try {
-    await authAPI.logout(token);
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error
-        ? error.message
-        : "Network error while logging out"
-    );
-  }
-});
 
 const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    clearAuthError(state) {
-      state.error = null;
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        loginUser.fulfilled,
-        (state, action: PayloadAction<{ user: User; token: string }>) => {
-          state.loading = false;
-          state.user = action.payload.user;
-          state.token = action.payload.token;
+    name: "auth",
+    initialState,
+    reducers: {
+        setCredentials: (
+            state,
+            action: PayloadAction<{ user: User; token: string }>
+        ) => {
+            const { user, token } = action.payload;
+            state.user = {
+                ...user,
+                name: user.userName // Maintain compatibility with existing UI
+            };
+            state.token = token;
+            state.isAuthenticated = true;
+            state.error = null;
+
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("auth_token", token);
+                localStorage.setItem("auth_user", JSON.stringify(state.user));
+            }
+        },
+        logout: (state) => {
+            state.user = null;
+            state.token = null;
+            state.isAuthenticated = false;
+            state.error = null;
+
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem("auth_token");
+                localStorage.removeItem("auth_user");
+            }
+        },
+        updateCredentials: (state, action: PayloadAction<{ name?: string; email?: string; image?: string }>) => {
+            if (state.user) {
+                state.user = {
+                    ...state.user,
+                    ...action.payload,
+                    userName: action.payload.name || state.user.userName,
+                    name: action.payload.name || state.user.name
+                };
+            }
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("auth_user", JSON.stringify(state.user));
+            }
+        },
+        setLoading: (state, action: PayloadAction<boolean>) => {
+            state.isLoading = action.payload;
+        },
+        setError: (state, action: PayloadAction<string | null>) => {
+            state.error = action.payload;
+            state.isLoading = false;
+        },
+        hydrate: (state) => {
+            if (typeof window !== 'undefined') {
+                const token = localStorage.getItem("auth_token");
+                const userJson = localStorage.getItem("auth_user");
+
+                if (token && userJson) {
+                    try {
+                        state.token = token;
+                        state.user = JSON.parse(userJson);
+                        state.isAuthenticated = true;
+                    } catch (e) {
+                        console.error("Failed to parse persisted user", e);
+                        localStorage.removeItem("auth_token");
+                        localStorage.removeItem("auth_user");
+                    }
+                }
+            }
+            state.isLoading = false; // Hydration complete
         }
-      )
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Login failed";
-      })
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Registration failed";
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-        state.token = null;
-      });
-  },
+
+    },
 });
 
-export const { clearAuthError } = authSlice.actions;
+export const { setCredentials, logout, updateCredentials, setLoading, setError, hydrate } = authSlice.actions;
 export const authReducer = authSlice.reducer;
-
-export const selectAuth = (state: RootState) => state.auth;
-
-

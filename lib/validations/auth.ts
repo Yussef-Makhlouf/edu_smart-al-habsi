@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Login Form Schema
+// Login Form Schema - Fixed to avoid TypeScript issues
 export const loginSchema = z.object({
   email: z
     .string()
@@ -11,9 +11,11 @@ export const loginSchema = z.object({
     .min(1, "كلمة المرور مطلوبة")
     .min(3, "كلمة المرور يجب أن تكون على الأقل 3 أحرف"),
   rememberMe: z.boolean().optional().default(false),
+
 });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
+export type LoginFormInput = z.input<typeof loginSchema>;   // RHF
+export type LoginFormData = z.output<typeof loginSchema>;  // onSubmit
 
 // Register Form Schema
 export const registerSchema = z.object({
@@ -30,7 +32,8 @@ export const registerSchema = z.object({
     .min(1, "كلمة المرور مطلوبة")
     .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف"),
   confirmPassword: z.string().min(1, "تأكيد كلمة المرور مطلوب"),
-  role: z.enum(["user", "admin"]).optional().default("user"),
+  role: z.enum(["student", "admin"]).default("student"),
+
 }).refine((data) => data.password === data.confirmPassword, {
   message: "كلمات المرور غير متطابقة",
   path: ["confirmPassword"],
@@ -70,3 +73,12 @@ export const changePasswordSchema = z.object({
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
+// Forget Password Schema
+export const forgetPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "البريد الإلكتروني مطلوب")
+    .email("البريد الإلكتروني غير صحيح"),
+});
+
+export type ForgetPasswordFormData = z.infer<typeof forgetPasswordSchema>;

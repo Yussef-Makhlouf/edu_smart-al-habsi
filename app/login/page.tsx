@@ -23,7 +23,8 @@ import Link from "next/link";
 import { useState } from "react";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
 import { Footer } from "@/components/Footer";
 import { useLoginForm } from "@/lib/hooks/useLoginForm";
 import { useForgetPassword } from "@/lib/hooks/useForgetPassword";
@@ -32,22 +33,29 @@ import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user } = useStore();
+  const { user, isLoading: isAuthLoading } = useSelector(
+    (state: RootState) => state.auth
+  );
   const { form, onSubmit, isLoading, error } = useLoginForm();
-  const { form: forgetPasswordForm, onSubmit: onForgetPasswordSubmit, isLoading: isForgetPasswordLoading, isSuccess: isForgetPasswordSuccess } = useForgetPassword();
+  const {
+    form: forgetPasswordForm,
+    onSubmit: onForgetPasswordSubmit,
+    isLoading: isForgetPasswordLoading,
+    isSuccess: isForgetPasswordSuccess,
+  } = useForgetPassword();
   const [showPassword, setShowPassword] = useState(false);
   const [forgetPasswordOpen, setForgetPasswordOpen] = useState(false);
 
-  // Auto redirect if already logged in
+  // Auto redirect if already logged in (wait for initialization to complete)
   React.useEffect(() => {
-    if (user) {
-      if (user.role === "admin") {
+    if (!isAuthLoading && user) {
+      if (user.role.toLowerCase() === "admin") {
         router.push("/dashboard");
       } else {
         router.push("/my-courses");
       }
     }
-  }, [user, router]);
+  }, [user, isAuthLoading, router]);
 
   return (
     <main className="min-h-screen bg-paper relative flex flex-col" dir="rtl">
@@ -63,7 +71,7 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-navy" />
           <div
             className="absolute top-0 right-0 w-2/3 h-full bg-navy-dark"
-            style={{ clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 0% 100%)' }}
+            style={{ clipPath: "polygon(40% 0, 100% 0, 100% 100%, 0% 100%)" }}
           />
         </div>
 
@@ -71,13 +79,19 @@ export default function LoginPage() {
         <div
           className="absolute inset-0 opacity-5"
           style={{
-            background: 'repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)'
+            background:
+              "repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)",
           }}
         />
 
         {/* Large decorative text */}
-        <div className="absolute bottom-0 right-0 pointer-events-none select-none">
-          <span className="text-[180px] font-bold text-white/[0.02] leading-none">دخول</span>
+        <div
+          className="absolute bottom-0 right-0 pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          <span className="text-[180px] font-bold text-white/[0.02] leading-none">
+            دخول
+          </span>
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
@@ -86,7 +100,10 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="flex items-center justify-center gap-4 mb-8">
+            <div
+              className="flex items-center justify-center gap-4 mb-8"
+              aria-hidden="true"
+            >
               <div className="w-12 h-px bg-gold" />
               <div className="w-3 h-3 bg-gold" />
               <div className="w-12 h-px bg-gold" />
@@ -102,8 +119,14 @@ export default function LoginPage() {
         </div>
 
         {/* Corner decorative elements */}
-        <div className="absolute bottom-10 left-10 w-px h-24 bg-gradient-to-t from-gold/50 to-transparent" />
-        <div className="absolute bottom-10 left-10 w-24 h-px bg-gradient-to-r from-gold/50 to-transparent" />
+        <div
+          className="absolute bottom-10 left-10 w-px h-24 bg-gradient-to-t from-gold/50 to-transparent"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-10 left-10 w-24 h-px bg-gradient-to-r from-gold/50 to-transparent"
+          aria-hidden="true"
+        />
       </section>
 
       {/* Form Section */}
@@ -115,20 +138,23 @@ export default function LoginPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Corner accent */}
-          <div className="absolute top-0 left-0 w-0 h-0 border-t-[40px] border-t-gold border-r-[40px] border-r-transparent z-10" />
+          <div
+            className="absolute top-0 left-0 w-0 h-0 border-t-[40px] border-t-gold border-r-[40px] border-r-transparent z-10"
+            aria-hidden="true"
+          />
 
           <div className="p-8 md:p-10">
             <Form {...form}>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  form.handleSubmit(onSubmit)(e);
-                }}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
                 {/* Error Message */}
                 {error && (
-                  <div className="p-4 bg-red-50 border-r-2 border-red-500 text-red-700 text-sm">
+                  <div
+                    className="p-4 bg-red-50 border-r-2 border-red-500 text-red-700 text-sm"
+                    role="alert"
+                  >
                     {error}
                   </div>
                 )}
@@ -140,7 +166,8 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem className="text-right">
                       <FormLabel className="text-navy text-sm font-bold block">
-                        البريد الإلكتروني <span className="text-red-500">*</span>
+                        البريد الإلكتروني{" "}
+                        <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -148,6 +175,8 @@ export default function LoginPage() {
                           placeholder="e.g johndoe@example.com"
                           {...field}
                           className="w-full h-12 border border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 px-4 text-sm focus:border-gold focus:ring-1 focus:ring-gold"
+                          aria-required="true"
+                          aria-invalid={!!form.formState.errors.email}
                         />
                       </FormControl>
                       <FormMessage className="text-right" />
@@ -168,17 +197,27 @@ export default function LoginPage() {
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="......
-"
+                            placeholder="أدخل كلمة المرور"
                             {...field}
                             className="w-full h-12 border border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 px-4 text-sm focus:border-gold focus:ring-1 focus:ring-gold"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.password}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gold transition-colors"
+                            aria-label={
+                              showPassword
+                                ? "إخفاء كلمة المرور"
+                                : "إظهار كلمة المرور"
+                            }
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
                           </button>
                         </div>
                       </FormControl>
@@ -196,12 +235,17 @@ export default function LoginPage() {
                       <FormControl>
                         <input
                           type="checkbox"
+                          id="rememberMe"
                           checked={field.value}
                           onChange={field.onChange}
                           className="w-4 h-4 border-gray-300 text-gold focus:ring-gold accent-gold"
+                          aria-label="تذكرني"
                         />
                       </FormControl>
-                      <FormLabel className="cursor-pointer text-gray-500 text-xs !mt-0">
+                      <FormLabel
+                        htmlFor="rememberMe"
+                        className="cursor-pointer text-gray-500 text-xs !mt-0"
+                      >
                         تذكرني
                       </FormLabel>
                     </FormItem>
@@ -230,8 +274,14 @@ export default function LoginPage() {
                   >
                     نسيت كلمة المرور؟
                   </button>
-                  <span className="w-1 h-1 rounded-full bg-gray-300" />
-                  <Link href="/contact" className="font-bold text-gold hover:underline">
+                  <span
+                    className="w-1 h-1 rounded-full bg-gray-300"
+                    aria-hidden="true"
+                  />
+                  <Link
+                    href="/contact"
+                    className="font-bold text-gold hover:underline"
+                  >
                     إنشاء حساب
                   </Link>
                 </div>
@@ -268,11 +318,9 @@ export default function LoginPage() {
             </DialogHeader>
             <Form {...forgetPasswordForm}>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  forgetPasswordForm.handleSubmit(onForgetPasswordSubmit)(e);
-                }}
+                onSubmit={forgetPasswordForm.handleSubmit(
+                  onForgetPasswordSubmit
+                )}
                 className="space-y-4 mt-4"
               >
                 <FormField
@@ -287,7 +335,10 @@ export default function LoginPage() {
                           placeholder="example@email.com"
                           {...field}
                           dir="ltr"
-                          disabled={isForgetPasswordLoading || isForgetPasswordSuccess}
+                          disabled={
+                            isForgetPasswordLoading || isForgetPasswordSuccess
+                          }
+                          aria-required="true"
                         />
                       </FormControl>
                       <FormMessage />
@@ -295,7 +346,10 @@ export default function LoginPage() {
                   )}
                 />
                 {isForgetPasswordSuccess && (
-                  <div className="p-3 bg-green-50 border-r-2 border-green-500 text-green-700 text-sm">
+                  <div
+                    className="p-3 bg-green-50 border-r-2 border-green-500 text-green-700 text-sm"
+                    role="status"
+                  >
                     تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني
                   </div>
                 )}
@@ -313,7 +367,9 @@ export default function LoginPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isForgetPasswordLoading || isForgetPasswordSuccess}
+                    disabled={
+                      isForgetPasswordLoading || isForgetPasswordSuccess
+                    }
                     className="bg-gold hover:bg-gold-dim text-navy"
                   >
                     {isForgetPasswordLoading ? "جاري الإرسال..." : "إرسال"}

@@ -13,11 +13,18 @@ import {
   Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStore } from "@/lib/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { logout } from "@/lib/redux/slices/authSlice";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { user, logout } = useStore();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   const links = [
     {
@@ -44,7 +51,7 @@ export function DashboardSidebar() {
       label: "تسجيل الخروج",
       href: "#logout",
       icon: LogOut,
-      action: logout,
+      action: handleLogout,
       variant: "destructive",
     },
   ];

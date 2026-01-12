@@ -16,10 +16,13 @@ import {
   Share2,
   Play,
   FileText,
-  MonitorPlay
+  MonitorPlay,
 } from "lucide-react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { setCartCourse } from "@/lib/redux/slices/enrollmentSlice";
+import { MOCK_COURSES } from "@/lib/data/mockData";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -49,8 +52,10 @@ const coursesData: Record<string, CourseData> = {
   "leadership-secrets": {
     title: "أسرار القيادة الاستراتيجية",
     category: "القيادة",
-    description: "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.",
-    longDescription: "دورة شاملة تغطي جميع جوانب القيادة الاستراتيجية من بناء الرؤية إلى تنفيذها على أرض الواقع. ستتعلم كيفية إلهام فريقك، واتخاذ قرارات استراتيجية، وبناء ثقافة عمل قوية.",
+    description:
+      "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.",
+    longDescription:
+      "دورة شاملة تغطي جميع جوانب القيادة الاستراتيجية من بناء الرؤية إلى تنفيذها على أرض الواقع. ستتعلم كيفية إلهام فريقك، واتخاذ قرارات استراتيجية، وبناء ثقافة عمل قوية.",
     price: "1200 SAR",
     duration: "12 ساعة",
     students: 2450,
@@ -61,32 +66,62 @@ const coursesData: Record<string, CourseData> = {
       {
         title: "مقدمة في القيادة",
         lessons: [
-          { title: "ما هي القيادة الحقيقية؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "صفات القائد الناجح", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "ما هي القيادة الحقيقية؟",
+            duration: "15:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "صفات القائد الناجح",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "بناء الرؤية",
         lessons: [
-          { title: "كيف تصنع رؤية ملهمة", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "تحويل الرؤية إلى أهداف", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "كيف تصنع رؤية ملهمة",
+            duration: "25:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "تحويل الرؤية إلى أهداف",
+            duration: "18:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "إدارة الفريق",
         lessons: [
-          { title: "بناء فريق عمل متماسك", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "التفويض الفعال", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "بناء فريق عمل متماسك",
+            duration: "22:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "التفويض الفعال",
+            duration: "16:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
     ],
-    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
+    features: [
+      "شهادة معتمدة",
+      "دعم فني على مدار الساعة",
+      "ملفات PDF قابلة للتحميل",
+      "تطبيقات عملية",
+    ],
   },
   "crisis-management": {
     title: "فن إدارة الأزمات الكبرى",
     category: "القيادة",
     description: "دورة مكثفة تأخذك في رحلة عميقة لفهم كيفية إدارة الأزمات.",
-    longDescription: "تعلم كيفية التعامل مع الأزمات بحكمة واتخاذ قرارات سريعة وصحيحة تحت الضغط. الدورة تغطي أنواع الأزمات المختلفة واستراتيجيات التعامل مع كل منها.",
+    longDescription:
+      "تعلم كيفية التعامل مع الأزمات بحكمة واتخاذ قرارات سريعة وصحيحة تحت الضغط. الدورة تغطي أنواع الأزمات المختلفة واستراتيجيات التعامل مع كل منها.",
     price: "1100 SAR",
     duration: "10 ساعات",
     students: 1820,
@@ -97,25 +132,47 @@ const coursesData: Record<string, CourseData> = {
       {
         title: "مفهوم الأزمة",
         lessons: [
-          { title: "تعريف الأزمة وأنواعها", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "علامات الإنذار المبكر", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "تعريف الأزمة وأنواعها",
+            duration: "18:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "علامات الإنذار المبكر",
+            duration: "22:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "استراتيجيات المواجهة",
         lessons: [
-          { title: "خطة الطوارئ", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "التواصل في الأزمات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "خطة الطوارئ",
+            duration: "25:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "التواصل في الأزمات",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
     ],
-    features: ["شهادة معتمدة", "دراسات حالة واقعية", "تمارين محاكاة", "جلسات أسئلة وأجوبة"],
+    features: [
+      "شهادة معتمدة",
+      "دراسات حالة واقعية",
+      "تمارين محاكاة",
+      "جلسات أسئلة وأجوبة",
+    ],
   },
   "digital-startup": {
     title: "تأسيس المشاريع الرقمية",
     category: "ريادة الأعمال",
     description: "الدليل الشامل لبناء شركة ناشئة قابلة للنمو.",
-    longDescription: "من الفكرة إلى أول مليون ريال. دورة متكاملة تغطي جميع مراحل تأسيس المشروع الرقمي من التخطيط إلى التنفيذ والتوسع.",
+    longDescription:
+      "من الفكرة إلى أول مليون ريال. دورة متكاملة تغطي جميع مراحل تأسيس المشروع الرقمي من التخطيط إلى التنفيذ والتوسع.",
     price: "950 SAR",
     duration: "15 ساعة",
     students: 3200,
@@ -126,32 +183,62 @@ const coursesData: Record<string, CourseData> = {
       {
         title: "اختيار الفكرة",
         lessons: [
-          { title: "كيف تجد فكرة ناجحة", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "دراسة السوق", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "كيف تجد فكرة ناجحة",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "دراسة السوق",
+            duration: "25:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "بناء المنتج",
         lessons: [
-          { title: "MVP - الحد الأدنى", duration: "30:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "اختبار السوق", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "MVP - الحد الأدنى",
+            duration: "30:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "اختبار السوق",
+            duration: "22:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "النمو والتوسع",
         lessons: [
-          { title: "استراتيجيات النمو", duration: "28:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "جذب الاستثمار", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "استراتيجيات النمو",
+            duration: "28:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "جذب الاستثمار",
+            duration: "25:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
     ],
-    features: ["قوالب خطط عمل جاهزة", "جلسات إرشاد شخصية", "مجتمع رواد الأعمال", "شهادة إتمام"],
+    features: [
+      "قوالب خطط عمل جاهزة",
+      "جلسات إرشاد شخصية",
+      "مجتمع رواد الأعمال",
+      "شهادة إتمام",
+    ],
   },
   "e-business-secrets": {
     title: "كورس أسرار عالم البزنس الإلكتروني",
     category: "ريادة الأعمال",
     description: "خطوة بخطوة نحو بناء مشروعك الالكتروني ناجح.",
-    longDescription: "دورة شاملة تغطي جميع جوانب البزنس الإلكتروني من التخطيط إلى التنفيذ والتسويق.",
+    longDescription:
+      "دورة شاملة تغطي جميع جوانب البزنس الإلكتروني من التخطيط إلى التنفيذ والتسويق.",
     price: "1200 SAR",
     duration: "12 ساعة",
     students: 2450,
@@ -162,29 +249,70 @@ const coursesData: Record<string, CourseData> = {
       {
         title: "مقدمة في البزنس الإلكتروني",
         lessons: [
-          { title: "ما هو البزنس الإلكتروني؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "فرص السوق الرقمي", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "بناء خطة العمل", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "ما هو البزنس الإلكتروني؟",
+            duration: "15:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "فرص السوق الرقمي",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "بناء خطة العمل",
+            duration: "25:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "التسويق الرقمي",
         lessons: [
-          { title: "استراتيجيات التسويق الإلكتروني", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "التسويق عبر وسائل التواصل", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "إعلانات جوجل وفيسبوك", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "استراتيجيات التسويق الإلكتروني",
+            duration: "22:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "التسويق عبر وسائل التواصل",
+            duration: "18:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "إعلانات جوجل وفيسبوك",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
       {
         title: "إدارة المشروع",
         lessons: [
-          { title: "إدارة العمليات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "قياس الأداء", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
-          { title: "التوسع والنمو", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          {
+            title: "إدارة العمليات",
+            duration: "20:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "قياس الأداء",
+            duration: "16:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
+          {
+            title: "التوسع والنمو",
+            duration: "18:00",
+            videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+          },
         ],
       },
     ],
-    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
+    features: [
+      "شهادة معتمدة",
+      "دعم فني على مدار الساعة",
+      "ملفات PDF قابلة للتحميل",
+      "تطبيقات عملية",
+    ],
   },
 };
 
@@ -200,15 +328,25 @@ const getYouTubeVideoId = (url: string | undefined): string | null => {
 
 export default function CoursePage() {
   const params = useParams();
-  const slug = params?.slug as string || "leadership-secrets";
+  const slug = (params?.slug as string) || "leadership-secrets";
   const courseDetails = coursesData[slug] || defaultCourse;
 
-  const { courses, isEnrolled, user, addToCart } = useStore();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { items: storeCourses } = useSelector(
+    (state: RootState) => state.courses
+  );
+  const { enrollments } = useSelector((state: RootState) => state.enrollment);
+  const dispatch = useDispatch();
   const router = useRouter();
 
   const videoId = getYouTubeVideoId(courseDetails.videoUrl);
-  const storeCourse = courses.find((c) => c.slug === slug);
-  const enrolled = storeCourse ? isEnrolled(storeCourse.id) : false;
+
+  // Use MOCK_COURSES as source if storeCourses is empty
+  const activeCourses = storeCourses.length > 0 ? storeCourses : MOCK_COURSES;
+  const storeCourse = activeCourses.find((c) => c.slug === slug);
+  const enrolled = storeCourse
+    ? enrollments.some((e) => e.courseId === storeCourse.id)
+    : false;
 
   // State for active accordion section
   const [activeSection, setActiveSection] = useState<number | null>(0);
@@ -227,24 +365,24 @@ export default function CoursePage() {
       title: courseDetails.title,
       description: courseDetails.description,
       price: courseDetails.price,
-      priceValue: parseInt(courseDetails.price.replace(/[^0-9]/g, '')) || 0,
+      priceValue: parseInt(courseDetails.price.replace(/[^0-9]/g, "")) || 0,
       image: "/images/Mockup.jpg",
       instructor: courseDetails.instructor,
       duration: courseDetails.duration,
       rating: courseDetails.rating,
       students: courseDetails.students,
       longDescription: courseDetails.longDescription,
-      sections: courseDetails.sections.map(section => ({
+      sections: courseDetails.sections.map((section) => ({
         title: section.title,
-        lessons: section.lessons.map(lesson => ({
+        lessons: section.lessons.map((lesson) => ({
           title: lesson.title,
-          duration: lesson.duration
-        }))
+          duration: lesson.duration,
+        })),
       })),
-      features: courseDetails.features
+      features: courseDetails.features,
     };
 
-    addToCart(courseToAdd);
+    dispatch(setCartCourse(courseToAdd as any));
     router.push("/checkout");
   };
 
@@ -292,7 +430,9 @@ export default function CoursePage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-gold/30 rounded-full mb-8">
                 <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                <span className="text-gold text-sm font-bold tracking-wider">{courseDetails.category}</span>
+                <span className="text-gold text-sm font-bold tracking-wider">
+                  {courseDetails.category}
+                </span>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
@@ -314,7 +454,9 @@ export default function CoursePage() {
                     </div>
                     <span className="text-sm text-gray-400">المدة</span>
                   </div>
-                  <p className="text-white font-bold text-lg">{courseDetails.duration}</p>
+                  <p className="text-white font-bold text-lg">
+                    {courseDetails.duration}
+                  </p>
                 </div>
 
                 {/* Students */}
@@ -325,7 +467,9 @@ export default function CoursePage() {
                     </div>
                     <span className="text-sm text-gray-400">المشتركين</span>
                   </div>
-                  <p className="text-white font-bold text-lg">{courseDetails.students.toLocaleString("en-US")}</p>
+                  <p className="text-white font-bold text-lg">
+                    {courseDetails.students.toLocaleString("en-US")}
+                  </p>
                 </div>
 
                 {/* Rating */}
@@ -336,7 +480,9 @@ export default function CoursePage() {
                     </div>
                     <span className="text-sm text-gray-400">التقييم</span>
                   </div>
-                  <p className="text-white font-bold text-lg">{courseDetails.rating}</p>
+                  <p className="text-white font-bold text-lg">
+                    {courseDetails.rating}
+                  </p>
                 </div>
               </div>
 
@@ -354,7 +500,9 @@ export default function CoursePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gold mb-1">مدرب المادة</p>
-                  <h3 className="text-white font-bold text-lg">{courseDetails.instructor}</h3>
+                  <h3 className="text-white font-bold text-lg">
+                    {courseDetails.instructor}
+                  </h3>
                 </div>
               </div>
             </motion.div>
@@ -369,7 +517,6 @@ export default function CoursePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-12">
-
             {/* Course Features - Mobile Only (visible here on desktop only if designated) */}
 
             {/* Course Content Accordion */}
@@ -389,34 +536,77 @@ export default function CoursePage() {
                   محتوى الدورة
                 </h2>
                 <span className="text-gray-500 text-sm font-medium">
-                  {courseDetails.sections.length} أقسام • {courseDetails.sections.reduce((acc, s) => acc + s.lessons.length, 0)} درس
+                  {courseDetails.sections.length} أقسام •{" "}
+                  {courseDetails.sections.reduce(
+                    (acc, s) => acc + s.lessons.length,
+                    0
+                  )}{" "}
+                  درس
                 </span>
               </div>
 
               <div className="space-y-4">
                 {courseDetails.sections.map((section, sIdx) => (
-                  <div key={sIdx} className="border border-gray-100 rounded-xl overflow-hidden transition-all duration-300 hover:border-gold/30 hover:shadow-lg">
+                  <div
+                    key={sIdx}
+                    className="border border-gray-100 rounded-xl overflow-hidden transition-all duration-300 hover:border-gold/30 hover:shadow-lg"
+                  >
                     <button
-                      onClick={() => setActiveSection(activeSection === sIdx ? null : sIdx)}
-                      className={`w-full flex items-center justify-between p-5 transition-colors ${activeSection === sIdx ? 'bg-navy text-white' : 'bg-gray-50 hover:bg-white text-navy'}`}
+                      onClick={() =>
+                        setActiveSection(activeSection === sIdx ? null : sIdx)
+                      }
+                      className={`w-full flex items-center justify-between p-5 transition-colors ${
+                        activeSection === sIdx
+                          ? "bg-navy text-white"
+                          : "bg-gray-50 hover:bg-white text-navy"
+                      }`}
                     >
                       <div className="flex items-center gap-4">
-                        <span className={`text-lg font-bold opacity-30 ${activeSection === sIdx ? 'text-white' : 'text-navy'}`}>
-                          {(sIdx + 1).toString().padStart(2, '0')}
+                        <span
+                          className={`text-lg font-bold opacity-30 ${
+                            activeSection === sIdx ? "text-white" : "text-navy"
+                          }`}
+                        >
+                          {(sIdx + 1).toString().padStart(2, "0")}
                         </span>
                         <h3 className="font-bold text-lg">{section.title}</h3>
                       </div>
-                      <div className={`transform transition-transform duration-300 ${activeSection === sIdx ? 'rotate-180' : ''}`}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <div
+                        className={`transform transition-transform duration-300 ${
+                          activeSection === sIdx ? "rotate-180" : ""
+                        }`}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M6 9L12 15L18 9"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       </div>
                     </button>
 
-                    <div className={`transition-all duration-300 ease-in-out ${activeSection === sIdx ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div
+                      className={`transition-all duration-300 ease-in-out ${
+                        activeSection === sIdx
+                          ? "max-h-[500px] opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
                       <ul className="divide-y divide-gray-100 bg-white">
                         {section.lessons.map((lesson, lIdx) => (
-                          <li key={lIdx} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                          <li
+                            key={lIdx}
+                            className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group"
+                          >
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gold group-hover:text-navy transition-colors text-gray-400">
                                 <Play size={12} fill="currentColor" />
@@ -449,7 +639,10 @@ export default function CoursePage() {
                   {[1, 2, 3, 4].map((_, i) => (
                     <li key={i} className="flex gap-3 text-gray-600 text-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2 flex-shrink-0" />
-                      <span>مهارات قيادية متقدمة تمكنك من إدارة الفرق بكفاءة عالية وتحقيق النتائج.</span>
+                      <span>
+                        مهارات قيادية متقدمة تمكنك من إدارة الفرق بكفاءة عالية
+                        وتحقيق النتائج.
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -463,15 +656,24 @@ export default function CoursePage() {
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex gap-3 text-gray-600 text-sm">
-                    <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2
+                      size={16}
+                      className="text-green-500 mt-0.5 flex-shrink-0"
+                    />
                     <span>رغبة حقيقية في التعلم والتطوير</span>
                   </li>
                   <li className="flex gap-3 text-gray-600 text-sm">
-                    <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2
+                      size={16}
+                      className="text-green-500 mt-0.5 flex-shrink-0"
+                    />
                     <span>جهاز كمبيوتر أو هاتف ذكي</span>
                   </li>
                   <li className="flex gap-3 text-gray-600 text-sm">
-                    <CheckCircle2 size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2
+                      size={16}
+                      className="text-green-500 mt-0.5 flex-shrink-0"
+                    />
                     <span>اتصال بالإنترنت لمشاهدة الدروس</span>
                   </li>
                 </ul>
@@ -525,26 +727,40 @@ export default function CoursePage() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-4xl font-bold text-navy">{courseDetails.price}</span>
+                        <span className="text-4xl font-bold text-navy">
+                          {courseDetails.price}
+                        </span>
                       </div>
                     )}
 
                     {!enrolled && (
-                      <p className="text-gray-500 text-sm">شامل ضريبة القيمة المضافة</p>
+                      <p className="text-gray-500 text-sm">
+                        شامل ضريبة القيمة المضافة
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-3 mb-8">
                     {enrolled ? (
-                      <Button onClick={handleGoToCourse} className="w-full bg-navy hover:bg-navy-light text-white font-bold h-14 rounded-xl text-lg shadow-lg shadow-navy/20">
+                      <Button
+                        onClick={handleGoToCourse}
+                        className="w-full bg-navy hover:bg-navy-light text-white font-bold h-14 rounded-xl text-lg shadow-lg shadow-navy/20"
+                      >
                         متابعة الدورة
                       </Button>
                     ) : (
                       <>
-                        <Button onClick={handleSubscribe} className="w-full bg-gold hover:bg-gold-dim text-navy font-bold h-14 rounded-xl text-lg shadow-lg shadow-gold/20">
+                        <Button
+                          onClick={handleSubscribe}
+                          className="w-full bg-gold hover:bg-gold-dim text-navy font-bold h-14 rounded-xl text-lg shadow-lg shadow-gold/20"
+                        >
                           اشترك الآن
                         </Button>
-                        <Button onClick={handleFreeTrial} variant="outline" className="w-full border-2 border-navy text-navy font-bold h-14 rounded-xl hover:bg-navy hover:text-white transition-colors">
+                        <Button
+                          onClick={handleFreeTrial}
+                          variant="outline"
+                          className="w-full border-2 border-navy text-navy font-bold h-14 rounded-xl hover:bg-navy hover:text-white transition-colors"
+                        >
                           تجربة مجانية
                         </Button>
                       </>
@@ -552,20 +768,34 @@ export default function CoursePage() {
                   </div>
 
                   <div className="pt-6 border-t border-gray-100">
-                    <h4 className="font-bold text-navy mb-4 text-sm">تتضمن هذه الدورة:</h4>
+                    <h4 className="font-bold text-navy mb-4 text-sm">
+                      تتضمن هذه الدورة:
+                    </h4>
                     <ul className="space-y-3">
                       {courseDetails.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-gray-600">
-                          <CheckCircle2 size={16} className="text-gold mt-0.5 flex-shrink-0" />
+                        <li
+                          key={i}
+                          className="flex items-start gap-3 text-sm text-gray-600"
+                        >
+                          <CheckCircle2
+                            size={16}
+                            className="text-gold mt-0.5 flex-shrink-0"
+                          />
                           <span>{feature}</span>
                         </li>
                       ))}
                       <li className="flex items-start gap-3 text-sm text-gray-600">
-                        <MonitorPlay size={16} className="text-gold mt-0.5 flex-shrink-0" />
+                        <MonitorPlay
+                          size={16}
+                          className="text-gold mt-0.5 flex-shrink-0"
+                        />
                         <span>وصول عبر الجوال والكمبيوتر</span>
                       </li>
                       <li className="flex items-start gap-3 text-sm text-gray-600">
-                        <Award size={16} className="text-gold mt-0.5 flex-shrink-0" />
+                        <Award
+                          size={16}
+                          className="text-gold mt-0.5 flex-shrink-0"
+                        />
                         <span>شهادة إتمام رسمية</span>
                       </li>
                     </ul>
@@ -575,7 +805,9 @@ export default function CoursePage() {
 
               {/* Share Card */}
               <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center justify-between">
-                <span className="font-bold text-navy text-sm">شارك الدورة مع أصدقائك</span>
+                <span className="font-bold text-navy text-sm">
+                  شارك الدورة مع أصدقائك
+                </span>
                 <button className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gold hover:text-navy transition-colors">
                   <Share2 size={18} />
                 </button>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { StoreProvider } from "@/lib/store";
+import { Providers } from "./providers";
 
 const handicrafts = localFont({
   src: "./fonts/TheYearofHandicrafts-Regular.otf",
@@ -27,7 +27,7 @@ export default function RootLayout({
       <body
         className={`${handicrafts.variable} font-sans antialiased selection:bg-gold/30`}
       >
-        <StoreProvider>{children}</StoreProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

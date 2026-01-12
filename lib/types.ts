@@ -1,12 +1,32 @@
-export type UserRole = "admin" | "student";
+export type UserRole = "Admin" | "Student" | "admin" | "student";
 
 export interface User {
-    id: string;
-    name: string;
+    _id: string;
+    userName: string;
     email: string;
     role: UserRole;
-    password?: string; // For mock auth validation
+    image?: string | { secure_url: string };
+    currentSessionToken?: string;
+    // Compatibility fields
+    name?: string;
 }
+
+export interface LoginResponse {
+    message: string;
+    userUpdated: {
+        user: User;
+        token: string;
+    };
+}
+
+export interface AuthState {
+    user: User | null;
+    token: string | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    error: string | null;
+}
+
 
 export interface Course {
     id: number;

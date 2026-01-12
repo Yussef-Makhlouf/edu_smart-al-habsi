@@ -3,13 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { PlayCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
+import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { RootState } from "@/lib/redux/store";
+import { MOCK_COURSES } from "@/lib/data/mockData";
 import Image from "next/image";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProfileSidebar } from "@/components/ProfileSidebar";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type CourseStatus = "not_started" | "in_progress" | "completed";
 
@@ -27,7 +32,10 @@ interface CourseDisplay {
 
 const calculateTotalVideos = (course: { sections?: { lessons: any[] }[] }) => {
   if (!course.sections) return 0;
-  return course.sections.reduce((total, section) => total + (section.lessons?.length || 0), 0);
+  return course.sections.reduce(
+    (total, section) => total + (section.lessons?.length || 0),
+    0
+  );
 };
 
 const getCourseButton = (course: CourseDisplay) => {
@@ -37,12 +45,47 @@ const getCourseButton = (course: CourseDisplay) => {
     case "in_progress":
       return { text: "أكمل التعلم", icon: <PlayCircle className="w-4 h-4" /> };
     case "completed":
-      return { text: "شاهد مرة أخرى", icon: <CheckCircle className="w-4 h-4" /> };
+      return {
+        text: "شاهد مرة أخرى",
+        icon: <CheckCircle className="w-4 h-4" />,
+      };
   }
 };
 
 export default function MyCoursesPage() {
-  const { enrolledCourses } = useStore();
+  const { enrollments, isLoading: isEnrollmentLoading } = useSelector(
+    (state: RootState) => state.enrollment
+  );
+  const { items: courses, isLoading: isCoursesLoading } = useSelector(
+    (state: RootState) => state.courses
+  );
+  const { user, isLoading: isAuthLoading } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const router = useRouter();
+
+  const isAnyLoading = isAuthLoading || isEnrollmentLoading || isCoursesLoading;
+
+  // Redirect if not logged in after initialization
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isAuthLoading, router]);
+
+  // Derive enrolled courses (merging course details with enrollment progress)
+  const enrolledCourses = useMemo(() => {
+    // We use MOCK_COURSES as a fallback if Redux items are empty for now
+    const sourceCourses = courses.length > 0 ? courses : MOCK_COURSES;
+
+    return enrollments
+      .map((enrollment) => {
+        const course = sourceCourses.find((c) => c.id === enrollment.courseId);
+        if (!course) return null;
+        return { ...course, progress: enrollment.progress };
+      })
+      .filter((c): c is any => c !== null);
+  }, [enrollments, courses]);
 
   const displayCourses = useMemo(() => {
     return enrolledCourses.map((course): CourseDisplay => {
@@ -82,7 +125,7 @@ export default function MyCoursesPage() {
           <div className="absolute inset-0 bg-navy" />
           <div
             className="absolute top-0 right-0 w-2/3 h-full bg-navy-dark"
-            style={{ clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 0% 100%)' }}
+            style={{ clipPath: "polygon(40% 0, 100% 0, 100% 100%, 0% 100%)" }}
           />
         </div>
 
@@ -90,13 +133,16 @@ export default function MyCoursesPage() {
         <div
           className="absolute inset-0 opacity-5"
           style={{
-            background: 'repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)'
+            background:
+              "repeating-linear-gradient(135deg, transparent, transparent 80px, rgba(212,175,55,0.3) 80px, rgba(212,175,55,0.3) 81px)",
           }}
         />
 
         {/* Large decorative text */}
         <div className="absolute bottom-0 right-0 pointer-events-none select-none">
-          <span className="text-[180px] font-bold text-white/[0.02] leading-none">دوراتي</span>
+          <span className="text-[180px] font-bold text-white/[0.02] leading-none">
+            دوراتي
+          </span>
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -108,15 +154,26 @@ export default function MyCoursesPage() {
             <div className="flex items-center gap-4 mb-6">
               <div className="w-3 h-3 bg-gold" />
               <div className="w-12 h-px bg-gold" />
-              <span className="text-gold text-sm font-bold tracking-widest uppercase">التعلم</span>
+              <span className="text-gold text-sm font-bold tracking-widest uppercase">
+                التعلم
+              </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              دوراتي <span className="text-gold">المسجلة</span>
-            </h1>
-            <p className="text-white/70 text-lg">
-              تابع تقدمك التعليمي واستمر في رحلة التعلم
-            </p>
+            {isAnyLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-12 w-64 bg-white/10" />
+                <Skeleton className="h-6 w-96 bg-white/5" />
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  دوراتي <span className="text-gold">المسجلة</span>
+                </h1>
+                <p className="text-white/70 text-lg">
+                  تابع تقدمك التعليمي واستمر في رحلة التعلم
+                </p>
+              </>
+            )}
           </motion.div>
         </div>
 
@@ -128,8 +185,25 @@ export default function MyCoursesPage() {
       {/* Main Content */}
       <div className="container mx-auto px-6 py-12 flex flex-col lg:flex-row-reverse gap-8 items-start relative z-20">
         {/* Course List */}
-        <div className="flex-1 space-y-6 order-2 lg:order-1">
-          {displayCourses.length === 0 ? (
+        <div className="flex-1 space-y-6 order-2 lg:order-1 w-full">
+          {isAnyLoading ? (
+            [1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white border border-gray-100 p-6 flex flex-col md:flex-row gap-6"
+              >
+                <Skeleton className="w-full md:w-56 h-40 shrink-0" />
+                <div className="flex-1 space-y-4">
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-20 w-full" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : displayCourses.length === 0 ? (
             <motion.div
               className="text-center py-16 bg-white border border-gray-100"
               initial={{ opacity: 0, y: 20 }}
@@ -192,9 +266,12 @@ export default function MyCoursesPage() {
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-2 text-sm">
                             <span className="text-gray-500">
-                              {course.completedVideos} من {course.totalVideos} فيديو
+                              {course.completedVideos} من {course.totalVideos}{" "}
+                              فيديو
                             </span>
-                            <span className="font-bold text-gold">{course.progress}%</span>
+                            <span className="font-bold text-gold">
+                              {course.progress}%
+                            </span>
                           </div>
                           <div className="w-full bg-gray-100 h-1.5">
                             <div
@@ -209,12 +286,17 @@ export default function MyCoursesPage() {
                       {course.status === "completed" && (
                         <div className="flex items-center gap-2 mb-4 text-green-600">
                           <CheckCircle className="w-5 h-5" />
-                          <span className="font-bold text-sm">تم إكمال الدورة بنجاح</span>
+                          <span className="font-bold text-sm">
+                            تم إكمال الدورة بنجاح
+                          </span>
                         </div>
                       )}
 
                       {/* Action Button */}
-                      <Link href={`/courses/${course.slug}/learn`} className="inline-block">
+                      <Link
+                        href={`/courses/${course.slug}/learn`}
+                        className="inline-block"
+                      >
                         <div className="inline-flex items-center gap-2 text-gold font-bold text-sm hover:gap-3 transition-all">
                           {buttonConfig.icon}
                           <span>{buttonConfig.text}</span>
@@ -230,7 +312,7 @@ export default function MyCoursesPage() {
         </div>
 
         {/* Sidebar */}
-        <aside className="w-full lg:w-[280px] flex-shrink-0 order-1 lg:order-2">
+        <aside className="w-full lg:w-[280px] shrink-0 order-1 lg:order-2">
           <ProfileSidebar />
         </aside>
       </div>
