@@ -12,7 +12,7 @@ export default function ContactPage() {
             <Navbar />
 
             {/* Hero Section */}
-            <section className="relative pt-40 pb-20 bg-navy overflow-hidden">
+            <section className="relative h-[55vh] flex items-center justify-center pt-40 pb-20 bg-navy overflow-hidden">
                 {/* Background Effects */}
                 <div className="absolute inset-0 bg-gradient-to-b from-navy-dark via-navy to-navy z-0" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent opacity-50" />

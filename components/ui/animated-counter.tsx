@@ -71,7 +71,7 @@ export function AnimatedCounter({
                 </div>
             )}
             <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-mono">
-                {prefix}{count.toLocaleString()}{suffix}
+                {prefix}{count.toLocaleString("en-US")}{suffix}
             </div>
             <div className="text-gray-400 text-sm md:text-base font-medium">
                 {label}

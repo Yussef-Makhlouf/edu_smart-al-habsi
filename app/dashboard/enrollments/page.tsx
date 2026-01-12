@@ -53,19 +53,19 @@ export default function EnrollmentsPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">إجمالي الاشتراكات</p>
                     <p className="text-2xl font-bold text-navy">{enrollments.length}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <p className="text-sm text-gray-500 mb-1">الاشتراكات النشطة</p>
                     <p className="text-2xl font-bold text-green-600">{enrollments.filter(e => e.status === "active").length}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <p className="text-sm text-gray-500 mb-1">المكتملة</p>
                     <p className="text-2xl font-bold text-blue-600">{enrollments.filter(e => e.status === "completed").length}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">إجمالي الإيرادات</p>
                     <p className="text-2xl font-bold text-gold">{totalRevenue} ر.س</p>
                 </div>
@@ -97,7 +97,7 @@ export default function EnrollmentsPage() {
             </div>
 
             {/* Enrollments Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100  overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>

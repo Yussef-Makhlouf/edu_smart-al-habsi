@@ -9,23 +9,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gold: "bg-gold text-navy-950 hover:bg-gold/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
+        gold: "bg-gold text-navy-950 hover:bg-gold/90 hover:-translate-y-0.5",
         "luxury-outline":
-          "border border-gold text-gold hover:bg-gold hover:text-navy-950 shadow-sm hover:shadow-md",
+          "border border-gold text-gold hover:bg-gold hover:text-navy-950",
         "solid-white":
-          "bg-white text-navy hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md",
+          "bg-white text-navy hover:bg-gray-50 border border-gray-200",
         "outline-dark":
-          "border border-navy text-navy hover:bg-navy hover:text-white shadow-sm",
+          "border border-navy text-navy hover:bg-navy hover:text-white",
       },
       size: {
         default: "h-10 px-4 py-2",

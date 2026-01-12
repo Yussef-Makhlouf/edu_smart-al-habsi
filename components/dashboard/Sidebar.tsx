@@ -3,11 +3,19 @@
 import { Button } from "@/components/ui/button";
 import { Book, LayoutDashboard, Settings, User, LogOut, Users, CreditCard, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import { useStore } from "@/lib/store";
 
 export function DashboardSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { logout } = useStore();
+
+    const handleLogout = () => {
+        logout();
+        router.push("/login");
+    };
 
     const links = [
         { name: "الرئيسية", icon: LayoutDashboard, href: "/dashboard" },
@@ -42,7 +50,10 @@ export function DashboardSidebar() {
                 })}
             </nav>
             <div className="p-6 border-t border-white/10">
-                <button className="flex items-center gap-4 text-red-400 hover:text-red-300 transition-colors w-full px-4 py-2">
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-4 text-red-400 hover:text-red-300 transition-colors w-full px-4 py-2 rounded-md hover:bg-red-500/10"
+                >
                     <LogOut size={20} />
                     تسجيل الخروج
                 </button>

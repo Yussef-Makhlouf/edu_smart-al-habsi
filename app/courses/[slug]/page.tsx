@@ -19,244 +19,178 @@ import { useStore } from "@/lib/store";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// Sample course data - in real app this would come from database/API
-const coursesData: Record<
-  string,
-  {
+// Course data type
+type CourseData = {
+  title: string;
+  category: string;
+  description: string;
+  longDescription: string;
+  price: string;
+  duration: string;
+  students: number;
+  rating: number;
+  instructor: string;
+  videoUrl?: string;
+  sections: {
     title: string;
-    category: string;
-    description: string;
-    longDescription: string;
-    price: string;
-    duration: string;
-    students: number;
-    rating: number;
-    instructor: string;
-    sections: {
-      title: string;
-      lessons: { title: string; duration: string }[];
-    }[];
-    features: string[];
-  }
-> = {
+    lessons: { title: string; duration: string; videoUrl?: string }[];
+  }[];
+  features: string[];
+};
+
+// Course data
+const coursesData: Record<string, CourseData> = {
   "leadership-secrets": {
     title: "أسرار القيادة الاستراتيجية",
     category: "القيادة",
-    description:
-      "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.",
-    longDescription:
-      "دورة شاملة تغطي جميع جوانب القيادة الاستراتيجية من بناء الرؤية إلى تنفيذها على أرض الواقع. ستتعلم كيفية إلهام فريقك، واتخاذ قرارات استراتيجية، وبناء ثقافة عمل قوية.",
+    description: "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.",
+    longDescription: "دورة شاملة تغطي جميع جوانب القيادة الاستراتيجية من بناء الرؤية إلى تنفيذها على أرض الواقع. ستتعلم كيفية إلهام فريقك، واتخاذ قرارات استراتيجية، وبناء ثقافة عمل قوية.",
     price: "1200 SAR",
     duration: "12 ساعة",
     students: 2450,
     rating: 4.9,
     instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
     sections: [
       {
         title: "مقدمة في القيادة",
         lessons: [
-          { title: "ما هي القيادة الحقيقية؟", duration: "15:00" },
-          { title: "صفات القائد الناجح", duration: "20:00" },
+          { title: "ما هي القيادة الحقيقية؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "صفات القائد الناجح", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
         title: "بناء الرؤية",
         lessons: [
-          { title: "كيف تصنع رؤية ملهمة", duration: "25:00" },
-          { title: "تحويل الرؤية إلى أهداف", duration: "18:00" },
+          { title: "كيف تصنع رؤية ملهمة", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "تحويل الرؤية إلى أهداف", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
         title: "إدارة الفريق",
         lessons: [
-          { title: "بناء فريق عمل متماسك", duration: "22:00" },
-          { title: "التفويض الفعال", duration: "16:00" },
+          { title: "بناء فريق عمل متماسك", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التفويض الفعال", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
     ],
-    features: [
-      "شهادة معتمدة",
-      "دعم فني على مدار الساعة",
-      "ملفات PDF قابلة للتحميل",
-      "تطبيقات عملية",
-    ],
+    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
   },
   "crisis-management": {
     title: "فن إدارة الأزمات الكبرى",
     category: "القيادة",
     description: "دورة مكثفة تأخذك في رحلة عميقة لفهم كيفية إدارة الأزمات.",
-    longDescription:
-      "تعلم كيفية التعامل مع الأزمات بحكمة واتخاذ قرارات سريعة وصحيحة تحت الضغط. الدورة تغطي أنواع الأزمات المختلفة واستراتيجيات التعامل مع كل منها.",
+    longDescription: "تعلم كيفية التعامل مع الأزمات بحكمة واتخاذ قرارات سريعة وصحيحة تحت الضغط. الدورة تغطي أنواع الأزمات المختلفة واستراتيجيات التعامل مع كل منها.",
     price: "1100 SAR",
     duration: "10 ساعات",
     students: 1820,
     rating: 4.8,
     instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
     sections: [
       {
         title: "مفهوم الأزمة",
         lessons: [
-          { title: "تعريف الأزمة وأنواعها", duration: "18:00" },
-          { title: "علامات الإنذار المبكر", duration: "22:00" },
+          { title: "تعريف الأزمة وأنواعها", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "علامات الإنذار المبكر", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
         title: "استراتيجيات المواجهة",
         lessons: [
-          { title: "خطة الطوارئ", duration: "25:00" },
-          { title: "التواصل في الأزمات", duration: "20:00" },
+          { title: "خطة الطوارئ", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التواصل في الأزمات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
     ],
-    features: [
-      "شهادة معتمدة",
-      "دراسات حالة واقعية",
-      "تمارين محاكاة",
-      "جلسات أسئلة وأجوبة",
-    ],
+    features: ["شهادة معتمدة", "دراسات حالة واقعية", "تمارين محاكاة", "جلسات أسئلة وأجوبة"],
   },
   "digital-startup": {
     title: "تأسيس المشاريع الرقمية",
     category: "ريادة الأعمال",
     description: "الدليل الشامل لبناء شركة ناشئة قابلة للنمو.",
-    longDescription:
-      "من الفكرة إلى أول مليون ريال. دورة متكاملة تغطي جميع مراحل تأسيس المشروع الرقمي من التخطيط إلى التنفيذ والتوسع.",
+    longDescription: "من الفكرة إلى أول مليون ريال. دورة متكاملة تغطي جميع مراحل تأسيس المشروع الرقمي من التخطيط إلى التنفيذ والتوسع.",
     price: "950 SAR",
     duration: "15 ساعة",
     students: 3200,
     rating: 4.9,
     instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
     sections: [
       {
         title: "اختيار الفكرة",
         lessons: [
-          { title: "كيف تجد فكرة ناجحة", duration: "20:00" },
-          { title: "دراسة السوق", duration: "25:00" },
+          { title: "كيف تجد فكرة ناجحة", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "دراسة السوق", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
         title: "بناء المنتج",
         lessons: [
-          { title: "MVP - الحد الأدنى", duration: "30:00" },
-          { title: "اختبار السوق", duration: "22:00" },
+          { title: "MVP - الحد الأدنى", duration: "30:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "اختبار السوق", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
         title: "النمو والتوسع",
         lessons: [
-          { title: "استراتيجيات النمو", duration: "28:00" },
-          { title: "جذب الاستثمار", duration: "25:00" },
+          { title: "استراتيجيات النمو", duration: "28:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "جذب الاستثمار", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
     ],
-    features: [
-      "قوالب خطط عمل جاهزة",
-      "جلسات إرشاد شخصية",
-      "مجتمع رواد الأعمال",
-      "شهادة إتمام",
-    ],
+    features: ["قوالب خطط عمل جاهزة", "جلسات إرشاد شخصية", "مجتمع رواد الأعمال", "شهادة إتمام"],
   },
-  "emerging-markets": {
-    title: "الاستثمار في الأسواق الناشئة",
-    category: "المالية",
-    description: "فهم ديناميكيات الأسواق الناشئة وكيفية الاستثمار فيها بذكاء.",
-    longDescription:
-      "دورة متخصصة في فهم الأسواق الناشئة وفرص الاستثمار فيها، مع تحليل معمق للمخاطر والعوائد المتوقعة.",
-    price: "1300 SAR",
-    duration: "14 ساعة",
-    students: 1560,
-    rating: 4.7,
-    instructor: "د. محمد الحبسي",
-    sections: [
-      {
-        title: "أساسيات الأسواق الناشئة",
-        lessons: [
-          { title: "ما هي الأسواق الناشئة؟", duration: "18:00" },
-          { title: "فرص النمو", duration: "20:00" },
-        ],
-      },
-      {
-        title: "استراتيجيات الاستثمار",
-        lessons: [
-          { title: "تنويع المحفظة", duration: "25:00" },
-          { title: "إدارة المخاطر", duration: "22:00" },
-        ],
-      },
-    ],
-    features: [
-      "تحليلات أسواق حية",
-      "أدوات تقييم الاستثمار",
-      "تقارير بحثية",
-      "شهادة معتمدة",
-    ],
-  },
-  "wealth-mindset": {
-    title: "عقلية الثراء والحكمة",
-    category: "التطوير الشخصي",
-    description: "أعد برمجة عقلك للتعامل مع المال والفرص بطريقة الأثرياء.",
-    longDescription:
-      "دورة تحويلية تساعدك على تغيير طريقة تفكيرك حول المال والنجاح، مستوحاة من عقليات أنجح رواد الأعمال في العالم.",
-    price: "750 SAR",
-    duration: "8 ساعات",
-    students: 4100,
+  "e-business-secrets": {
+    title: "كورس أسرار عالم البزنس الإلكتروني",
+    category: "ريادة الأعمال",
+    description: "خطوة بخطوة نحو بناء مشروعك الالكتروني ناجح.",
+    longDescription: "دورة شاملة تغطي جميع جوانب البزنس الإلكتروني من التخطيط إلى التنفيذ والتسويق.",
+    price: "1200 SAR",
+    duration: "12 ساعة",
+    students: 2450,
     rating: 4.9,
-    instructor: "د. محمد الحبسي",
+    instructor: "د. عمار عمر",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
     sections: [
       {
-        title: "فهم العقلية",
+        title: "مقدمة في البزنس الإلكتروني",
         lessons: [
-          { title: "عقلية الندرة vs الوفرة", duration: "20:00" },
-          { title: "أنماط التفكير المحدودة", duration: "25:00" },
+          { title: "ما هو البزنس الإلكتروني؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "فرص السوق الرقمي", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "بناء خطة العمل", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
-        title: "بناء عقلية الثراء",
+        title: "التسويق الرقمي",
         lessons: [
-          { title: "تمارين إعادة البرمجة", duration: "30:00" },
-          { title: "عادات الأثرياء", duration: "22:00" },
-        ],
-      },
-    ],
-    features: ["تمارين يومية", "جلسات تأمل", "كتاب عمل رقمي", "مجتمع دعم"],
-  },
-  "personal-branding": {
-    title: "بناء العلامة الشخصية",
-    category: "التسويق",
-    description: "كيف تبني حضورًا رقميًا قويًا يجعلك مرجعًا في مجالك.",
-    longDescription:
-      "تعلم كيفية بناء علامة شخصية قوية على الإنترنت تجذب الفرص والعملاء إليك بشكل طبيعي.",
-    price: "850 SAR",
-    duration: "9 ساعات",
-    students: 2890,
-    rating: 4.8,
-    instructor: "د. محمد الحبسي",
-    sections: [
-      {
-        title: "أساسيات العلامة الشخصية",
-        lessons: [
-          { title: "ما هي العلامة الشخصية؟", duration: "15:00" },
-          { title: "تحديد هويتك", duration: "20:00" },
+          { title: "استراتيجيات التسويق الإلكتروني", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التسويق عبر وسائل التواصل", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "إعلانات جوجل وفيسبوك", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
       {
-        title: "بناء الحضور الرقمي",
+        title: "إدارة المشروع",
         lessons: [
-          { title: "استراتيجية المحتوى", duration: "25:00" },
-          { title: "منصات التواصل", duration: "28:00" },
+          { title: "إدارة العمليات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "قياس الأداء", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التوسع والنمو", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
         ],
       },
     ],
-    features: [
-      "قوالب محتوى",
-      "تحليل ملفك الشخصي",
-      "استراتيجية مخصصة",
-      "شهادة إتمام",
-    ],
+    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
   },
 };
 
-// Default course for unknown slugs
 const defaultCourse = coursesData["leadership-secrets"];
+
+// Helper function to extract YouTube video ID from URL
+const getYouTubeVideoId = (url: string | undefined): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
 
 export default function CoursePage() {
   const params = useParams();
@@ -267,6 +201,9 @@ export default function CoursePage() {
   const { courses, isEnrolled, user, addToCart } = useStore();
   const router = useRouter();
 
+  // Get YouTube video ID
+  const videoId = getYouTubeVideoId(courseDetails.videoUrl);
+
   // Find the basic course object from the store using slug
   const storeCourse = courses.find((c) => c.slug === slug);
   const enrolled = storeCourse ? isEnrolled(storeCourse.id) : false;
@@ -276,19 +213,42 @@ export default function CoursePage() {
       router.push("/login?redirect=/courses/" + slug);
       return;
     }
-    if (storeCourse) {
-      addToCart(storeCourse);
-      router.push("/checkout");
-    }
+    
+    // Use storeCourse if available, otherwise create course object from courseDetails
+    const courseToAdd = storeCourse || {
+      id: Date.now(), // Temporary ID
+      slug: slug,
+      category: courseDetails.category,
+      title: courseDetails.title,
+      description: courseDetails.description,
+      price: courseDetails.price,
+      priceValue: parseInt(courseDetails.price.replace(/[^0-9]/g, '')) || 0,
+      image: "/images/Mockup.jpg",
+      instructor: courseDetails.instructor,
+      duration: courseDetails.duration,
+      rating: courseDetails.rating,
+      students: courseDetails.students,
+      longDescription: courseDetails.longDescription,
+      sections: courseDetails.sections.map(section => ({
+        title: section.title,
+        lessons: section.lessons.map(lesson => ({
+          title: lesson.title,
+          duration: lesson.duration
+        }))
+      })),
+      features: courseDetails.features
+    };
+    
+    addToCart(courseToAdd);
+    router.push("/checkout");
   };
 
   const handleGoToCourse = () => {
-    // Check if we have a specific 'learn' page or just stay here with 'enrolled' view
-    // User requirement: "Student view course in course page alone" -> This suggests this page might transform or link to a viewer.
-    // For now, let's assume there is a /learn sub-route or we just refresh.
-    // Let's implement a simple alert for now as '/learn' page might not exist yet.
-    alert("الانتقال إلى مشغل الدورة...");
-    // router.push(`/courses/${slug}/learn`);
+    router.push(`/courses/${slug}/learn`);
+  };
+
+  const handleFreeTrial = () => {
+    router.push(`/courses/${slug}/learn?trial=true`);
   };
 
   return (
@@ -320,7 +280,7 @@ export default function CoursePage() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Users size={18} className="text-gold" />
-                  <span>{courseDetails.students.toLocaleString()} طالب</span>
+                  <span>{courseDetails.students.toLocaleString("en-US")} طالب</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Star size={18} className="text-gold fill-gold" />
@@ -341,37 +301,78 @@ export default function CoursePage() {
             </div>
 
             {/* Enrollment Card */}
-            <div className="bg-white rounded-lg p-8 border border-gray-100">
-              <div className="aspect-video bg-navy/10 rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-navy/20" />
-                <button className="relative z-10 w-20 h-20 rounded-full bg-gold flex items-center justify-center hover:scale-110 transition-transform">
-                  <PlayCircle size={40} className="text-navy mr-[-4px]" />
-                </button>
-                <span className="absolute bottom-4 right-4 bg-navy/80 text-white px-3 py-1 text-sm rounded">
-                  فيديو تعريفي
-                </span>
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-xl sticky top-24">
+              {/* Video Preview */}
+              {videoId ? (
+                <div className="aspect-video rounded-xl mb-6 overflow-hidden border border-gray-200 shadow-lg">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&start=1010`}
+                    title="فيديو تعريفي"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video bg-gradient-to-br from-navy via-navy/90 to-navy/80 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden group cursor-pointer">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-navy/40 group-hover:bg-navy/30 transition-colors duration-300" />
+                  <button className="relative z-10 w-24 h-24 rounded-full bg-gold flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-gold/50 group-hover:bg-gold/90">
+                    <PlayCircle size={48} className="text-navy mr-[-4px]" />
+                  </button>
+                  <span className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white px-4 py-2 text-sm font-medium rounded-lg border border-white/20">
+                    فيديو تعريفي
+                  </span>
+                </div>
+              )}
+
+              {/* Price Section */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2 mb-2">
+                  {enrolled ? (
+                    <div className="text-3xl font-bold text-green-600">
+                      أنت مشترك بالفعل
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-4xl font-bold text-navy">
+                        {courseDetails.price}
+                      </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-gray-600 text-sm flex items-center gap-2">
+                  {enrolled ? (
+                    <span className="text-green-600 font-medium">تم تفعيل الوصول للدورة</span>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-gold rounded-full"></span>
+                      <span>دفعة واحدة</span>
+                      <span className="text-gray-400">•</span>
+                      <span>وصول مدى الحياة</span>
+                    </>
+                  )}
+                </p>
               </div>
 
-              <div className="text-4xl font-bold text-navy mb-2">
-                {enrolled ? "أنت مشترك ✅" : courseDetails.price}
-              </div>
-              <p className="text-gray-500 mb-6">{enrolled ? "تم تفعيل الوصول للدورة" : "دفعة واحدة • وصول مدى الحياة"}</p>
-
+              {/* Action Buttons */}
               {enrolled ? (
                 <Button
                   variant="gold"
                   size="lg"
-                  className="w-full text-navy font-bold text-lg py-6 mb-4"
+                  className="w-full text-navy font-bold text-lg py-7 mb-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
                   onClick={handleGoToCourse}
                 >
                   متابعة الدورة
                 </Button>
               ) : (
-                <>
+                <div className="space-y-3">
                   <Button
                     variant="gold"
                     size="lg"
-                    className="w-full text-navy font-bold text-lg py-6 mb-4"
+                    className="w-full text-navy font-bold text-lg py-7 rounded-xl transition-all duration-300 scale-[98%] hover:scale-100"
                     onClick={handleSubscribe}
                   >
                     اشترك الآن
@@ -379,24 +380,30 @@ export default function CoursePage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full border-navy text-navy hover:bg-navy hover:text-white"
+                    className="w-full border-2 border-navy text-navy hover:bg-navy hover:text-white font-semibold py-7 rounded-xl transition-all duration-300 scale-[98%] hover:scale-100"
+                    onClick={handleFreeTrial}
                   >
                     تجربة مجانية
                   </Button>
-                </>
+                </div>
               )}
 
               {/* Features */}
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <h4 className="font-bold text-navy mb-4">تتضمن الدورة:</h4>
-                <ul className="space-y-3">
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="font-bold text-navy mb-5 text-lg flex items-center gap-2">
+                  <CheckCircle2 size={20} className="text-gold" />
+                  تتضمن الدورة:
+                </h4>
+                <ul className="space-y-3.5">
                   {courseDetails.features.map((feature, idx) => (
                     <li
                       key={idx}
-                      className="flex items-center gap-3 text-gray-600"
+                      className="flex items-start gap-3 text-gray-700 group/item"
                     >
-                      <CheckCircle2 size={18} className="text-gold" />
-                      {feature}
+                      <div className="mt-0.5 flex-shrink-0">
+                        <CheckCircle2 size={18} className="text-gold group-hover/item:scale-110 transition-transform" />
+                      </div>
+                      <span className="text-sm leading-relaxed">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -485,7 +492,7 @@ export default function CoursePage() {
                       <Users size={16} className="text-gold" /> الطلاب
                     </span>
                     <span className="font-bold text-navy">
-                      {courseDetails.students.toLocaleString()}
+                      {courseDetails.students.toLocaleString("en-US")}
                     </span>
                   </li>
                   <li className="flex items-center justify-between text-gray-600">

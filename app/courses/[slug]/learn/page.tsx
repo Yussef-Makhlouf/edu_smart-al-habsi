@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,401 +9,592 @@ import {
   PlayCircle,
   CheckCircle2,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Download,
-  MessageSquare,
   Menu,
   X,
+  FileText,
+  MessageSquare,
   ArrowRight,
+  Lock,
+  Play,
+  Download,
+  FolderOpen,
+  ListVideo
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Mock Data (matching the structure from the details page)
-const courseData = {
-  title: "أسرار القيادة الاستراتيجية",
-  progress: 35,
-  sections: [
-    {
-      id: 1,
-      title: "مقدمة في القيادة",
-      lessons: [
-        {
-          id: 101,
-          title: "مرحبًا بك في الدورة",
-          duration: "02:30",
-          type: "video",
-          completed: true,
-        },
-        {
-          id: 102,
-          title: "ما هي القيادة الحقيقية؟",
-          duration: "15:00",
-          type: "video",
-          completed: true,
-        },
-        {
-          id: 103,
-          title: "اختبار شخصية القائد",
-          duration: "10:00",
-          type: "quiz",
-          completed: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "بناء الرؤية",
-      lessons: [
-        {
-          id: 201,
-          title: "كيف تصنع رؤية ملهمة",
-          duration: "25:00",
-          type: "video",
-          completed: false,
-        },
-        {
-          id: 202,
-          title: "تحويل الرؤية إلى أهداف",
-          duration: "18:00",
-          type: "video",
-          completed: false,
-        },
-        {
-          id: 203,
-          title: "ملف عمل: صياغة الرؤية",
-          duration: "10:00",
-          type: "resource",
-          completed: false,
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "إدارة الفريق",
-      lessons: [
-        {
-          id: 301,
-          title: "بناء فريق عمل متماسك",
-          duration: "22:00",
-          type: "video",
-          completed: false,
-        },
-        {
-          id: 302,
-          title: "التفويض الفعال",
-          duration: "16:00",
-          type: "video",
-          completed: false,
-        },
-      ],
-    },
-  ],
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useStore } from "@/lib/store";
+// Course data type
+type CourseData = {
+  title: string;
+  category: string;
+  description: string;
+  longDescription: string;
+  price: string;
+  duration: string;
+  students: number;
+  rating: number;
+  instructor: string;
+  videoUrl?: string;
+  sections: {
+    title: string;
+    lessons: { title: string; duration: string; videoUrl?: string }[];
+  }[];
+  features: string[];
 };
 
-export default function CourseLearnPage({
-  params,
+// Course data
+const coursesData: Record<string, CourseData> = {
+  "leadership-secrets": {
+    title: "أسرار القيادة الاستراتيجية",
+    category: "القيادة",
+    description: "كيف تحول رؤيتك إلى واقع ملموس وتقود فريقك نحو تحقيق المستحيل.",
+    longDescription: "دورة شاملة تغطي جميع جوانب القيادة الاستراتيجية من بناء الرؤية إلى تنفيذها على أرض الواقع. ستتعلم كيفية إلهام فريقك، واتخاذ قرارات استراتيجية، وبناء ثقافة عمل قوية.",
+    price: "1200 SAR",
+    duration: "12 ساعة",
+    students: 2450,
+    rating: 4.9,
+    instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+    sections: [
+      {
+        title: "مقدمة في القيادة",
+        lessons: [
+          { title: "ما هي القيادة الحقيقية؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "صفات القائد الناجح", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "بناء الرؤية",
+        lessons: [
+          { title: "كيف تصنع رؤية ملهمة", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "تحويل الرؤية إلى أهداف", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "إدارة الفريق",
+        lessons: [
+          { title: "بناء فريق عمل متماسك", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التفويض الفعال", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+    ],
+    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
+  },
+  "crisis-management": {
+    title: "فن إدارة الأزمات الكبرى",
+    category: "القيادة",
+    description: "دورة مكثفة تأخذك في رحلة عميقة لفهم كيفية إدارة الأزمات.",
+    longDescription: "تعلم كيفية التعامل مع الأزمات بحكمة واتخاذ قرارات سريعة وصحيحة تحت الضغط. الدورة تغطي أنواع الأزمات المختلفة واستراتيجيات التعامل مع كل منها.",
+    price: "1100 SAR",
+    duration: "10 ساعات",
+    students: 1820,
+    rating: 4.8,
+    instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+    sections: [
+      {
+        title: "مفهوم الأزمة",
+        lessons: [
+          { title: "تعريف الأزمة وأنواعها", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "علامات الإنذار المبكر", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "استراتيجيات المواجهة",
+        lessons: [
+          { title: "خطة الطوارئ", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التواصل في الأزمات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+    ],
+    features: ["شهادة معتمدة", "دراسات حالة واقعية", "تمارين محاكاة", "جلسات أسئلة وأجوبة"],
+  },
+  "digital-startup": {
+    title: "تأسيس المشاريع الرقمية",
+    category: "ريادة الأعمال",
+    description: "الدليل الشامل لبناء شركة ناشئة قابلة للنمو.",
+    longDescription: "من الفكرة إلى أول مليون ريال. دورة متكاملة تغطي جميع مراحل تأسيس المشروع الرقمي من التخطيط إلى التنفيذ والتوسع.",
+    price: "950 SAR",
+    duration: "15 ساعة",
+    students: 3200,
+    rating: 4.9,
+    instructor: "د. محمد الحبسي",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+    sections: [
+      {
+        title: "اختيار الفكرة",
+        lessons: [
+          { title: "كيف تجد فكرة ناجحة", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "دراسة السوق", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "بناء المنتج",
+        lessons: [
+          { title: "MVP - الحد الأدنى", duration: "30:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "اختبار السوق", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "النمو والتوسع",
+        lessons: [
+          { title: "استراتيجيات النمو", duration: "28:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "جذب الاستثمار", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+    ],
+    features: ["قوالب خطط عمل جاهزة", "جلسات إرشاد شخصية", "مجتمع رواد الأعمال", "شهادة إتمام"],
+  },
+  "e-business-secrets": {
+    title: "كورس أسرار عالم البزنس الإلكتروني",
+    category: "ريادة الأعمال",
+    description: "خطوة بخطوة نحو بناء مشروعك الالكتروني ناجح.",
+    longDescription: "دورة شاملة تغطي جميع جوانب البزنس الإلكتروني من التخطيط إلى التنفيذ والتسويق.",
+    price: "1200 SAR",
+    duration: "12 ساعة",
+    students: 2450,
+    rating: 4.9,
+    instructor: "د. عمار عمر",
+    videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc",
+    sections: [
+      {
+        title: "مقدمة في البزنس الإلكتروني",
+        lessons: [
+          { title: "ما هو البزنس الإلكتروني؟", duration: "15:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "فرص السوق الرقمي", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "بناء خطة العمل", duration: "25:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "التسويق الرقمي",
+        lessons: [
+          { title: "استراتيجيات التسويق الإلكتروني", duration: "22:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التسويق عبر وسائل التواصل", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "إعلانات جوجل وفيسبوك", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+      {
+        title: "إدارة المشروع",
+        lessons: [
+          { title: "إدارة العمليات", duration: "20:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "قياس الأداء", duration: "16:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+          { title: "التوسع والنمو", duration: "18:00", videoUrl: "https://www.youtube.com/watch?v=PSrVVb1o-Dc" },
+        ],
+      },
+    ],
+    features: ["شهادة معتمدة", "دعم فني على مدار الساعة", "ملفات PDF قابلة للتحميل", "تطبيقات عملية"],
+  },
+};
+
+const defaultCourse = coursesData["leadership-secrets"];
+
+// Helper function to extract YouTube video ID from URL
+const getYouTubeVideoId = (url: string | undefined): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
+// Mock Data (for resources - can be moved to data file later)
+const resourceFiles = [
+  { id: 1, title: "العقود", type: "folder", items: ["عقد 1.pdf", "عقد 2.pdf"] },
+  { id: 2, title: "رسائل التواصل مع الموردين", type: "folder", items: ["مسودة تواصل 1.docx", "قائمة الموردين.xlsx"] },
+  { id: 3, title: "ملف حساب التكاليف", type: "file", items: ["شيت التكاليف v2.xlsx"] },
+  { id: 4, title: "التمارين التسويقية", type: "folder", items: [] },
+  { id: 5, title: "الكتب", type: "folder", items: ["كتاب القواعد الذهبية.pdf"] },
+  { id: 6, title: "التمارين الصوتية", type: "folder", items: [] },
+  { id: 7, title: "خطة المؤثر على سناب شات", type: "file", items: [] },
+  { id: 8, title: "طلب التسجيل في كليك بانك", type: "file", items: ["نموذج التسجيل.pdf"] },
+  { id: 9, title: "البطاقة الذهبية", type: "file", items: ["Golden Card.png"] },
+  { id: 10, title: "تمارين منزلية", type: "folder", items: [] },
+  { id: 11, title: "مذكرة اطلق حملتك الاعلانية", type: "file", items: ["checklist_ads.pdf"] },
+  { id: 12, title: "فريق الاستشارات والمتابعة", type: "folder", items: [] },
+  { id: 13, title: "ملف الخطة الاستراتيجية للمشروع", type: "file", items: [] },
+  { id: 14, title: "الاسئلة الاكثر تكرارا", type: "folder", items: [] },
+];
+
+// Extracted Sidebar Component to prevent re-renders losing scroll state
+const CourseSidebar = ({
+    activeLesson, 
+    onLessonSelect, 
+    expandedSection, 
+    setExpandedSection, 
+    expandedResource, 
+    setExpandedResource,
+    courseSections,
+    courseTitle
 }: {
-  params: { slug: string };
-}) {
-  const [activeLesson, setActiveLesson] = useState(
-    courseData.sections[1].lessons[0]
-  );
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedSections, setExpandedSections] = useState<number[]>([1, 2]);
-
-  const toggleSection = (sectionId: number) => {
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden direction-rtl">
-      {/* Sidebar - Course Content */}
-      <AnimatePresence mode="wait">
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="bg-white border-l border-gray-200 flex flex-col h-full flex-shrink-0 relative z-20"
-          >
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-bold text-navy text-lg">محتوى الدورة</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(false)}
-                className="md:hidden"
-              >
-                <X size={20} />
-              </Button>
+    activeLesson: any,
+    onLessonSelect: (lesson: any) => void,
+    expandedSection: number | null,
+    setExpandedSection: (id: number | null) => void,
+    expandedResource: number | null,
+    setExpandedResource: (id: number | null) => void,
+    courseSections: any[],
+    courseTitle: string
+}) => {
+    return (
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+        {/* 1. Course Content Section */}
+        <div className="bg-gold p-3 text-center sticky top-0 z-10 shadow-sm">
+          <h3 className="font-bold text-navy text-sm md:text-base">
+            محتوى الدورة
+          </h3>
+        </div>
+  
+        {/* Sections Accordion */}
+        {courseSections.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="border-b border-gray-200">
+            {/* Section Title Bar */}
+            <div className="bg-gray-200 text-navy p-3 flex justify-between items-center cursor-pointer hover:bg-gray-300 transition-colors">
+              <div className="flex flex-col items-start text-right">
+                <span className="font-bold text-sm">{section.title}</span>
+                <span className="text-[10px] text-gray-500 mt-0.5">
+                  {section.lessons.length > 0
+                    ? `${section.lessons.length} مقاطع فيديو`
+                    : ""}
+                </span>
+              </div>
             </div>
-
-            <div className="overflow-y-auto flex-1 custom-scrollbar">
-              {courseData.sections.map((section) => (
-                <div key={section.id} className="border-b border-gray-50">
-                  <button
-                    onClick={() => toggleSection(section.id)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="font-bold text-navy text-sm">
-                        {section.title}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {section.lessons.length} دروس
-                      </span>
-                    </div>
-                    <ChevronDown
-                      size={16}
-                      className={cn(
-                        "text-gray-400 transition-transform",
-                        expandedSections.includes(section.id)
-                          ? "rotate-180"
-                          : ""
-                      )}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {expandedSections.includes(section.id) && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        className="overflow-hidden bg-gray-50/50"
-                      >
-                        {section.lessons.map((lesson) => (
-                          <div
-                            key={lesson.id}
-                            onClick={() => setActiveLesson(lesson)}
-                            className={cn(
-                              "flex items-center gap-3 p-3 px-6 cursor-pointer border-l-4 transition-all hover:bg-gray-100",
-                              activeLesson.id === lesson.id
-                                ? "bg-gold/10 border-gold"
-                                : "border-transparent bg-transparent"
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "mt-0.5",
-                                lesson.completed
-                                  ? "text-green-500"
-                                  : activeLesson.id === lesson.id
-                                  ? "text-gold"
-                                  : "text-gray-400"
-                              )}
-                            >
-                              {lesson.completed ? (
-                                <CheckCircle2 size={16} />
-                              ) : (
-                                <PlayCircle size={16} />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <p
-                                className={cn(
-                                  "text-sm font-medium",
-                                  activeLesson.id === lesson.id
-                                    ? "text-navy"
-                                    : "text-gray-600"
-                                )}
-                              >
-                                {lesson.title}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-gray-400 flex items-center gap-1">
-                                  {lesson.type === "video"
-                                    ? "فيديو"
-                                    : lesson.type === "quiz"
-                                    ? "اختبار"
-                                    : "ملف"}
-                                </span>
-                                <span className="text-xs text-gray-300">•</span>
-                                <span className="text-xs text-gray-400">
-                                  {lesson.duration}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </motion.div>
+  
+            {/* Lessons List */}
+            <div className="bg-white">
+              {section.lessons.map((lesson: any, lessonIndex: number) => {
+                const isActive = activeLesson.lessonIndex === lessonIndex && activeLesson.sectionIndex === sectionIndex;
+                return (
+                  <div
+                    key={lessonIndex}
+                    onClick={() => onLessonSelect({ ...lesson, sectionIndex, lessonIndex })}
+                    className={cn(
+                      "p-2 border-b border-gray-100 flex gap-3 cursor-pointer transition-all duration-200 relative group",
+                      isActive
+                        ? "bg-navy text-white"
+                        : "hover:bg-gray-50 text-navy",
+                      lesson.isLocked ? "opacity-70 grayscale cursor-not-allowed" : ""
                     )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-paper">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            {!sidebarOpen && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu size={20} className="text-navy" />
-              </Button>
-            )}
-            <div>
-              <h1 className="font-bold text-navy line-clamp-1">
-                {courseData.title}
-              </h1>
-              <div className="w-32 md:w-48 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                <div
-                  className="h-full bg-gold rounded-full"
-                  style={{ width: `${courseData.progress}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden md:flex gap-2"
-            >
-              <MessageSquare size={16} /> مجتمع الدورة
-            </Button>
-            <Link href="/my-courses">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-500 hover:text-navy"
-              >
-                العودة لدوراتي <ArrowRight size={16} className="mr-2" />
-              </Button>
-            </Link>
-          </div>
-        </header>
-
-        {/* Content Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-4xl mx-auto">
-            {/* Video Player */}
-            <div className="aspect-video bg-black rounded-xl shadow-2xl overflow-hidden relative group mb-8">
-              <div className="absolute inset-0 bg-navy/20 group-hover:bg-transparent transition-colors pointer-events-none z-10" />
-              {/* Replace this with actual Video Player Implementation */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  variant="gold"
-                  className="rounded-full w-20 h-20 pl-1 p-0 flex items-center justify-center"
-                >
-                  <PlayCircle size={40} className="text-navy fill-navy" />
-                </Button>
-              </div>
-              <img
-                src="/course-placeholder.jpg"
-                alt="Video Thumbnail"
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white z-20">
-                <p className="font-bold text-lg">{activeLesson.title}</p>
-              </div>
-            </div>
-
-            {/* Lesson Navigation */}
-            <div className="flex items-center justify-between mb-10">
-              <Button variant="outline" className="gap-2">
-                <ChevronRight size={16} /> الدرس السابق
-              </Button>
-              <Button variant="gold" className="gap-2 text-navy font-bold px-8">
-                أكملت الدرس <CheckCircle2 size={16} />
-              </Button>
-              <Button variant="outline" className="gap-2">
-                الدرس التالي <ChevronLeft size={16} />
-              </Button>
-            </div>
-
-            {/* Tabs / Content */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="flex border-b border-gray-100">
-                <button className="px-6 py-4 font-bold text-navy border-b-2 border-gold bg-gold/5">
-                  عن الدرس
-                </button>
-                <button className="px-6 py-4 font-medium text-gray-500 hover:text-navy hover:bg-gray-50">
-                  المرفقات (2)
-                </button>
-                <button className="px-6 py-4 font-medium text-gray-500 hover:text-navy hover:bg-gray-50">
-                  المناقشات
-                </button>
-              </div>
-              <div className="p-8">
-                <h2 className="text-2xl font-bold text-navy mb-4">
-                  {activeLesson.title}
-                </h2>
-                <p className="text-gray-600 leading-relaxed mb-6">
-                  في هذا الدرس، سنتعرف على الأساسيات الجوهرية للقيادة. سنتحدث عن
-                  الفرق بين الإدارة والقيادة، وكيف يمكنك اكتشاف نمط قيادتك الخاص
-                  وتطويره. ستخرج من هذا الدرس بفهم عميق لما يعنيه أن تكون قائداً
-                  مؤثراً في محيطك العملي والشخصي.
-                </p>
-
-                <h3 className="font-bold text-navy mb-3">نقاط رئيسية:</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600 mb-8">
-                  <li>تعريف القيادة في القرن الواحد والعشرين.</li>
-                  <li>الأخطاء الخمسة الشائعة التي يقع فيها القادة الجدد.</li>
-                  <li>مثلث التأثير: الثقة، الرؤية، والكفاءة.</li>
-                </ul>
-
-                <div className="bg-navy/5 rounded-lg p-6 border border-navy/10">
-                  <h4 className="font-bold text-navy mb-4 flex items-center gap-2">
-                    <Download size={18} className="text-gold" /> ملفات للتحميل
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-red-100 p-2 rounded text-red-500">
-                          <FileText size={18} />
+                  >
+                    {/* Thumbnail Image */}
+                    <div
+                      className={cn(
+                        "w-20 h-14 rounded mb-auto shrink-0 relative overflow-hidden border self-center flex items-center justify-center",
+                        isActive ? "border-white/20" : "border-gray-200"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "absolute inset-0",
+                          isActive ? "bg-white/10" : "bg-primary"
+                        )}
+                      />
+                      <span className="relative z-10 text-[9px] font-bold text-white text-center px-1 truncate w-full">
+                        {lesson.title}
+                      </span>
+  
+                      {/* Status Overlay */}
+                      {lesson.isLocked && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                          <Lock size={12} className="text-white/80" />
                         </div>
-                        <span className="text-gray-700 font-medium">
-                          ملخص الدرس PDF
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gold hover:text-navy"
-                      >
-                        تحميل
-                      </Button>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded text-blue-500">
-                          <FileText size={18} />
-                        </div>
-                        <span className="text-gray-700 font-medium">
-                          ورقة عمل التمارين
+  
+                    {/* Info */}
+                    <div className="flex flex-col justify-center gap-1 flex-1">
+                      <h4 className="text-[11px] font-bold line-clamp-2 leading-tight">
+                        {lesson.title}
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            "text-[9px]",
+                            isActive ? "text-white/60" : "text-gray-400"
+                          )}
+                        >
+                          {courseTitle.substring(0, 20)}...
                         </span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gold hover:text-navy"
+                      <span
+                        className={cn(
+                          "text-[9px]",
+                          isActive ? "text-white/60" : "text-gray-400"
+                        )}
                       >
-                        تحميل
-                      </Button>
+                        {lesson.duration}
+                      </span>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
+        ))}
+  
+        {/* 2. Files and Resources Section */}
+        <div className="bg-gold p-3 text-center sticky top-0 z-10 shadow-sm mt-0.5">
+          <h3 className="font-bold text-navy text-sm md:text-base">
+            الملفات والمصادر
+          </h3>
         </div>
-      </main>
+  
+        <div className="bg-[#f0f0f0] min-h-[300px] pb-8">
+          {resourceFiles.map((file) => (
+            <div
+              key={file.id}
+              className="border-b border-gray-200 last:border-0"
+            >
+              <div
+                onClick={() =>
+                  setExpandedResource(
+                    expandedResource === file.id ? null : file.id
+                  )
+                }
+                className="p-3 bg-gray-100 hover:bg-gray-200 cursor-pointer flex justify-between items-center transition-colors"
+              >
+                <span className="text-sm font-bold text-navy">
+                  {file.title}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "text-gray-500 transition-transform",
+                    expandedResource === file.id ? "rotate-180" : ""
+                  )}
+                />
+              </div>
+  
+              <AnimatePresence>
+                {expandedResource === file.id && (
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: "auto" }}
+                    exit={{ height: 0 }}
+                    className="overflow-hidden bg-white"
+                  >
+                    {file.items.length > 0 ? (
+                      file.items.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 border-b border-gray-50 flex items-center gap-2 text-xs text-gray-600 hover:text-navy hover:bg-gray-50 cursor-pointer"
+                        >
+                          <Download size={12} className="text-gold" />
+                          {item}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-center text-xs text-gray-400">
+                        لا توجد ملفات متاحة حالياً
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+};
+
+export default function CourseLearnPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const slug = params?.slug as string || "leadership-secrets";
+  const isTrial = searchParams?.get("trial") === "true";
+  
+  const { courses, isEnrolled } = useStore();
+  const storeCourse = courses.find((c) => c.slug === slug);
+  const enrolled = storeCourse ? isEnrolled(storeCourse.id) : false;
+  
+  // Redirect if not enrolled and not in trial mode
+  useEffect(() => {
+    if (!enrolled && !isTrial) {
+      router.push(`/courses/${slug}`);
+    }
+  }, [enrolled, isTrial, slug, router]);
+  
+  // Get course data
+  const courseDetails = coursesData[slug] || defaultCourse;
+  
+  // Convert course data to the format needed for the page
+  const courseSections = useMemo(() => {
+    let lessonCount = 0;
+    return courseDetails.sections.map((section, sectionIndex) => ({
+      id: sectionIndex + 1,
+      title: section.title,
+      lessons: section.lessons.map((lesson, lessonIndex) => {
+        const globalLessonIndex = lessonCount++;
+        // If enrolled: all videos available
+        // If trial mode: only first 2 videos available
+        // Otherwise: all locked (but user should be redirected)
+        const isLocked = enrolled ? false : (isTrial ? globalLessonIndex >= 2 : true);
+        return {
+          id: `${sectionIndex}-${lessonIndex}`,
+          title: lesson.title,
+          duration: lesson.duration,
+          videoUrl: lesson.videoUrl || courseDetails.videoUrl,
+          isLocked,
+          sectionIndex,
+          lessonIndex,
+        };
+      }),
+    }));
+  }, [courseDetails, enrolled, isTrial]);
+  
+  const [activeLesson, setActiveLesson] = useState(
+    courseSections[0]?.lessons[0] || null
+  );
+  const [expandedSection, setExpandedSection] = useState<number | null>(1);
+  const [expandedResource, setExpandedResource] = useState<number | null>(null);
+  
+  // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLessonClick = (lesson: any, isMobile = false) => {
+    if (!lesson.isLocked) {
+      setActiveLesson(lesson);
+      if (isMobile) {
+        setIsMobileMenuOpen(false); // Close menu on mobile
+      }
+    }
+  };
+  
+  // Get YouTube video ID if it's a YouTube URL
+  const videoId = activeLesson?.videoUrl ? getYouTubeVideoId(activeLesson.videoUrl) : null;
+
+  return (
+    <div
+      className="flex flex-col min-h-screen bg-white font-sans"
+      dir="rtl"
+    >
+      {/* Top Navbar */}
+      <div className="absolute top-0 left-0 right-0 z-50">
+        <Navbar lightVariant={false} />
+      </div>
+
+      {/* Hero Header */}
+      <div className="bg-navy relative w-full h-[55vh] flex items-center justify-center overflow-hidden text-center flex-shrink-0 z-10 transition-all">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold/20 via-transparent to-transparent" />
+        </div>
+
+        <div className="container mx-auto px-6 relative z-10">
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            {courseDetails.title}
+          </h1>
+          {isTrial && !enrolled && (
+            <p className="text-gold text-lg font-medium mt-2">
+              تجربة مجانية - أول فيديوين متاحين فقط
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 flex flex-col lg:flex-row relative z-20 bg-white items-start">
+        
+        {/* Mobile Course Menu Trigger */}
+        <div className="lg:hidden w-full p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center sticky top-0 z-30">
+             <span className="font-bold text-navy">محتوى الدورة</span>
+             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 border-gold text-navy hover:bg-gold hover:text-white">
+                        <ListVideo size={16} />
+                        عرض القائمة
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="p-0 w-80">
+                    {/* Fixed Height Container for Sheet Content to Scroll properly */}
+                   <div className="h-full flex flex-col">
+                        <SheetHeader className="p-4 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+                            <SheetTitle className="text-navy text-right">محتوى الدورة</SheetTitle>
+                        </SheetHeader>
+                        <CourseSidebar 
+                           activeLesson={activeLesson}
+                           onLessonSelect={(l) => handleLessonClick(l, true)}
+                           expandedSection={expandedSection}
+                           setExpandedSection={setExpandedSection}
+                           expandedResource={expandedResource}
+                           setExpandedResource={setExpandedResource}
+                           courseSections={courseSections}
+                           courseTitle={courseDetails.title}
+                        />
+                   </div>
+                </SheetContent>
+             </Sheet>
+        </div>
+
+        {/* Main Video Area */}
+        <main className="flex-1 w-full lg:w-auto bg-white relative p-4 md:p-8">
+          <div className="max-w-5xl mx-auto">
+            {activeLesson ? (
+              <>
+                <div className="aspect-video bg-black rounded-xl overflow-hidden relative mb-8 border border-gray-100 ring-1 ring-gray-200 group">
+                  {videoId ? (
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&start=10`}
+                      title={activeLesson.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      key={activeLesson.id}
+                      controls
+                      className="w-full h-full object-contain"
+                      src={activeLesson.videoUrl}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
+
+                <div className="flex items-start gap-4 mb-8 border-b border-gray-100 pb-8">
+                  <div className="w-12 h-12 bg-gold text-white rounded-full flex items-center justify-center shadow-lg shrink-0">
+                    <span className="font-bold text-lg">م</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-navy mb-2">
+                      {activeLesson.title}
+                    </h2>
+                    <p className="text-gray-500 text-sm leading-relaxed font-medium">
+                      {activeLesson.isLocked 
+                        ? "يجب الاشتراك في الدورة لمشاهدة هذا الفيديو"
+                        : "يجب مشاهدة الفيديو كاملا لتصبح قادر على مشاهدة الفيديو الذي يليه"
+                      }
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center">
+                <p className="text-gray-400">لا يوجد فيديو متاح</p>
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Sidebar List (Desktop) */}
+        <aside className="hidden lg:flex w-96 bg-gray-100 flex-shrink-0 flex-col border-r border-gray-200 shadow-xl h-screen sticky top-0 overflow-hidden">
+             <CourseSidebar 
+                activeLesson={activeLesson}
+                onLessonSelect={(l) => handleLessonClick(l, false)}
+                expandedSection={expandedSection}
+                setExpandedSection={setExpandedSection}
+                expandedResource={expandedResource}
+                setExpandedResource={setExpandedResource}
+                courseSections={courseSections}
+                courseTitle={courseDetails.title}
+             />
+        </aside>
+      </div>
+      <Footer />
     </div>
   );
 }

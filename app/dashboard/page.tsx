@@ -9,16 +9,22 @@ export default function DashboardPage() {
   const { user } = useStore();
   const router = useRouter();
 
-  // Role Protection
+  // Auto redirect based on user role
   useEffect(() => {
-    if (user && user.role !== "admin") {
-      router.push("/my-courses");
-    } else if (!user) {
+    if (!user) {
       router.push("/login");
+    } else if (user.role === "admin") {
+      // Admin stays on dashboard
+      return;
+    } else if (user.role === "student") {
+      // Student redirects to my-courses
+      router.push("/my-courses");
     }
   }, [user, router]);
 
-  if (!user || user.role !== "admin") return null;
+  // Show loading or nothing while redirecting
+  if (!user) return null;
+  if (user.role !== "admin") return null;
 
   return (
     <div className="bg-gray-50 min-h-screen">

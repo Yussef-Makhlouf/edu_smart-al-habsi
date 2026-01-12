@@ -53,7 +53,7 @@ export default function StudentsPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-gold/10 rounded-full flex items-center justify-center">
                             <Users size={20} className="text-gold" />
@@ -64,7 +64,7 @@ export default function StudentsPage() {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                             <Users size={20} className="text-green-600" />
@@ -75,7 +75,7 @@ export default function StudentsPage() {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                             <BookOpen size={20} className="text-blue-600" />
@@ -89,7 +89,7 @@ export default function StudentsPage() {
             </div>
 
             {/* Students Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>

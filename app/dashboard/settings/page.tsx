@@ -13,7 +13,7 @@ export default function SettingsPage() {
             </div>
 
             {/* General Settings */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-100  p-6 space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-gold/10 rounded-lg">
                         <Globe size={20} className="text-gold" />
@@ -53,7 +53,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Email Settings */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-100  p-6 space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                         <Mail size={20} className="text-blue-600" />
@@ -103,7 +103,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Payment Settings */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
                         <CreditCard size={20} className="text-green-600" />
@@ -143,7 +143,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Notification Settings */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-100  p-6 space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-purple-100 rounded-lg">
                         <Bell size={20} className="text-purple-600" />

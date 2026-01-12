@@ -63,7 +63,7 @@ export default function CoursesPage() {
                     {activeTab === "content" && (
                         <>
                             {/* Course Info */}
-                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                            <div className="bg-white p-6 rounded-xl border border-gray-100  space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="text-navy font-bold">عنوان الدورة</Label>
                                     <Input
@@ -87,7 +87,7 @@ export default function CoursesPage() {
                             </div>
 
                             {/* Course Builder (Sections & Lessons) */}
-                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div className="bg-white p-6 rounded-xl border border-gray-100">
                                 <CourseBuilder />
                             </div>
                         </>
@@ -98,7 +98,7 @@ export default function CoursesPage() {
                     )}
 
                     {activeTab === "settings" && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-6">
                             <h2 className="text-xl font-bold text-navy flex items-center gap-2">
                                 <Settings2 size={20} className="text-gold" />
                                 إعدادات الدورة
@@ -145,7 +145,7 @@ export default function CoursesPage() {
                 {/* Sidebar */}
                 <div className="space-y-6">
                     {/* Course Image */}
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="bg-white p-6 rounded-xl border border-gray-100  space-y-4">
                         <h3 className="font-bold text-navy">صورة الدورة</h3>
                         <div className="border-2 border-dashed border-gray-200 rounded-lg h-48 flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 hover:border-gold/50 transition-colors cursor-pointer group">
                             <ImagePlus size={32} className="mb-2 group-hover:text-gold transition-colors" />
@@ -154,7 +154,7 @@ export default function CoursesPage() {
                     </div>
 
                     {/* Publish Settings */}
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="bg-white p-6 rounded-xl border border-gray-100  space-y-4">
                         <h3 className="font-bold text-navy">إعدادات النشر</h3>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

@@ -74,7 +74,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Right Column: Order Summary */}
             <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 sticky top-24">
+              <div className="bg-white rounded-xl border border-gray-100  p-6 sticky top-24">
                 <h3 className="font-bold text-navy text-lg mb-4">ملخص الطلب</h3>
 
                 {/* Course Item */}
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
             {/* Left Column: Form & Payment */}
             <div className="lg:col-span-2 order-1 lg:order-2 space-y-6">
               {/* Account Info (Mocked as logged in) */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
+              <div className="bg-white rounded-xl border border-gray-100  p-8">
                 <h3 className="font-bold text-navy text-lg mb-6 flex items-center gap-2">
                   <CheckCircle2 className="text-green-500" size={20} />
                   بيانات الحساب
@@ -141,7 +141,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
+              <div className="bg-white rounded-xl border border-gray-100  p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-navy text-lg flex items-center gap-2">
                     <CreditCard className="text-gold" size={20} />
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
                   <div className="pt-6">
                     <Button
                       onClick={handlePayment}
-                      className="w-full h-14 text-lg bg-gold hover:bg-gold-dim text-navy font-bold shadow-lg gap-2"
+                      className="w-full h-14 text-lg bg-gold hover:bg-gold-dim text-navy font-bold gap-2"
                     >
                       <Lock size={18} />
                       إتمام الدفع ({total} ر.س)

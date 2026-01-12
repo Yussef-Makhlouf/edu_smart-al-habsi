@@ -135,7 +135,7 @@ export function CourseBuilder() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="border border-gray-200 rounded-lg bg-white overflow-hidden shadow-sm"
+                            className="border border-gray-200 rounded-lg bg-white overflow-hidden"
                         >
                             {/* Section Header */}
                             <div className="flex items-center gap-3 p-4 bg-gray-50 border-b border-gray-100">

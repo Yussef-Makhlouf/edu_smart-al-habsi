@@ -77,7 +77,7 @@ export function LearningJourneySection() {
                                     <step.icon className="w-10 h-10 text-gold group-hover:text-navy transition-colors duration-300" />
                                 </div>
                                 {/* Number badge */}
-                                <div className="absolute -top-2 -right-2 w-10 h-10 bg-gold rounded-full flex items-center justify-center text-navy font-bold text-sm shadow-lg">
+                                <div className="absolute -top-2 -right-2 w-10 h-10 bg-gold rounded-full flex items-center justify-center text-navy font-bold text-sm ">
                                     {step.number}
                                 </div>
                             </div>
@@ -105,7 +105,7 @@ export function LearningJourneySection() {
                         >
                             {/* Left side - number and line */}
                             <div className="flex flex-col items-center">
-                                <div className="w-14 h-14 bg-gold rounded-full flex items-center justify-center text-navy font-bold shadow-lg shrink-0">
+                                <div className="w-14 h-14 bg-gold rounded-full flex items-center justify-center text-navy font-bold shrink-0">
                                     {step.number}
                                 </div>
                                 {index < steps.length - 1 && (

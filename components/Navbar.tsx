@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { Menu, X, BookOpen, Award, User, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown, BookOpen, Award, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useStore } from "@/lib/store";
 
 const navItems = [
   { name: "الرئيسية", href: "/" },
@@ -23,7 +24,10 @@ interface NavbarProps {
 export function Navbar({ lightVariant = false }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +46,12 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
     }
   }, [mobileMenuOpen]);
 
+  const handleLogout = () => {
+    logout();
+    setDropdownOpen(false);
+    router.push("/");
+  };
+
   return (
     <>
       <motion.header
@@ -51,7 +61,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-navy/95 backdrop-blur-md py-3 shadow-lg border-b border-white/5"
+            ? "bg-navy/95 backdrop-blur-md py-3 border-b border-white/5"
             : "bg-transparent py-5 lg:py-6"
         )}
       >
@@ -98,59 +108,86 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
             ))}
           </nav>
 
-          {/* User Menu (Mocked Logged In) */}
+          {/* User Menu - Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="relative group">
-              <button className="flex items-center gap-2 focus:outline-none">
-                <div className="w-10 h-10 rounded-full bg-gold text-navy font-bold flex items-center justify-center border-2 border-white/20">
-                  م
-                </div>
-                <div
+            {user ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
+                  className="flex justify-center items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gold/40 hover:border-gold transition-all bg-navy/40 hover:bg-navy/60 backdrop-blur-sm"
+                >
+                  <ChevronDown 
+                    size={16} 
+                    className={cn(
+                      "transition-transform",
+                      dropdownOpen && "rotate-180",
+                      scrolled ? "text-gold" : lightVariant ? "text-gold" : "text-gold"
+                    )} 
+                  />
+                  <span className={cn(
+                    "text-sm font-bold",
+                    scrolled ? "text-white" : lightVariant ? "text-navy" : "text-white"
+                  )}>
+                   محمد علي
+                  </span>
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50"
+                    >
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                      >
+                        <User size={18} className="text-gold" />
+                        <span className="font-semibold">الملف الشخصي</span>
+                      </Link>
+                      <Link
+                        href="/my-courses"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                      >
+                        <BookOpen size={18} className="text-gold" />
+                        <span className="font-semibold">دوراتي</span>
+                      </Link>
+                      <Link
+                        href="/my-certificates"
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-navy/5 transition-colors border-b border-gray-100"
+                      >
+                        <Award size={18} className="text-gold" />
+                        <span className="font-semibold">شهاداتي</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-right"
+                      >
+                        <LogOut size={18} />
+                        <span className="font-semibold">تسجيل الخروج</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="outline"
                   className={cn(
-                    "text-right hidden lg:block",
-                    scrolled
-                      ? "text-navy"
-                      : lightVariant
-                      ? "text-navy"
-                      : "text-white"
+                    "border-gold text-gold hover:bg-gold hover:text-navy transition-all px-6 rounded-full font-bold",
+                    !scrolled && !lightVariant ? "bg-transparent" : ""
                   )}
                 >
-                  <p className="text-sm font-bold">محمد علي</p>
-                  <p className="text-xs opacity-80">طالب</p>
-                </div>
-              </button>
-
-              {/* Dropdown */}
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-left z-50">
-                <div className="p-2">
-                  <Link
-                    href="/my-courses"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-navy/5 rounded-lg transition-colors"
-                  >
-                    <BookOpen size={16} className="text-gold" /> دوراتي
-                  </Link>
-                  <Link
-                    href="/my-certificates"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-navy/5 rounded-lg transition-colors"
-                  >
-                    <Award size={16} className="text-gold" /> شهاداتي
-                  </Link>
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-navy/5 rounded-lg transition-colors"
-                  >
-                    <User size={16} className="text-gold" /> الملف الشخصي
-                  </Link>
-                  <div className="h-px bg-gray-100 my-1 font-bold"></div>
-                  <Link
-                    href="/"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <LogOut size={16} /> تسجيل الخروج
-                  </Link>
-                </div>
-              </div>
-            </div>
+                  تسجيل الدخول / تسجيل
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -240,57 +277,64 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                 transition={{ delay: 0.5 }}
                 className="w-full mt-6 pt-6 border-t border-white/10"
               >
-                {/* Mocked Mobile User Menu */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-center gap-3 text-white mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gold text-navy font-bold flex items-center justify-center">
-                      م
+                {user ? (
+                  <div className="px-4">
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                      >
+                        <User size={24} className="text-gold" />
+                        <span className="text-xs font-bold text-white">الملف الشخصي</span>
+                      </Link>
+                      
+                      <Link
+                        href="/my-courses"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                      >
+                        <BookOpen size={24} className="text-gold" />
+                        <span className="text-xs font-bold text-white">دوراتي</span>
+                      </Link>
+                      
+                      <Link
+                        href="/my-certificates"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-lg p-4 border border-gold/20"
+                      >
+                        <Award size={24} className="text-gold" />
+                        <span className="text-xs font-bold text-white">شهاداتي</span>
+                      </Link>
+                      
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="flex flex-col items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 transition-colors rounded-lg p-4 border border-red-500/30"
+                      >
+                        <LogOut size={24} className="text-red-400" />
+                        <span className="text-xs font-bold text-red-400">خروج</span>
+                      </button>
                     </div>
-                    <span className="font-bold">محمد علي</span>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+                ) : (
+                  <div className="flex justify-center px-4">
                     <Link
-                      href="/my-courses"
+                      href="/login"
                       onClick={() => setMobileMenuOpen(false)}
+                      className="w-full"
                     >
-                      <div className="bg-white/5 p-2 rounded-lg text-center hover:bg-white/10 transition-colors">
-                        <BookOpen
-                          size={20}
-                          className="text-gold mx-auto mb-1"
-                        />
-                        <span className="text-xs text-white">دوراتي</span>
-                      </div>
-                    </Link>
-                    <Link
-                      href="/my-certificates"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="bg-white/5 p-2 rounded-lg text-center hover:bg-white/10 transition-colors">
-                        <Award size={20} className="text-gold mx-auto mb-1" />
-                        <span className="text-xs text-white">شهاداتي</span>
-                      </div>
-                    </Link>
-                    <Link
-                      href="/profile"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="bg-white/5 p-2 rounded-lg text-center hover:bg-white/10 transition-colors">
-                        <User size={20} className="text-gold mx-auto mb-1" />
-                        <span className="text-xs text-white">الملف الشخصي</span>
-                      </div>
-                    </Link>
-                    <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                      <div className="bg-red-500/10 p-2 rounded-lg text-center hover:bg-red-500/20 transition-colors border border-red-500/20">
-                        <LogOut
-                          size={20}
-                          className="text-red-400 mx-auto mb-1"
-                        />
-                        <span className="text-xs text-red-400">خروج</span>
-                      </div>
+                      <Button
+                        variant="gold"
+                        className="w-full px-12 font-bold text-navy"
+                      >
+                        تسجيل الدخول
+                      </Button>
                     </Link>
                   </div>
-                </div>
+                )}
               </motion.div>
             </nav>
           </motion.div>

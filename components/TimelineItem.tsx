@@ -50,7 +50,7 @@ export function TimelineItem({
             {/* Center line and year dot */}
             <div className="relative flex flex-col items-center">
                 {/* Year badge */}
-                <div className="w-20 h-20 rounded-full bg-gold flex items-center justify-center text-navy font-bold text-lg shadow-lg shadow-gold/30 z-10">
+                <div className="w-20 h-20 rounded-full bg-gold flex items-center justify-center text-navy font-bold text-lg shadow-gold/30 z-10">
                     {year}
                 </div>
 
@@ -85,7 +85,7 @@ export function TimelineItemMobile({
         >
             {/* Left side - line and dot */}
             <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-gold flex items-center justify-center text-navy font-bold text-sm shadow-lg shadow-gold/30 z-10 shrink-0">
+                <div className="w-14 h-14 rounded-full bg-gold flex items-center justify-center text-navy font-bold text-sm shadow-gold/30 z-10 shrink-0">
                     {year}
                 </div>
                 {!isLast && (

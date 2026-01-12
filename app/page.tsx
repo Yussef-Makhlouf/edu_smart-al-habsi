@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
@@ -12,6 +14,7 @@ import { LearningJourneySection } from "@/components/LearningJourneySection";
 import { CheckCircle2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { CoursesSection } from "@/components/course/CoursesSection";
 
 export default function Home() {
   return (
@@ -28,7 +31,7 @@ export default function Home() {
       <WhyChooseUsSection />
 
       {/* 4. Featured Courses */}
-      <section className="py-24 bg-white relative">
+      {/* <section className="py-24 bg-white relative">
         <div className="container mx-auto px-6">
           <FadeIn direction="down">
             <SectionHeading
@@ -86,7 +89,9 @@ export default function Home() {
             </FadeIn>
           </div>
         </div>
-      </section>
+      </section> */}
+
+      <CoursesSection />
 
       {/* 5. Learning Journey Section */}
       <LearningJourneySection />
@@ -180,7 +185,7 @@ export default function Home() {
                   variant="gold"
                   size="lg"
                   shape="sharp"
-                  className="min-w-[200px] px-12 py-6 text-lg text-navy font-bold hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
+                  className="min-w-[200px] px-12 py-6 text-lg text-navy font-bold transition-all duration-300"
                 >
                   ابدأ رحلتك الآن
                 </Button>

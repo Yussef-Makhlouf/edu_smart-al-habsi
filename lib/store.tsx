@@ -1,11 +1,150 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { User, Course, Enrollment, UserRole } from "./types";
-import { INITIAL_COURSES, INITIAL_USERS, INITIAL_ENROLLMENTS } from "./mock-data";
 
 // Re-export types for convenience if needed by other components importing from store
 export type { User, Course, Enrollment, UserRole };
+
+// Helper function to get sections - using hardcoded data
+const getSectionsForCourse = (slug: string) => {
+    const sectionsMap: Record<string, { title: string; lessons: { title: string; duration: string }[] }[]> = {
+        "e-business-secrets": [
+            {
+                title: "مقدمة في البزنس الإلكتروني",
+                lessons: [
+                    { title: "ما هو البزنس الإلكتروني؟", duration: "15:00" },
+                    { title: "فرص السوق الرقمي", duration: "20:00" },
+                    { title: "بناء خطة العمل", duration: "25:00" },
+                ],
+            },
+            {
+                title: "التسويق الرقمي",
+                lessons: [
+                    { title: "استراتيجيات التسويق الإلكتروني", duration: "22:00" },
+                    { title: "التسويق عبر وسائل التواصل", duration: "18:00" },
+                    { title: "إعلانات جوجل وفيسبوك", duration: "20:00" },
+                ],
+            },
+            {
+                title: "إدارة المشروع",
+                lessons: [
+                    { title: "إدارة العمليات", duration: "20:00" },
+                    { title: "قياس الأداء", duration: "16:00" },
+                    { title: "التوسع والنمو", duration: "18:00" },
+                ],
+            },
+        ],
+        "crisis-management": [
+            {
+                title: "مفهوم الأزمة",
+                lessons: [
+                    { title: "تعريف الأزمة وأنواعها", duration: "18:00" },
+                    { title: "علامات الإنذار المبكر", duration: "22:00" },
+                ],
+            },
+            {
+                title: "استراتيجيات المواجهة",
+                lessons: [
+                    { title: "خطة الطوارئ", duration: "25:00" },
+                    { title: "التواصل في الأزمات", duration: "20:00" },
+                ],
+            },
+        ],
+        "digital-startup": [
+            {
+                title: "اختيار الفكرة",
+                lessons: [
+                    { title: "كيف تجد فكرة ناجحة", duration: "20:00" },
+                    { title: "دراسة السوق", duration: "25:00" },
+                ],
+            },
+            {
+                title: "بناء المنتج",
+                lessons: [
+                    { title: "MVP - الحد الأدنى", duration: "30:00" },
+                    { title: "اختبار السوق", duration: "22:00" },
+                ],
+            },
+            {
+                title: "النمو والتوسع",
+                lessons: [
+                    { title: "استراتيجيات النمو", duration: "28:00" },
+                    { title: "جذب الاستثمار", duration: "25:00" },
+                ],
+            },
+        ],
+    };
+    return sectionsMap[slug] || [];
+};
+
+// Mock data - Users
+const MOCK_USERS: User[] = [
+    { id: "admin-1", name: "Admin User", email: "admin@edusmart.com", role: "admin", password: "123" },
+    { id: "student-1", name: "محمد علي", email: "student@edusmart.com", role: "student", password: "123" }
+];
+
+// Mock data - Courses (created from coursesData)
+const MOCK_COURSES: Course[] = [
+    { 
+        id: 1, 
+        slug: "e-business-secrets", 
+        category: "ريادة الأعمال", 
+        title: "كورس أسرار عالم البزنس الإلكتروني", 
+        description: "خطوة بخطوة نحو بناء مشروعك الالكتروني ناجح.", 
+        price: "1200 SAR", 
+        priceValue: 1200, 
+        image: "/images/Mockup.jpg", 
+        instructor: "د. عمار عمر", 
+        duration: "12 ساعة", 
+        rating: 4.9, 
+        students: 2450, 
+        longDescription: "دورة شاملة تغطي جميع جوانب البزنس الإلكتروني...", 
+        features: ["شهادة معتمدة"], 
+        sections: getSectionsForCourse("e-business-secrets")
+    },
+    { 
+        id: 2, 
+        slug: "crisis-management", 
+        category: "القيادة", 
+        title: "فن إدارة الأزمات الكبرى", 
+        description: "دورة مكثفة لفهم إدارة الأزمات.", 
+        price: "1100 SAR", 
+        priceValue: 1100, 
+        image: "/images/Mockup.jpg", 
+        instructor: "د. محمد الحبسي", 
+        duration: "10 ساعات", 
+        rating: 4.8, 
+        students: 1820, 
+        longDescription: "تعلم كيفية التعامل مع الأزمات...", 
+        features: ["دراسات حالة"], 
+        sections: getSectionsForCourse("crisis-management")
+    },
+    { 
+        id: 3, 
+        slug: "digital-startup", 
+        category: "ريادة الأعمال", 
+        title: "تأسيس المشاريع الرقمية", 
+        description: "من الفكرة إلى أول مليون.", 
+        price: "950 SAR", 
+        priceValue: 950, 
+        image: "/images/Mockup.jpg", 
+        instructor: "د. سارة أحمد", 
+        duration: "15 ساعة", 
+        rating: 4.9, 
+        students: 3200, 
+        longDescription: "من الفكرة إلى أول مليون ريال...", 
+        features: ["قوالب خطط عمل"], 
+        sections: getSectionsForCourse("digital-startup")
+    },
+];
+
+// Mock data - Enrollments
+const MOCK_ENROLLMENTS: Enrollment[] = [
+    { courseId: 1, progress: 35, lastAccessed: "الآن" }, 
+    { courseId: 2, progress: 100, lastAccessed: "أمس" }, 
+    { courseId: 3, progress: 0, lastAccessed: "قبل أسبوع" } 
+];
 
 // --- Context State Interface ---
 
@@ -37,29 +176,14 @@ const StoreContext = createContext<StoreState | undefined>(undefined);
 export function StoreProvider({ children }: { children: React.ReactNode }) {
     // Auth State
     const [user, setUser] = useState<User | null>(null);
-    const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+    const [users, setUsers] = useState<User[]>(MOCK_USERS);
 
     // Data State
-    const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
-    const [enrollments, setEnrollments] = useState<Enrollment[]>(INITIAL_ENROLLMENTS);
+    const [courses, setCourses] = useState<Course[]>(MOCK_COURSES);
+    const [enrollments, setEnrollments] = useState<Enrollment[]>(MOCK_ENROLLMENTS);
 
     // Cart State
     const [cartCourse, setCartCourse] = useState<Course | null>(null);
-
-    // Hydrate from LocalStorage
-    useEffect(() => {
-        const storedUser = localStorage.getItem("edu_smart_user");
-        if (storedUser) setUser(JSON.parse(storedUser));
-
-        const storedUsers = localStorage.getItem("edu_smart_users_db");
-        if (storedUsers) setUsers(JSON.parse(storedUsers));
-
-        const storedCourses = localStorage.getItem("edu_smart_courses_db");
-        if (storedCourses) setCourses(JSON.parse(storedCourses));
-
-        const storedEnrollments = localStorage.getItem("edu_smart_enrollments");
-        if (storedEnrollments) setEnrollments(JSON.parse(storedEnrollments));
-    }, []);
 
     // Actions
     const login = (email: string, role: UserRole) => {
@@ -67,7 +191,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const foundUser = users.find(u => u.email === email && u.role === role);
         if (foundUser) {
             setUser(foundUser);
-            localStorage.setItem("edu_smart_user", JSON.stringify(foundUser));
             return true;
         } else {
             // Fallback for demo if users cleared, just to keep it working
@@ -78,14 +201,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 role
             };
             setUser(demoUser);
-            localStorage.setItem("edu_smart_user", JSON.stringify(demoUser));
             return true;
         }
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem("edu_smart_user");
     };
 
     const enroll = (courseId: number) => {
@@ -98,7 +219,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         };
         const updatedEnrollments = [...enrollments, newEnrollment];
         setEnrollments(updatedEnrollments);
-        localStorage.setItem("edu_smart_enrollments", JSON.stringify(updatedEnrollments));
     };
 
     const isEnrolled = (courseId: number) => {
@@ -118,13 +238,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const addStudent = (newUser: User) => {
         const updatedUsers = [...users, newUser];
         setUsers(updatedUsers);
-        localStorage.setItem("edu_smart_users_db", JSON.stringify(updatedUsers));
     };
 
     const addCourse = (newCourse: Course) => {
         const updatedCourses = [...courses, newCourse];
         setCourses(updatedCourses);
-        localStorage.setItem("edu_smart_courses_db", JSON.stringify(updatedCourses));
     };
 
     // Derived State

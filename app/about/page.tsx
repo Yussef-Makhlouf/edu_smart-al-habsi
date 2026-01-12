@@ -471,7 +471,7 @@ export default function AboutPage() {
                                 </Button>
                             </Link>
                             <Link href="/contact">
-                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-white border-white/30 hover:bg-white/10 hover:text-white">
+                                <Button variant="outline" size="lg" shape="sharp" className="min-w-[200px] text-navy border-white/30 hover:bg-white/10 hover:text-white">
                                     تواصل معنا <ArrowLeft className="mr-2 w-5 h-5" />
                                 </Button>
                             </Link>

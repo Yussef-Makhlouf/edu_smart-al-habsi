@@ -11,14 +11,14 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Card */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100  overflow-hidden">
                 {/* Avatar Section */}
                 <div className="bg-navy/5 p-8 flex flex-col items-center">
                     <div className="relative group">
                         <div className="w-28 h-28 rounded-full bg-navy flex items-center justify-center text-4xl text-gold font-bold">
                             م
                         </div>
-                        <button className="absolute bottom-0 left-0 bg-gold p-2 rounded-full text-navy shadow-lg group-hover:scale-110 transition-transform">
+                        <button className="absolute bottom-0 left-0 bg-gold p-2 rounded-full text-navy  group-hover:scale-110 transition-transform">
                             <Camera size={16} />
                         </button>
                     </div>
