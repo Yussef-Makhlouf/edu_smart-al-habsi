@@ -1,283 +1,323 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Video, Clock, Link2, Play, Upload } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  GripVertical,
+  ChevronDown,
+  ChevronRight,
+  Video,
+  Clock,
+  Play,
+  Upload,
+  Loader2,
+} from "lucide-react";
 import { VideoPreviewModal } from "./VideoPreviewModal";
+import { ConfirmModal } from "./ConfirmModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { useCourseManager } from "@/lib/hooks/useCourseManager";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/lib/redux/store";
+import type {
+  Video as VideoType,
+  BunnyUploadDetails,
+} from "@/lib/api/courses/types";
+import { toast } from "sonner";
 
-// Types for our course structure
-export interface Section {
-    id: string;
-    title: string;
-    videoCount: number;
-    lessons: Lesson[];
-    isOpen?: boolean;
+interface CourseBuilderProps {
+  courseId: string;
 }
 
-export interface Lesson {
-    id: string;
-    title: string;
-    duration: string;
-    videoUrl: string;
-}
+export function CourseBuilder({ courseId }: CourseBuilderProps) {
+  const {
+    course,
+    videos,
+    addVideo,
+    deleteVideo,
+    getSignedVideoUrl,
+    uploadToBunny,
+    isLoading,
+    isSaving,
+  } = useCourseManager(courseId);
 
-export function CourseBuilder() {
-    const [sections, setSections] = useState<Section[]>([
-        { id: "1", title: "مقدمة الدورة", videoCount: 3, lessons: [], isOpen: true }
-    ]);
-    const [videoPreview, setVideoPreview] = useState<{ isOpen: boolean; url: string; title: string }>({
-        isOpen: false,
-        url: "",
-        title: ""
+  const { isUploadingVideo, uploadProgress } = useSelector(
+    (state: RootState) => state.courses
+  );
+
+  const [videoPreview, setVideoPreview] = useState<{
+    isOpen: boolean;
+    url: string;
+    title: string;
+  }>({
+    isOpen: false,
+    url: "",
+    title: "",
+  });
+
+  const [pendingUpload, setPendingUpload] = useState<{
+    videoId: string;
+    bunnyDetails: BunnyUploadDetails;
+  } | null>(null);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    videoId: string;
+  }>({
+    isOpen: false,
+    videoId: "",
+  });
+
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newLessonTitle, setNewLessonTitle] = useState("");
+
+  const handleAddVideo = async (file: File) => {
+    if (!newLessonTitle.trim()) {
+      toast.error("يرجى إدخال عنوان الدرس أولاً");
+      return;
+    }
+
+    try {
+      const result = await addVideo(newLessonTitle);
+      if (result) {
+        // Start upload immediately
+        await uploadToBunny(file, result.bunnyUploadDetails);
+        setIsAddingNew(false);
+        setNewLessonTitle("");
+      }
+    } catch (error) {
+      console.error("Failed to add video:", error);
+    }
+  };
+
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleAddVideo(file);
+    }
+  };
+
+  const handleDeleteVideo = (videoId: string) => {
+    setDeleteConfirm({
+      isOpen: true,
+      videoId,
     });
+  };
 
-    const addSection = () => {
-        const newSection: Section = {
-            id: Math.random().toString(36).substr(2, 9),
-            title: "قسم جديد",
-            videoCount: 0,
-            lessons: [],
-            isOpen: true
-        };
-        setSections([...sections, newSection]);
-    };
+  const confirmDeleteVideo = async () => {
+    if (deleteConfirm.videoId) {
+      await deleteVideo(deleteConfirm.videoId);
+    }
+  };
 
-    const removeSection = (id: string) => {
-        setSections(sections.filter(s => s.id !== id));
-    };
+  const handlePlayVideo = async (video: VideoType) => {
+    const signedUrl = await getSignedVideoUrl(video._id);
+    if (signedUrl) {
+      setVideoPreview({
+        isOpen: true,
+        url: signedUrl,
+        title: video.title,
+      });
+    }
+  };
 
-    const updateSectionTitle = (id: string, title: string) => {
-        setSections(sections.map(s => s.id === id ? { ...s, title } : s));
-    };
+  // Group videos by chapter (for now, we'll show all videos in one section)
+  // In the future, you can implement chapter management
+  const chapters = course?.chapters || [];
 
-    const updateSectionVideoCount = (id: string, videoCount: number) => {
-        setSections(sections.map(s => s.id === id ? { ...s, videoCount: Math.max(0, videoCount) } : s));
-    };
-
-    const toggleSection = (id: string) => {
-        setSections(sections.map(s => s.id === id ? { ...s, isOpen: !s.isOpen } : s));
-    };
-
-    const addLesson = (sectionId: string) => {
-        setSections(sections.map(s => {
-            if (s.id === sectionId) {
-                return {
-                    ...s,
-                    lessons: [...s.lessons, {
-                        id: Math.random().toString(36).substr(2, 9),
-                        title: "درس جديد",
-                        duration: "00:00",
-                        videoUrl: ""
-                    }]
-                };
-            }
-            return s;
-        }));
-    };
-
-    const updateLesson = (sectionId: string, lessonId: string, field: keyof Lesson, value: string) => {
-        setSections(sections.map(s => {
-            if (s.id === sectionId) {
-                return {
-                    ...s,
-                    lessons: s.lessons.map(l => l.id === lessonId ? { ...l, [field]: value } : l)
-                };
-            }
-            return s;
-        }));
-    };
-
-    const removeLesson = (sectionId: string, lessonId: string) => {
-        setSections(sections.map(s => {
-            if (s.id === sectionId) {
-                return {
-                    ...s,
-                    lessons: s.lessons.filter(l => l.id !== lessonId)
-                };
-            }
-            return s;
-        }));
-    };
-
-    const handleFileUpload = (sectionId: string, lessonId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            updateLesson(sectionId, lessonId, "videoUrl", url);
-        }
-    };
-
-    const totalVideos = sections.reduce((acc, s) => acc + s.videoCount, 0);
-
+  if (isLoading) {
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-bold text-navy">محتوى الدورة</h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {sections.length} أقسام • {totalVideos} فيديو
-                    </p>
-                </div>
-                <Button onClick={addSection} variant="outline" className="gap-2 border-gold text-gold hover:bg-gold hover:text-navy">
-                    <Plus size={16} /> إضافة قسم
-                </Button>
-            </div>
-
-            <div className="space-y-4">
-                <AnimatePresence>
-                    {sections.map((section, index) => (
-                        <motion.div
-                            key={section.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="border border-gray-200 rounded-lg bg-white overflow-hidden"
-                        >
-                            {/* Section Header */}
-                            <div className="flex items-center gap-3 p-4 bg-gray-50 border-b border-gray-100">
-                                <button onClick={() => toggleSection(section.id)} className="text-gray-400 hover:text-navy">
-                                    {section.isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                                </button>
-                                <span className="font-bold text-gold">#{index + 1}</span>
-                                <input
-                                    type="text"
-                                    value={section.title}
-                                    onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                                    className="flex-1 bg-transparent border-none focus:ring-0 font-bold text-navy placeholder-gray-400"
-                                    placeholder="عنوان القسم (مثلاً: المقدمة)"
-                                />
-
-                                {/* Video Count Input */}
-                                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-2">
-                                    <Video size={14} className="text-gold" />
-                                    <input
-                                        type="number"
-                                        value={section.videoCount}
-                                        onChange={(e) => updateSectionVideoCount(section.id, parseInt(e.target.value) || 0)}
-                                        className="w-12 bg-transparent border-none focus:ring-0 text-center text-sm text-navy font-medium py-1"
-                                        min="0"
-                                        placeholder="0"
-                                    />
-                                    <span className="text-xs text-gray-400">فيديو</span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => removeSection(section.id)}
-                                        className="text-red-400 hover:text-red-600 hover:bg-red-50"
-                                    >
-                                        <Trash2 size={16} />
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={() => addLesson(section.id)}
-                                        className="bg-navy/5 text-navy hover:bg-navy/10"
-                                    >
-                                        <Plus size={14} className="ml-1" /> درس
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Lessons List */}
-                            {section.isOpen && (
-                                <div className="p-2 space-y-2 bg-white">
-                                    {section.lessons.length === 0 ? (
-                                        <div className="text-center py-6 text-gray-400 text-sm border-2 border-dashed border-gray-100 rounded-md">
-                                            لا يوجد دروس في هذا القسم
-                                        </div>
-                                    ) : (
-                                        section.lessons.map((lesson, lIndex) => (
-                                            <motion.div
-                                                key={lesson.id}
-                                                layout
-                                                className="flex flex-col gap-2 p-3 rounded-md border border-gray-100 hover:border-gold/30 hover:bg-gold/5 transition-colors group"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <GripVertical size={16} className="text-gray-300 cursor-move" />
-                                                    <span className="text-xs font-bold text-gray-300">{lIndex + 1}</span>
-                                                    <input
-                                                        type="text"
-                                                        value={lesson.title}
-                                                        onChange={(e) => updateLesson(section.id, lesson.id, "title", e.target.value)}
-                                                        className="flex-1 bg-transparent border-none focus:ring-0 text-gray-700 text-sm"
-                                                        placeholder="عنوان الدرس"
-                                                    />
-                                                    <div className="flex items-center gap-1 text-gray-400">
-                                                        <Clock size={12} />
-                                                        <input
-                                                            type="text"
-                                                            value={lesson.duration}
-                                                            onChange={(e) => updateLesson(section.id, lesson.id, "duration", e.target.value)}
-                                                            className="w-14 bg-transparent border-none focus:ring-0 text-xs text-left"
-                                                            placeholder="00:00"
-                                                        />
-                                                    </div>
-                                                    <button
-                                                        onClick={() => removeLesson(section.id, lesson.id)}
-                                                        className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-500 transition-opacity"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                                {/* Video URL Input */}
-                                                <div className="flex items-center gap-2 pr-8">
-                                                    <Link2 size={14} className="text-gray-400 shrink-0" />
-                                                    <input
-                                                        type="url"
-                                                        value={lesson.videoUrl}
-                                                        onChange={(e) => updateLesson(section.id, lesson.id, "videoUrl", e.target.value)}
-                                                        className="flex-1 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 focus:border-gold focus:ring-1 focus:ring-gold/20"
-                                                        placeholder="رابط الفيديو (YouTube, Vimeo, أو رابط مباشر)"
-                                                        dir="ltr"
-                                                    />
-                                                    <input
-                                                        type="file"
-                                                        id={`video-upload-${lesson.id}`}
-                                                        className="hidden"
-                                                        accept="video/*"
-                                                        onChange={(e) => handleFileUpload(section.id, lesson.id, e)}
-                                                    />
-                                                    <label
-                                                        htmlFor={`video-upload-${lesson.id}`}
-                                                        className="p-1.5 rounded-md bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer transition-colors"
-                                                        title="رفع فيديو"
-                                                    >
-                                                        <Upload size={14} />
-                                                    </label>
-                                                    {lesson.videoUrl && (
-                                                        <button
-                                                            onClick={() => setVideoPreview({ isOpen: true, url: lesson.videoUrl, title: lesson.title })}
-                                                            className="p-1.5 rounded-md bg-gold/10 text-gold hover:bg-gold hover:text-navy transition-colors"
-                                                            title="معاينة الفيديو"
-                                                        >
-                                                            <Play size={14} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </motion.div>
-                                        ))
-                                    )}
-                                </div>
-                            )}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
-
-            {/* Video Preview Modal */}
-            <VideoPreviewModal
-                isOpen={videoPreview.isOpen}
-                onClose={() => setVideoPreview({ isOpen: false, url: "", title: "" })}
-                videoUrl={videoPreview.url}
-                title={videoPreview.title}
-            />
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="animate-spin text-gold" size={32} />
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-navy">محتوى الدورة</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {chapters.length} أقسام • {videos.length} فيديو
+          </p>
+        </div>
+        {!isAddingNew && (
+          <Button
+            onClick={() => setIsAddingNew(true)}
+            disabled={isSaving || isUploadingVideo}
+            variant="outline"
+            className="gap-2 border-gold text-gold hover:bg-gold hover:text-navy"
+          >
+            <Plus size={16} />
+            إضافة درس
+          </Button>
+        )}
+      </div>
+
+      {/* New Lesson Form */}
+      {isAddingNew && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gold/5 border border-gold/20 rounded-xl p-4 flex flex-col md:flex-row gap-4 shadow-sm"
+        >
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="أدخل عنوان الدرس..."
+              className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/50"
+              value={newLessonTitle}
+              onChange={(e) => setNewLessonTitle(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 bg-gold text-navy px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-gold-dim transition-colors">
+              <Upload size={16} />
+              اختر الفيديو وابدأ الرفع
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={onFileSelect}
+              />
+            </label>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsAddingNew(false);
+                setNewLessonTitle("");
+              }}
+              className="text-gray-500 hover:text-red-500"
+            >
+              إلغاء
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Upload Progress */}
+      {isUploadingVideo && (
+        <div className="bg-gold/10 border border-gold/20 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-navy">
+              جاري رفع واستخراج الفيديو...
+            </span>
+            <span className="text-sm font-bold text-navy">
+              {uploadProgress}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${uploadProgress}%` }}
+              className="bg-gold h-2 rounded-full"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {videos.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+            <Video size={48} className="mx-auto text-gray-300 mb-3" />
+            <p className="text-gray-400 font-medium mb-2">
+              لا توجد دروس في هذه الدورة
+            </p>
+            <p className="text-gray-300 text-sm mb-4">ابدأ بإضافة درس جديد</p>
+            <Button
+              onClick={() => setIsAddingNew(true)}
+              disabled={isSaving}
+              className="bg-gold hover:bg-gold-dim text-navy font-bold"
+            >
+              <Plus size={16} className="ml-2" />
+              إضافة أول درس
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <AnimatePresence>
+              {videos
+                .filter((v) => v._id !== pendingUpload?.videoId)
+                .map((video, index) => (
+                  <motion.div
+                    key={video._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-lg border border-gray-100 hover:border-gold/30 hover:bg-gold/5 transition-colors group bg-white"
+                  >
+                    <GripVertical
+                      size={16}
+                      className="text-gray-300 cursor-move"
+                    />
+                    <span className="text-xs font-bold text-gray-300 w-6">
+                      {index + 1}
+                    </span>
+
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-navy">
+                        {video.title}
+                      </p>
+                      {video.duration && (
+                        <div className="flex items-center gap-1 text-gray-400 mt-1">
+                          <Clock size={12} />
+                          <span className="text-xs">
+                            {Math.floor(video.duration / 60)}:
+                            {(video.duration % 60).toString().padStart(2, "0")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {video.bunnyVideoId && (
+                        <button
+                          onClick={() => handlePlayVideo(video)}
+                          className="p-2 rounded-md bg-gold/10 text-gold hover:bg-gold hover:text-navy transition-colors"
+                          title="معاينة الفيديو"
+                        >
+                          <Play size={14} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteVideo(video._id)}
+                        disabled={isSaving || isUploadingVideo}
+                        className="p-2 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      {/* Video Preview Modal */}
+      <VideoPreviewModal
+        isOpen={videoPreview.isOpen}
+        onClose={() => setVideoPreview({ isOpen: false, url: "", title: "" })}
+        videoUrl={videoPreview.url}
+        title={videoPreview.title}
+      />
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+        onConfirm={confirmDeleteVideo}
+        title="حذف الدرس"
+        description="هل أنت متأكد من حذف هذا الدرس؟ لا يمكن التراجع عن هذا الإجراء."
+        confirmText="نعم، احذف الدرس"
+        cancelText="إلغاء"
+        variant="danger"
+      />
+    </div>
+  );
 }

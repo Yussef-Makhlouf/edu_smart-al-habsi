@@ -18,6 +18,7 @@ export const translateError = (message: string): string => {
         "Token expired": "انتهت صلاحية الجلسة",
         "Invalid token": "رمز غير صالح",
         "Session expired. This account is logged in from another device.": "تم تسجيل الدخول من جهاز آخر، يرجى إعادة تسجيل الدخول",
+        "Authentication required. Please log in.": "يجب تسجيل الدخول للمتابعة",
 
         // Validation Errors
         "Validation failed": "فشل التحقق من البيانات",

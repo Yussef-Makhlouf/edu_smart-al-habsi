@@ -332,8 +332,8 @@ export default function CoursePage() {
   const courseDetails = coursesData[slug] || defaultCourse;
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const { items: storeCourses } = useSelector(
-    (state: RootState) => state.courses
+  const { items: storeCourses = [] } = useSelector(
+    (state: RootState) => state.courses as any
   );
   const { enrollments } = useSelector((state: RootState) => state.enrollment);
   const dispatch = useDispatch();
@@ -342,10 +342,11 @@ export default function CoursePage() {
   const videoId = getYouTubeVideoId(courseDetails.videoUrl);
 
   // Use MOCK_COURSES as source if storeCourses is empty
-  const activeCourses = storeCourses.length > 0 ? storeCourses : MOCK_COURSES;
-  const storeCourse = activeCourses.find((c) => c.slug === slug);
+  const activeCourses =
+    storeCourses && storeCourses.length > 0 ? storeCourses : MOCK_COURSES;
+  const storeCourse = activeCourses.find((c: any) => c.slug === slug);
   const enrolled = storeCourse
-    ? enrollments.some((e) => e.courseId === storeCourse.id)
+    ? enrollments.some((e: any) => e.courseId === storeCourse.id)
     : false;
 
   // State for active accordion section

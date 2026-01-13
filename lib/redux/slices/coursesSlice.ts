@@ -1,36 +1,49 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Course } from "@/lib/types";
 
 interface CoursesState {
-    items: Course[];
-    isLoading: boolean;
-    error: string | null;
+    selectedCourseId: string | null;
+    selectedVideoId: string | null;
+    isUploadingVideo: boolean;
+    uploadProgress: number;
 }
 
 const initialState: CoursesState = {
-    items: [],
-    isLoading: false,
-    error: null,
+    selectedCourseId: null,
+    selectedVideoId: null,
+    isUploadingVideo: false,
+    uploadProgress: 0,
 };
 
 const coursesSlice = createSlice({
     name: "courses",
     initialState,
     reducers: {
-        setCourses: (state, action: PayloadAction<Course[]>) => {
-            state.items = action.payload;
+        setSelectedCourseId: (state, action: PayloadAction<string | null>) => {
+            state.selectedCourseId = action.payload;
         },
-        setCoursesLoading: (state, action: PayloadAction<boolean>) => {
-            state.isLoading = action.payload;
+        setSelectedVideoId: (state, action: PayloadAction<string | null>) => {
+            state.selectedVideoId = action.payload;
         },
-        setCoursesError: (state, action: PayloadAction<string | null>) => {
-            state.error = action.payload;
+        setIsUploadingVideo: (state, action: PayloadAction<boolean>) => {
+            state.isUploadingVideo = action.payload;
         },
-        addCourse: (state, action: PayloadAction<Course>) => {
-            state.items.push(action.payload);
+        setUploadProgress: (state, action: PayloadAction<number>) => {
+            state.uploadProgress = action.payload;
+        },
+        resetUploadState: (state) => {
+            state.isUploadingVideo = false;
+            state.uploadProgress = 0;
         },
     },
 });
 
-export const { setCourses, setCoursesLoading, setCoursesError, addCourse } = coursesSlice.actions;
+export const {
+    setSelectedCourseId,
+    setSelectedVideoId,
+    setIsUploadingVideo,
+    setUploadProgress,
+    resetUploadState,
+} = coursesSlice.actions;
+
 export const coursesReducer = coursesSlice.reducer;
+

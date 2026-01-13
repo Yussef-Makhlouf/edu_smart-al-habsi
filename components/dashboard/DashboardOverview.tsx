@@ -14,8 +14,10 @@ import { StatCard } from "./StatCard";
 import { SectionHeader } from "./SectionHeader";
 
 export function DashboardOverview() {
-  const { items: courses } = useSelector((state: RootState) => state.courses);
   const users = MOCK_USERS; // Fallback to mock users for admin dashboard for now
+
+  // TODO: Fetch courses count from RTK Query or analytics endpoint
+  const coursesCount = 0; // Placeholder - courses are now managed by RTK Query
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -40,7 +42,7 @@ export function DashboardOverview() {
         <StatCard
           icon={BookOpen}
           label="الدورات النشطة"
-          value={courses.length.toString()}
+          value={coursesCount.toString()}
         />
         <StatCard
           icon={TrendingUp}

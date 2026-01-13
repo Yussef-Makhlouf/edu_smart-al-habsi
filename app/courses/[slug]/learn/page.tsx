@@ -565,10 +565,12 @@ export default function CourseLearnPage() {
   const isTrial = searchParams?.get("trial") === "true";
 
   const { enrollments } = useSelector((state: RootState) => state.enrollment);
-  const { items: courses } = useSelector((state: RootState) => state.courses);
+  const { items: courses = [] } = useSelector(
+    (state: RootState) => state.courses as any
+  );
 
   // Use MOCK_COURSES as source if courses is empty
-  const activeCourses = courses.length > 0 ? courses : MOCK_COURSES;
+  const activeCourses = courses && courses.length > 0 ? courses : MOCK_COURSES;
   const storeCourse = activeCourses.find((c) => c.slug === slug);
   const enrolled = storeCourse
     ? enrollments.some((e) => e.courseId === storeCourse.id)

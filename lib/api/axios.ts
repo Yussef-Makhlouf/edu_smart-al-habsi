@@ -39,6 +39,7 @@ axiosInstance.interceptors.response.use(
 
         if (
             rawMessage === "Session expired. This account is logged in from another device." ||
+            rawMessage === "Authentication required. Please log in." ||
             error.response?.status === 401
         ) {
             store.dispatch(logout());

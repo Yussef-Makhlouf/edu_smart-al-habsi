@@ -56,9 +56,8 @@ export default function MyCoursesPage() {
   const { enrollments, isLoading: isEnrollmentLoading } = useSelector(
     (state: RootState) => state.enrollment
   );
-  const { items: courses, isLoading: isCoursesLoading } = useSelector(
-    (state: RootState) => state.courses
-  );
+  const { items: courses = [], isLoading: isCoursesLoading = false } =
+    useSelector((state: RootState) => state.courses as any);
   const { user, isLoading: isAuthLoading } = useSelector(
     (state: RootState) => state.auth
   );
@@ -80,7 +79,9 @@ export default function MyCoursesPage() {
 
     return enrollments
       .map((enrollment) => {
-        const course = sourceCourses.find((c) => c.id === enrollment.courseId);
+        const course = sourceCourses.find(
+          (c: any) => c.id === enrollment.courseId
+        );
         if (!course) return null;
         return { ...course, progress: enrollment.progress };
       })

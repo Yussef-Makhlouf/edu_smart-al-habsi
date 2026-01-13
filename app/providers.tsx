@@ -23,12 +23,14 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 }
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Toaster } from "sonner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <AuthInitializer>
         <ProtectedRoute>{children}</ProtectedRoute>
+        <Toaster richColors position="top-center" dir="rtl" />
       </AuthInitializer>
     </Provider>
   );

@@ -10,12 +10,27 @@ interface ProtectedRouteProps {
 }
 
 const PUBLIC_ROUTES = [
+  "/",
   "/login",
   "/register",
   "/forget-password",
   "/reset-password",
-  "/",
+  "/courses",
+  "/about",
+  "/contact",
 ];
+
+const isPublicRoute = (pathname: string) => {
+  // Exact matches
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
+
+  // Dynamic course details are public, but /learn is NOT
+  if (pathname.startsWith("/courses/") && !pathname.endsWith("/learn")) {
+    return true;
+  }
+
+  return false;
+};
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useSelector(
@@ -26,11 +41,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated && !PUBLIC_ROUTES.includes(pathname)) {
+      if (!isAuthenticated && !isPublicRoute(pathname)) {
         router.push("/login");
       } else if (
         isAuthenticated &&
-        PUBLIC_ROUTES.includes(pathname) &&
+        isPublicRoute(pathname) &&
         pathname !== "/"
       ) {
         if (user?.role?.toLowerCase() === "admin") {
@@ -42,7 +57,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [isAuthenticated, isLoading, user, pathname, router]);
 
-  if (isLoading && !PUBLIC_ROUTES.includes(pathname)) {
+  if (isLoading && !isPublicRoute(pathname)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
