@@ -17,18 +17,13 @@ export const authService = {
         return response.data;
     },
 
-    async getProfile(): Promise<{ user: User }> {
-        const response = await axiosInstance.get("/auth/profile");
-        return response.data;
-    },
-
     async updateUser(userId: string, data: FormData) {
         const response = await axiosInstance.put(`/auth/${userId}`, data, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
         });
-        console.log(response.data)
+        // console.log(response.data)
         return response.data;
     },
 
