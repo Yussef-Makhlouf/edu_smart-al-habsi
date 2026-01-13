@@ -113,20 +113,34 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
         try {
             const formData = new FormData();
+
+            // Add all fields from data to formData
             Object.entries(data).forEach(([key, value]) => {
-                if (value !== undefined) {
+                if (value !== undefined && value !== null) {
                     formData.append(key, value.toString());
                 }
             });
-            if (image) {
+
+            // CRITICAL: Append the actual File object, not a string!
+            if (image instanceof File) {
                 formData.append("image", image);
             }
 
-            const result = await updateCourseMutation({ id: courseId, data: formData as any }).unwrap();
+            // Debug: Log FormData content correctly
+            console.log(`🚀 Updating course ${courseId}`);
+            for (let [key, value] of (formData as any).entries()) {
+                console.log(`📦 Field [${key}]:`, value instanceof File ? `File Object: ${value.name}` : value);
+            }
+
+            const result = await updateCourseMutation({ id: courseId, data: formData }).unwrap();
             toast.success("✅ تم تحديث بيانات الدورة بنجاح");
             return result;
         } catch (error: any) {
-            console.error("Update course error:", error);
+            console.error("Update course detailed error:", {
+                status: error?.status,
+                data: error?.data,
+                message: error?.message || "Unknown error"
+            });
             const message = error?.data?.message || error?.message || "❌ فشل تحديث الدورة";
             toast.error(message);
             return undefined;

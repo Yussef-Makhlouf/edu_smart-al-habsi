@@ -9,28 +9,24 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const PUBLIC_ROUTES = [
-  "/",
+const AUTH_ROUTES = [
   "/login",
   "/register",
   "/forget-password",
   "/reset-password",
-  "/courses",
-  "/about",
-  "/contact",
 ];
 
-const isPublicRoute = (pathname: string) => {
-  // Exact matches
-  if (PUBLIC_ROUTES.includes(pathname)) return true;
+const PUBLIC_ROUTES = ["/", "/courses", "/about", "/contact"];
 
-  // Dynamic course details are public, but /learn is NOT
+const isPublicRoute = (pathname: string) => {
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
   if (pathname.startsWith("/courses/") && !pathname.endsWith("/learn")) {
     return true;
   }
-
   return false;
 };
+
+const isAuthRoute = (pathname: string) => AUTH_ROUTES.includes(pathname);
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useSelector(
@@ -41,14 +37,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!isLoading) {
+      // 1. Not logged in -> Must go to login if NOT a public route
       if (!isAuthenticated && !isPublicRoute(pathname)) {
         router.push("/login");
-      } else if (
-        isAuthenticated &&
-        isPublicRoute(pathname) &&
-        pathname !== "/"
-      ) {
-        if (user?.role?.toLowerCase() === "admin") {
+      }
+      // 2. Logged in -> Only redirect away if trying to access Auth pages (login/register)
+      else if (isAuthenticated && isAuthRoute(pathname)) {
+        if (user?.role === "Admin") {
           router.push("/dashboard");
         } else {
           router.push("/my-courses");

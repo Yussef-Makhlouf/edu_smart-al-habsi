@@ -212,7 +212,7 @@ export default function StudentProfilePage() {
                       </p>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
                         name="userName"
@@ -270,27 +270,57 @@ export default function StudentProfilePage() {
                         </h3>
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-bold text-navy">
-                              كلمة المرور الجديدة
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="password"
-                                placeholder="اتركه فارغاً إذا لم ترد تغيير كلمة المرور"
-                                className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold"
-                                disabled={isLoading || isFetching}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-right" />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-navy">
+                                كلمة المرور الجديدة
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="password"
+                                  placeholder="••••••••"
+                                  className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold"
+                                  disabled={isLoading || isFetching}
+                                />
+                              </FormControl>
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                اتركه فارغاً إذا لم ترد التغيير
+                              </p>
+                              <FormMessage className="text-right" />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-navy">
+                                تأكيد كلمة المرور
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="password"
+                                  placeholder="••••••••"
+                                  className="w-full h-12 px-4 border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold"
+                                  disabled={isLoading || isFetching}
+                                />
+                              </FormControl>
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                أعد كتابة كلمة المرور للتأكيد
+                              </p>
+                              <FormMessage className="text-right" />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
                     {/* Action Button */}

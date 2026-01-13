@@ -150,7 +150,7 @@ export default function CoursesPage() {
     if (result) {
       toast.success(
         newStatus
-          ? "🚀 تم نشر الدورة بنجاح، هي الآن متاحة للطلاب"
+          ? " تم نشر الدورة بنجاح، هي الآن متاحة للطلاب"
           : "📁 تم تحويل الدورة إلى مسودة"
       );
     }
@@ -207,7 +207,7 @@ export default function CoursesPage() {
             <p className="text-gray-500">جاري تحميل الدورات...</p>
           </div>
         ) : courses && courses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {courses.map((c) => (
               <div
                 key={c._id}

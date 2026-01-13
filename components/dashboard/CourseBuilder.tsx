@@ -303,7 +303,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
       {/* Video Preview Modal */}
       <VideoPreviewModal
         isOpen={videoPreview.isOpen}
-        onClose={() => setVideoPreview({ isOpen: false, url: "", title: "" })}
+        onClose={() => setVideoPreview((prev) => ({ ...prev, isOpen: false }))}
         videoUrl={videoPreview.url}
         title={videoPreview.title}
       />

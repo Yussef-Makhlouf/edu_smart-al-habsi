@@ -5,7 +5,7 @@ import { logout } from "@/lib/redux/slices/authSlice";
 import { translateError } from "@/lib/utils/error-translator";
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "");
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -34,6 +34,9 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+        if (error.response?.data) {
+            console.error("API Error Response Data:", error.response.data);
+        }
         const rawMessage = error.response?.data?.message || error.message;
         const message = translateError(rawMessage);
 

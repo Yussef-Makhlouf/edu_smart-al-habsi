@@ -12,7 +12,7 @@ import type {
     ApiResponse,
 } from "./types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "");
 
 const baseQuery = fetchBaseQuery({
     baseUrl: API_BASE_URL,
@@ -75,14 +75,22 @@ export const coursesApi = createApi({
         getCourse: builder.query<{ course: Course; videos: Video[] }, string>({
             query: (id) => `/courses/${id}`,
             transformResponse: (response: any) => {
-                const course = response.course || response.data;
-                const rawVideos = response.videos || [];
+                console.log("🔍 Raw Server Response (getCourse):", response);
+
+                // Try to find course in various common response structures
+                const course = response.course || response.data || (response._id ? response : null);
+
+                // Try to find videos in response or embedded in course
+                const rawVideos = response.videos || (course && course.videos) || [];
 
                 // Normalize videos to ensure they have _id
                 const videos = rawVideos.map((v: any) => ({
                     ...v,
-                    _id: v._id || v.id
+                    _id: v._id || v.id || v.bunnyVideoId
                 }));
+
+                console.log("📦 Parsed Course:", course);
+                console.log("🎥 Parsed Videos:", videos);
 
                 return { course, videos };
             },
@@ -95,30 +103,32 @@ export const coursesApi = createApi({
                 url: "/courses/create",
                 method: "POST",
                 body: formData,
+                formData: true,
             }),
             transformResponse: (response: any) => {
-                // Backend returns { success, message, course }
-                if (response.course) return response.course;
-                if (response.data) return response.data;
-                return response;
+                const result = response.course || response.data || response;
+                return result;
             },
             invalidatesTags: [{ type: "Course", id: "LIST" }],
         }),
 
         // Update course
-        updateCourse: builder.mutation<Course, { id: string; data: UpdateCourseDTO }>({
+        updateCourse: builder.mutation<Course, { id: string; data: UpdateCourseDTO | FormData }>({
             query: ({ id, data }) => ({
                 url: `/courses/${id}`,
                 method: "PUT",
                 body: data,
+                formData: true,
             }),
             transformResponse: (response: any) => {
-                // Backend may return { success, message, course } or { data: course }
-                if (response.course) return response.course;
-                if (response.data) return response.data;
-                return response;
+                console.log("🚀 Server Response (Update):", response);
+                const result = response.course || response.data || response;
+                return result;
             },
-            invalidatesTags: (result, error, { id }) => [{ type: "Course", id }],
+            invalidatesTags: (result, error, { id }) => [
+                { type: "Course", id },
+                { type: "Course", id: "LIST" }
+            ],
         }),
 
         // Delete course

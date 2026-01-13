@@ -32,7 +32,7 @@ export const registerSchema = z.object({
     .min(1, "كلمة المرور مطلوبة")
     .min(6, "كلمة المرور يجب أن تكون على الأقل 6 أحرف"),
   confirmPassword: z.string().min(1, "تأكيد كلمة المرور مطلوب"),
-  role: z.enum(["student", "admin"]).default("student"),
+  role: z.enum(["Student", "Admin", "Instructor"]).default("Student"),
 
 }).refine((data) => data.password === data.confirmPassword, {
   message: "كلمات المرور غير متطابقة",
@@ -52,8 +52,17 @@ export const profileUpdateSchema = z.object({
     .min(1, "البريد الإلكتروني مطلوب")
     .email("البريد الإلكتروني غير صحيح"),
   password: z.string().optional(),
+  confirmPassword: z.string().optional(),
   role: z.string().optional(),
   image: z.instanceof(File).optional().or(z.string().optional()),
+}).refine((data) => {
+  if (data.password && data.password !== data.confirmPassword) {
+    return false;
+  }
+  return true;
+}, {
+  message: "كلمات المرور غير متطابقة",
+  path: ["confirmPassword"],
 });
 
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;

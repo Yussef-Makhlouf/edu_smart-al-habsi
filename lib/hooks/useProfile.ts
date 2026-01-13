@@ -25,6 +25,7 @@ export function useProfile() {
       userName: user?.userName || "",
       email: user?.email || "",
       password: "",
+      confirmPassword: "",
       role: user?.role || "",
     },
   });
@@ -42,6 +43,7 @@ export function useProfile() {
           userName: response.user.userName || "",
           email: response.user.email || "",
           password: "",
+          confirmPassword: "",
           role: response.user.role || "",
         });
 
@@ -109,7 +111,14 @@ export function useProfile() {
 
         setProfileImage(imageUrl || null);
         setInitialImage(imageUrl || null);
-        setImageFile(null);
+        form.reset({
+          userName: response.user.userName || "",
+          email: response.user.email || "",
+          password: "",
+          confirmPassword: "",
+          role: response.user.role || "",
+        });
+
         toast.success("تم التحديث بنجاح");
       }
     } catch (err: any) {

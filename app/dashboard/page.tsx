@@ -15,11 +15,11 @@ export default function DashboardPage() {
     if (!isLoading) {
       if (!user) {
         router.push("/login");
-      } else if (user.role?.toLowerCase() === "admin") {
+      } else if (user.role === "Admin") {
         // Admin stays on dashboard
         return;
       } else {
-        // Anyone else (student, user, etc.) redirects to my-courses
+        // Anyone else (Student, Instructor) redirects to my-courses
         router.push("/my-courses");
       }
     }
@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
   // Show loading or nothing while redirecting
   if (isLoading || !user) return null;
-  if (user.role?.toLowerCase() !== "admin") return null;
+  if (user.role !== "Admin") return null;
 
   return (
     <div className="bg-gray-50 min-h-screen">

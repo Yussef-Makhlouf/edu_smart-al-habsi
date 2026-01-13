@@ -46,7 +46,7 @@ export function useLoginForm() {
             }));
 
             // Redirect
-            if (user.role.toLowerCase() === "admin") {
+            if (user.role === "Admin") {
                 router.push("/dashboard");
             } else {
                 router.push("/my-courses");
