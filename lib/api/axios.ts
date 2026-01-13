@@ -5,7 +5,7 @@ import { logout } from "@/lib/redux/slices/authSlice";
 import { translateError } from "@/lib/utils/error-translator";
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "");
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:8080/api/v1";
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
