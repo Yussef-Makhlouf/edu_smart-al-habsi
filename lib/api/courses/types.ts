@@ -48,6 +48,7 @@ export interface UpdateCourseDTO {
   description?: string;
   price?: number;
   isPublished?: boolean;
+  image?: string;
 }
 
 export interface CreateVideoDTO {

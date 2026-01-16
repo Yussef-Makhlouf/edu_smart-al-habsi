@@ -60,9 +60,9 @@ export default function CoursesPage() {
   useEffect(() => {
     if (courseId && course) {
       // Edit mode: Load course data
-      setTitle(course.title);
-      setDescription(course.description);
-      setPrice(course.price.toString());
+      setTitle(course.title || "");
+      setDescription(course.description || "");
+      setPrice(course.price?.toString() ?? "0");
       setImagePreview(course.image?.secure_url || "");
       setCourseImage(null); // Clear any pending image upload from previous course
     } else if (!courseId) {
@@ -145,7 +145,12 @@ export default function CoursesPage() {
     }
 
     const newStatus = !course?.isPublished;
-    const result = await updateCourse({ isPublished: newStatus });
+    const result = await updateCourse({
+      title: title.trim(),
+      description: description.trim(),
+      price: parseFloat(price),
+      isPublished: newStatus,
+    });
 
     if (result) {
       toast.success(
@@ -173,9 +178,10 @@ export default function CoursesPage() {
       );
     }
     // For existing course, compare with current data
-    const titleChanged = title.trim() !== course.title;
-    const descriptionChanged = description.trim() !== course.description;
-    const priceChanged = price !== course.price.toString();
+    const titleChanged = title.trim() !== (course.title || "");
+    const descriptionChanged =
+      description.trim() !== (course.description || "");
+    const priceChanged = price !== (course.price?.toString() ?? "0");
     const imageChanged = courseImage !== null;
 
     return titleChanged || descriptionChanged || priceChanged || imageChanged;

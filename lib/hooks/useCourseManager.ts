@@ -35,7 +35,7 @@ interface UseCourseManagerReturn {
     // Mutations
     createCourse: (data: CreateCourseDTO, image?: File) => Promise<Course | undefined>;
     updateCourse: (data: UpdateCourseDTO, image?: File) => Promise<Course | undefined>;
-    deleteCourse: () => Promise<void>;
+    deleteCourse: (targetCourseId?: string) => Promise<void>;
     addVideo: (title: string, chapterId?: string) => Promise<{ video: Video; bunnyUploadDetails: BunnyUploadDetails } | undefined>;
     deleteVideo: (videoId: string) => Promise<void>;
     getSignedVideoUrl: (videoId: string) => Promise<string | undefined>;
@@ -84,16 +84,20 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
     // Create course
     const createCourse = useCallback(async (data: CreateCourseDTO, image?: File): Promise<Course | undefined> => {
         try {
-            const formData = new FormData();
-            formData.append("title", data.title);
-            formData.append("description", data.description);
-            formData.append("price", data.price.toString());
+            let body: FormData | CreateCourseDTO;
 
-            if (image) {
+            if (image instanceof File) {
+                const formData = new FormData();
+                formData.append("title", data.title);
+                formData.append("description", data.description);
+                formData.append("price", data.price.toString());
                 formData.append("image", image);
+                body = formData;
+            } else {
+                body = data;
             }
 
-            const result = await createCourseMutation(formData).unwrap();
+            const result = await createCourseMutation(body).unwrap();
             toast.success("✨ تم إنشاء الدورة بنجاح");
             return result;
         } catch (error: any) {
@@ -112,36 +116,40 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
         }
 
         try {
-            const formData = new FormData();
+            let body: FormData | UpdateCourseDTO;
 
-            // Add all fields from data to formData
-            Object.entries(data).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    formData.append(key, value.toString());
-                }
-            });
-
-            // CRITICAL: Append the actual File object, not a string!
             if (image instanceof File) {
+                const formData = new FormData();
+                // Add all fields from data to formData
+                Object.entries(data).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        formData.append(key, value.toString());
+                    }
+                });
                 formData.append("image", image);
+                body = formData;
+
+                // Debug: Log FormData content
+                console.log(`🚀 Updating course ${courseId} via FormData`);
+                for (let [key, val] of (formData as any).entries()) {
+                    console.log(`📦 Field [${key}]:`, val instanceof File ? `File Object: ${val.name}` : val);
+                }
+            } else {
+                body = {
+                    ...data,
+                    image: course?.image?.secure_url
+                } as UpdateCourseDTO;
+                console.log(`🚀 Updating course ${courseId} via JSON (with existing image):`, body);
             }
 
-            // Debug: Log FormData content correctly
-            console.log(`🚀 Updating course ${courseId}`);
-            for (let [key, value] of (formData as any).entries()) {
-                console.log(`📦 Field [${key}]:`, value instanceof File ? `File Object: ${value.name}` : value);
-            }
-
-            const result = await updateCourseMutation({ id: courseId, data: formData }).unwrap();
+            const result = await updateCourseMutation({ id: courseId, data: body }).unwrap();
             toast.success("✅ تم تحديث بيانات الدورة بنجاح");
             return result;
         } catch (error: any) {
-            console.error("Update course detailed error:", {
-                status: error?.status,
-                data: error?.data,
-                message: error?.message || "Unknown error"
-            });
-            const message = error?.data?.message || error?.message || "❌ فشل تحديث الدورة";
+            console.error("Update course FULL error object:", error);
+            if (error.data) console.error("Update course error data:", error.data);
+
+            const message = error?.data?.message || error?.message || (typeof error === 'string' ? error : "❌ فشل تحديث الدورة");
             toast.error(message);
             return undefined;
         }

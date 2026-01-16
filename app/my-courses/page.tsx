@@ -15,6 +15,7 @@ import { ProfileSidebar } from "@/components/ProfileSidebar";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGetMyCoursesQuery } from "@/lib/api/enrollment";
 
 type CourseStatus = "not_started" | "in_progress" | "completed";
 
@@ -53,17 +54,21 @@ const getCourseButton = (course: CourseDisplay) => {
 };
 
 export default function MyCoursesPage() {
-  const { enrollments, isLoading: isEnrollmentLoading } = useSelector(
-    (state: RootState) => state.enrollment
-  );
-  const { items: courses = [], isLoading: isCoursesLoading = false } =
-    useSelector((state: RootState) => state.courses as any);
   const { user, isLoading: isAuthLoading } = useSelector(
     (state: RootState) => state.auth
   );
-  const router = useRouter();
 
-  const isAnyLoading = isAuthLoading || isEnrollmentLoading || isCoursesLoading;
+  // Use the new RTK Query hook
+  const {
+    data: myCourses = [],
+    isLoading: isEnrolledLoading,
+    error: enrollmentError,
+  } = useGetMyCoursesQuery(undefined, {
+    skip: !user,
+  });
+
+  const router = useRouter();
+  const isAnyLoading = isAuthLoading || isEnrolledLoading;
 
   // Redirect if not logged in after initialization
   useEffect(() => {
@@ -72,26 +77,21 @@ export default function MyCoursesPage() {
     }
   }, [user, isAuthLoading, router]);
 
-  // Derive enrolled courses (merging course details with enrollment progress)
-  const enrolledCourses = useMemo(() => {
-    // We use MOCK_COURSES as a fallback if Redux items are empty for now
-    const sourceCourses = courses.length > 0 ? courses : MOCK_COURSES;
+  const displayCourses = useMemo((): CourseDisplay[] => {
+    if (!myCourses || !Array.isArray(myCourses)) return [];
 
-    return enrollments
-      .map((enrollment) => {
-        const course = sourceCourses.find(
-          (c: any) => c.id === enrollment.courseId
-        );
-        if (!course) return null;
-        return { ...course, progress: enrollment.progress };
-      })
-      .filter((c): c is any => c !== null);
-  }, [enrollments, courses]);
+    return myCourses.map((item: any): CourseDisplay => {
+      // The item might be the course itself OR an enrollment object containing a course property
+      const course = item.courseId || item.course || item;
 
-  const displayCourses = useMemo(() => {
-    return enrolledCourses.map((course): CourseDisplay => {
-      const totalVideos = calculateTotalVideos(course);
-      const progress = course.progress || 0;
+      // Calculate total videos from chapters
+      const totalVideos =
+        course.chapters?.reduce(
+          (acc: number, cap: any) => acc + (cap.videos?.length || 0),
+          0
+        ) || 0;
+
+      const progress = item.progress || course.progress || 0;
       const completedVideos = Math.round((progress / 100) * totalVideos);
 
       let status: CourseStatus;
@@ -100,18 +100,19 @@ export default function MyCoursesPage() {
       else status = "in_progress";
 
       return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        image: course.image,
-        slug: course.slug,
+        id: course._id || course.id || Math.random().toString(),
+        title: course.title || "عنوان غير معروف",
+        description: course.description || "",
+        image:
+          course.image?.secure_url || course.image || "/decor2.jpg",
+        slug: course.slug || course._id || "",
         status,
         progress,
         completedVideos,
         totalVideos,
       };
     });
-  }, [enrolledCourses]);
+  }, [myCourses]);
 
   return (
     <div className="min-h-screen bg-paper flex flex-col" dir="rtl">
