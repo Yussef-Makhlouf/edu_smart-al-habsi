@@ -108,6 +108,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
   const confirmDeleteVideo = async () => {
     if (deleteConfirm.videoId) {
       await deleteVideo(deleteConfirm.videoId);
+      setDeleteConfirm({ ...deleteConfirm, isOpen: false });
     }
   };
 
@@ -317,6 +318,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
         confirmText="نعم، احذف الدرس"
         cancelText="إلغاء"
         variant="danger"
+        isLoading={isSaving}
       />
     </div>
   );

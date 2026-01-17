@@ -24,6 +24,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { EnrollmentFormDialog } from "@/components/dashboard/enrollments/EnrollmentFormDialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // Helper Interface for Flattened Data
 interface EnrollmentRow {
@@ -48,6 +57,10 @@ export default function EnrollmentsPage() {
     key: string;
     direction: "asc" | "desc";
   } | null>(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const { data: usersResponse, isLoading } = useGetAllUsersQuery();
   const users = usersResponse?.users || [];
@@ -109,6 +122,12 @@ export default function EnrollmentsPage() {
     if (aValue > bValue) return direction === "asc" ? 1 : -1;
     return 0;
   });
+
+  const totalPages = Math.ceil(sortedEnrollments.length / itemsPerPage);
+  const paginatedEnrollments = sortedEnrollments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
@@ -311,7 +330,7 @@ export default function EnrollmentsPage() {
                   </td>
                 </tr>
               ) : (
-                sortedEnrollments.map((row, index) => (
+                paginatedEnrollments.map((row, index) => (
                   <tr
                     key={`${row.id}-${index}`}
                     className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
@@ -394,6 +413,51 @@ export default function EnrollmentsPage() {
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center" dir="ltr">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(i + 1);
+                    }}
+                  >
+                    {(i + 1).toLocaleString("ar-SA")}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages)
+                      setCurrentPage(currentPage + 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {/* Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>

@@ -374,6 +374,7 @@ export default function CoursesPage() {
           confirmText="نعم، احذف الدورة"
           cancelText="إلغاء"
           variant="danger"
+          isLoading={isSaving}
         />
       </div>
     );

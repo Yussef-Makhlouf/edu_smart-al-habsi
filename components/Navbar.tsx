@@ -20,13 +20,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { logout } from "@/lib/redux/slices/authSlice";
 
-const navItems = [
-  { name: "الرئيسية", href: "/" },
-  // { name: "عن الدكتور", href: "/about" },
-  { name: "الدورات", href: "/courses" },
-  { name: "تواصل معنا", href: "/contact" },
-];
-
 interface NavbarProps {
   lightVariant?: boolean;
 }
@@ -62,6 +55,17 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
     router.push("/");
   };
 
+  // Dynamic Navigation Items based on Role
+  const navItems = [
+    {
+      name: "الرئيسية",
+      href: user && user.role !== "Student" ? "/dashboard" : "/",
+    },
+    // { name: "عن الدكتور", href: "/about" },
+    { name: "الدورات", href: "/courses" },
+    { name: "تواصل معنا", href: "/contact" },
+  ];
+
   return (
     <>
       <header
@@ -74,7 +78,10 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
       >
         <div className="container mx-auto px-6 h-full flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="relative z-50">
+          <Link
+            href={user && user.role !== "Student" ? "/dashboard" : "/"}
+            className="relative z-50"
+          >
             <Logo
               className={cn(
                 "transition-colors duration-200",
@@ -150,26 +157,36 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                       className="absolute left-0 mt-2 w-48 bg-white rounded-md border border-gray-100 overflow-hidden z-50"
                     >
                       <Link
-                        href="/profile"
+                        href={
+                          user.role !== "Student"
+                            ? "/dashboard/profile"
+                            : "/profile"
+                        }
                         className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
                       >
                         <User size={18} className="text-gold" />
                         <span className="font-semibold">الملف الشخصي</span>
                       </Link>
-                      <Link
-                        href="/my-courses"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
-                      >
-                        <BookOpen size={18} className="text-gold" />
-                        <span className="font-semibold">دوراتي</span>
-                      </Link>
-                      <Link
-                        href="/my-certificates"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
-                      >
-                        <Award size={18} className="text-gold" />
-                        <span className="font-semibold">شهاداتي</span>
-                      </Link>
+
+                      {user.role === "Student" && (
+                        <>
+                          <Link
+                            href="/my-courses"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
+                          >
+                            <BookOpen size={18} className="text-gold" />
+                            <span className="font-semibold">دوراتي</span>
+                          </Link>
+                          <Link
+                            href="/my-certificates"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
+                          >
+                            <Award size={18} className="text-gold" />
+                            <span className="font-semibold">شهاداتي</span>
+                          </Link>
+                        </>
+                      )}
+
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-right"
@@ -262,7 +279,11 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                   <div className="px-4">
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <Link
-                        href="/profile"
+                        href={
+                          user.role !== "Student"
+                            ? "/dashboard/profile"
+                            : "/profile"
+                        }
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
                       >
@@ -272,27 +293,31 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                         </span>
                       </Link>
 
-                      <Link
-                        href="/my-courses"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
-                      >
-                        <BookOpen size={24} className="text-gold" />
-                        <span className="text-xs font-bold text-white">
-                          دوراتي
-                        </span>
-                      </Link>
+                      {user.role === "Student" && (
+                        <>
+                          <Link
+                            href="/my-courses"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
+                          >
+                            <BookOpen size={24} className="text-gold" />
+                            <span className="text-xs font-bold text-white">
+                              دوراتي
+                            </span>
+                          </Link>
 
-                      <Link
-                        href="/my-certificates"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
-                      >
-                        <Award size={24} className="text-gold" />
-                        <span className="text-xs font-bold text-white">
-                          شهاداتي
-                        </span>
-                      </Link>
+                          <Link
+                            href="/my-certificates"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
+                          >
+                            <Award size={24} className="text-gold" />
+                            <span className="text-xs font-bold text-white">
+                              شهاداتي
+                            </span>
+                          </Link>
+                        </>
+                      )}
 
                       <button
                         onClick={() => {

@@ -3,9 +3,7 @@ import { toast } from "sonner";
 import { store } from "@/lib/redux/store";
 import { logout } from "@/lib/redux/slices/authSlice";
 import { translateError } from "@/lib/utils/error-translator";
-
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "./baseQuery";
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,

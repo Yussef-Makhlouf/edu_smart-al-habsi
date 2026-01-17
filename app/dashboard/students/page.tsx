@@ -44,6 +44,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function UsersPage() {
   // Renamed component to reflect broader scope
@@ -58,6 +67,10 @@ export default function UsersPage() {
     direction: "asc" | "desc";
   } | null>(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   // API Hooks
   const { data: usersResponse, isLoading: isUsersLoading } =
     useGetAllUsersQuery();
@@ -69,7 +82,7 @@ export default function UsersPage() {
 
   const users = usersResponse?.users || [];
   const stats = statsResponse?.users;
-console.log(users)
+  console.log(users);
   // Filter logic
   const filteredUsers = users.filter(
     (user) =>
@@ -101,6 +114,12 @@ console.log(users)
     if (aValue > bValue) return direction === "asc" ? 1 : -1;
     return 0;
   });
+
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+  const paginatedUsers = sortedUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
@@ -381,7 +400,7 @@ console.log(users)
                   </td>
                 </tr>
               ) : (
-                sortedUsers.map((user) => (
+                paginatedUsers.map((user) => (
                   <tr
                     key={user._id}
                     className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
@@ -486,6 +505,51 @@ console.log(users)
         </div>
       </div>
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center" dir="ltr">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(i + 1);
+                    }}
+                  >
+                    {(i + 1).toLocaleString("ar-SA")}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages)
+                      setCurrentPage(currentPage + 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       {/* User Form Dialog */}
       <UserFormDialog
         open={isFormOpen}
@@ -507,13 +571,18 @@ console.log(users)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
+            <AlertDialogCancel disabled={isDeleting}>إلغاء</AlertDialogCancel>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isDeleting ? "جاري الحذف..." : "حذف المستخدم"}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -534,13 +603,22 @@ console.log(users)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmBulkDelete}
+            <AlertDialogCancel disabled={isBulkDeleting}>
+              إلغاء
+            </AlertDialogCancel>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                confirmBulkDelete();
+              }}
+              disabled={isBulkDeleting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
+              {isBulkDeleting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isBulkDeleting ? "جاري الحذف..." : "حذف المحددين"}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

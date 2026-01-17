@@ -1,6 +1,5 @@
-import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "@/lib/redux/store";
-import { logout } from "@/lib/redux/slices/authSlice";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "../baseQuery";
 import type {
     Course,
     Video,
@@ -11,46 +10,6 @@ import type {
     SignedVideoResponse,
     ApiResponse,
 } from "./types";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:8080/api/v1";
-
-const baseQuery = fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-        const state = getState() as RootState;
-        const token = state.auth.token || localStorage.getItem("auth_token");
-
-        if (token) {
-            headers.set("Authorization", `Bearer ${token}`);
-        }
-
-        return headers;
-    },
-});
-
-const baseQueryWithReauth: BaseQueryFn<
-    string | FetchArgs,
-    unknown,
-    FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-    let result = await baseQuery(args, api, extraOptions);
-
-    if (result.error) {
-        const message = (result.error.data as any)?.message;
-        if (
-            result.error.status === 401 ||
-            message === "Authentication required. Please log in." ||
-            message === "Session expired. This account is logged in from another device."
-        ) {
-            api.dispatch(logout());
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
-            }
-        }
-    }
-
-    return result;
-};
 
 export const coursesApi = createApi({
     reducerPath: "coursesApi",

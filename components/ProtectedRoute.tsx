@@ -43,10 +43,22 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       }
       // 2. Logged in -> Only redirect away if trying to access Auth pages (login/register)
       else if (isAuthenticated && isAuthRoute(pathname)) {
-        if (user?.role === "Admin") {
+        if (user?.role !== "Student") {
           router.push("/dashboard");
         } else {
           router.push("/my-courses");
+        }
+      }
+      // 3. Logged in & Non-Student -> Restrict specific pages
+      else if (isAuthenticated && user?.role !== "Student") {
+        const STUDENT_ONLY_ROUTES = [
+          "/profile",
+          "/my-courses",
+          "/my-certificates",
+        ];
+
+        if (STUDENT_ONLY_ROUTES.includes(pathname)) {
+          router.push("/dashboard");
         }
       }
     }

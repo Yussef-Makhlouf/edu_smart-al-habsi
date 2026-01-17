@@ -6,10 +6,31 @@ import { Button } from "@/components/ui/button";
 import { SectionHeader } from "./SectionHeader";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export function DashboardCourses() {
   const { courses, isLoadingCourses, createCourse, isSaving } =
     useCourseManager();
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = courses ? Math.ceil(courses.length / itemsPerPage) : 0;
+
+  const paginatedCourses = courses
+    ? courses.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      )
+    : [];
 
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [newCourseDetails, setNewCourseDetails] = useState({
@@ -111,7 +132,14 @@ export function DashboardCourses() {
                 disabled={isSaving}
                 className="bg-gold text-navy font-bold"
               >
-                {isSaving ? "جاري الحفظ..." : "نشر الدورة"}
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  "نشر الدورة"
+                )}
               </Button>
             </div>
           </form>
@@ -124,7 +152,7 @@ export function DashboardCourses() {
         </div>
       ) : courses && courses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course: any) => (
+          {paginatedCourses.map((course: any) => (
             <div
               key={course._id}
               className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col group h-full"
@@ -186,6 +214,51 @@ export function DashboardCourses() {
           <p className="text-gray-500 font-medium">
             لا توجد دورات متاحة حالياً
           </p>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center" dir="ltr">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(i + 1);
+                    }}
+                  >
+                    {(i + 1).toLocaleString("ar-SA")}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages)
+                      setCurrentPage(currentPage + 1);
+                  }}
+                  href="#"
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>

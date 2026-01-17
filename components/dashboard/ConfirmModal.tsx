@@ -10,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ interface ConfirmModalProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "primary";
+  isLoading?: boolean;
 }
 
 export function ConfirmModal({
@@ -31,9 +34,10 @@ export function ConfirmModal({
   confirmText = "تأكيد",
   cancelText = "إلغاء",
   variant = "primary",
+  isLoading = false,
 }: ConfirmModalProps) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialog open={isOpen} onOpenChange={isLoading ? undefined : onClose}>
       <AlertDialogContent className="bg-white rounded-2xl border-navy/10 overflow-hidden">
         <AlertDialogHeader className="space-y-4">
           <AlertDialogTitle className="text-xl font-bold text-navy text-right">
@@ -44,26 +48,31 @@ export function ConfirmModal({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-8 flex-row-reverse gap-3 sm:justify-start">
-          <AlertDialogAction
+          <Button
             onClick={(e) => {
               e.preventDefault();
-              onConfirm();
-              onClose();
+              if (!isLoading) {
+                onConfirm();
+              }
             }}
+            disabled={isLoading}
             className={`flex-1 font-bold py-6 rounded-xl transition-all ${
               variant === "danger"
                 ? "bg-red-500 hover:bg-red-600 text-white"
                 : "bg-gold hover:bg-gold-dim text-navy"
             }`}
           >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmText}
-          </AlertDialogAction>
-          <AlertDialogCancel
+          </Button>
+          <Button
+            variant="ghost"
             onClick={onClose}
+            disabled={isLoading}
             className="flex-1 font-bold py-6 rounded-xl border-navy/10 text-navy hover:bg-navy/5 transition-all mt-0"
           >
             {cancelText}
-          </AlertDialogCancel>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
