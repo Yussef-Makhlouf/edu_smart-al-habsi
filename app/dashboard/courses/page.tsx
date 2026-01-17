@@ -62,7 +62,13 @@ export default function CoursesPage() {
       // Edit mode: Load course data
       setTitle(course.title || "");
       setDescription(course.description || "");
-      setPrice(course.price?.toString() ?? "0");
+
+      const currentPrice =
+        typeof course.price === "object"
+          ? (course.price as any).amount
+          : course.price;
+
+      setPrice(currentPrice?.toString() ?? "0");
       setImagePreview(course.image?.secure_url || "");
       setCourseImage(null); // Clear any pending image upload from previous course
     } else if (!courseId) {
@@ -181,7 +187,12 @@ export default function CoursesPage() {
     const titleChanged = title.trim() !== (course.title || "");
     const descriptionChanged =
       description.trim() !== (course.description || "");
-    const priceChanged = price !== (course.price?.toString() ?? "0");
+    const currentPrice =
+      typeof course.price === "object"
+        ? (course.price as any).amount
+        : course.price;
+
+    const priceChanged = price !== (currentPrice?.toString() ?? "0");
     const imageChanged = courseImage !== null;
 
     return titleChanged || descriptionChanged || priceChanged || imageChanged;
@@ -258,7 +269,22 @@ export default function CoursesPage() {
                   {/* Floating Price Tag (Bottom Right) */}
                   <div className="absolute bottom-4 right-4 z-10 bg-navy/90 backdrop-blur-md px-4 py-2 border-r-2 border-gold shadow-xl">
                     <span className="text-gold text-xs font-black tracking-tight">
-                      {c.price === 0 ? "مجاني" : `${c.price} ر.س`}
+                      {(() => {
+                        const p = c.price;
+                        if (
+                          p === 0 ||
+                          (typeof p === "object" &&
+                            p !== null &&
+                            (p as any).amount === 0)
+                        ) {
+                          return "مجاني";
+                        }
+                        const amount =
+                          typeof p === "object" && p !== null
+                            ? (p as any).amount
+                            : p;
+                        return `${amount ?? 0} ر.س`;
+                      })()}
                     </span>
                   </div>
 

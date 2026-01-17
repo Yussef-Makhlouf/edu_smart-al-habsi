@@ -142,7 +142,7 @@ export const coursesApi = createApi({
         }),
 
         // Add video to course
-        addVideo: builder.mutation<AddVideoResponse, CreateVideoDTO>({
+        addVideo: builder.mutation<AddVideoResponse, any>({
             query: (data) => ({
                 url: "/courses/video/add",
                 method: "POST",
@@ -172,15 +172,25 @@ export const coursesApi = createApi({
                 url: `/courses/video/${videoId}`,
                 method: "DELETE",
             }),
-            invalidatesTags: [{ type: "Course" }],
+            invalidatesTags: (result, error) => [
+                { type: "Course" as const },
+                { type: "Video" as const, id: "LIST" }
+            ],
         }),
 
         // Get signed video URL for playback
         getSignedVideoUrl: builder.query<any, string>({
             query: (videoId) => `/courses/video/${videoId}/sign`,
             transformResponse: (response: any) => {
-                // Backend returns { success, signedUrlParams: { token, expires, videoId } }
-                if (response.signedUrlParams) return response.signedUrlParams;
+                console.log("🔑 Signed URL Response:", response);
+                // The backend has inconsistent response structures
+                if (response?.signedUrlParams) return response.signedUrlParams;
+                if (response?.data?.signedUrlParams) return response.data.signedUrlParams;
+                if (response?.data && typeof response.data === 'object') {
+                    // Check if the data object itself has the required fields
+                    const d = response.data;
+                    if (d.token || d.signedUrl || d.url) return d;
+                }
                 return response;
             },
             providesTags: (result, error, videoId) => [{ type: "Video", id: videoId }],

@@ -17,9 +17,8 @@ export const enrollmentApi = createApi({
             return headers;
         },
     }),
-    tagTypes: ["Enrollment"],
+    tagTypes: ["Enrollment", "Users"],
     endpoints: (builder) => ({
-        // Get all courses the user is enrolled in
         getMyCourses: builder.query<Course[], void>({
             query: () => "/enroll/my-courses",
             transformResponse: (response: any) => {
@@ -30,7 +29,17 @@ export const enrollmentApi = createApi({
             },
             providesTags: ["Enrollment"],
         }),
+
+        // Enroll a user in a course
+        enrollUser: builder.mutation<void, { courseId: string; userId?: string }>({
+            query: (body) => ({
+                url: "/enroll",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Enrollment", "Users"],
+        }),
     }),
 });
 
-export const { useGetMyCoursesQuery } = enrollmentApi;
+export const { useGetMyCoursesQuery, useEnrollUserMutation } = enrollmentApi;

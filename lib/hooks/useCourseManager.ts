@@ -86,15 +86,23 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
         try {
             let body: FormData | CreateCourseDTO;
 
+            const priceValue = typeof data.price === "object" ? (data.price as any).amount : data.price;
+
             if (image instanceof File) {
                 const formData = new FormData();
                 formData.append("title", data.title);
                 formData.append("description", data.description);
-                formData.append("price", data.price.toString());
+                formData.append("price", priceValue.toString());
+                formData.append("priceValue", priceValue.toString()); // Fallback for some backend versions
                 formData.append("image", image);
                 body = formData;
             } else {
-                body = data;
+                body = {
+                    ...data,
+                    price: priceValue,
+                    // @ts-ignore - priceValue might be expected by backend
+                    priceValue: priceValue
+                };
             }
 
             const result = await createCourseMutation(body).unwrap();
@@ -117,15 +125,27 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
         try {
             let body: FormData | UpdateCourseDTO;
+            const priceValue = data.price !== undefined
+                ? (typeof data.price === "object" && data.price !== null ? (data.price as any).amount : data.price)
+                : undefined;
 
             if (image instanceof File) {
                 const formData = new FormData();
                 // Add all fields from data to formData
                 Object.entries(data).forEach(([key, value]) => {
                     if (value !== undefined && value !== null) {
-                        formData.append(key, value.toString());
+                        // If value is a price object, extract amount
+                        const finalValue = (key === "price" && typeof value === "object" && value !== null)
+                            ? (value as any).amount
+                            : value;
+                        formData.append(key, finalValue.toString());
                     }
                 });
+
+                if (priceValue !== undefined) {
+                    formData.append("priceValue", priceValue.toString());
+                }
+
                 formData.append("image", image);
                 body = formData;
 
@@ -137,6 +157,9 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             } else {
                 body = {
                     ...data,
+                    price: priceValue,
+                    // @ts-ignore
+                    priceValue: priceValue,
                     image: course?.image?.secure_url
                 } as UpdateCourseDTO;
                 console.log(`🚀 Updating course ${courseId} via JSON (with existing image):`, body);
@@ -180,9 +203,35 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             return undefined;
         }
 
+        // Fix: Ensure we always send a chapterId to avoid backend "undefined length" crash
+        const targetChapterId = chapterId || course?.chapters?.[0]?._id;
+
+        if (!targetChapterId) {
+            console.error("❌ No chapter found for this course:", course);
+            toast.error("⚠️ يجب أن تحتوي الدورة على قسم واحد على الأقل لإضافة دروس");
+            return undefined;
+        }
+
         try {
-            const result = await addVideoMutation({ courseId, title, chapterId }).unwrap();
-            console.log("Add video API response:", result);
+            const payload = {
+                courseId,
+                title,
+                chapterId: targetChapterId,
+                // Redundant/Alternative field names for compatibility
+                course_id: courseId,
+                chapter_id: targetChapterId,
+                video: {
+                    title,
+                    courseId,
+                    chapterId: targetChapterId
+                }
+            };
+
+            console.log("🎬 Adding video with robust params:", payload);
+            const result = await addVideoMutation(payload).unwrap();
+
+            console.log("✅ Add video API response:", result);
+            // ... (rest of the validation remains the same)
 
             // Validate the response structure
             if (!result || !result.video || !result.bunnyUploadDetails) {
@@ -205,7 +254,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             toast.error(message);
             return undefined;
         }
-    }, [courseId, addVideoMutation]);
+    }, [courseId, addVideoMutation, course]);
 
     // Delete video
     const deleteVideo = useCallback(async (videoId: string): Promise<void> => {
@@ -218,12 +267,19 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             await deleteVideoMutation(videoId).unwrap();
             toast.success("🗑️ تم حذف الدرس بنجاح");
         } catch (error: any) {
-            console.error("Delete video error details:", {
-                status: error?.status,
-                data: error?.data,
-                message: error?.message
-            });
-            const message = error?.data?.message || error?.message || "❌ فشل حذف الدرس";
+            console.error("❌ Delete video error:", error);
+
+            const serverMessage = error?.data?.message;
+            let message = "❌ فشل حذف الدرس";
+
+            if (serverMessage?.includes("BunnyDelete Error")) {
+                message = "⚠️ فشل حذف الفيديو من Bunny CDN (قد يكون الفيديو محذوفاً بالفعل)";
+            } else if (serverMessage) {
+                message = serverMessage;
+            } else if (error?.message) {
+                message = error.message;
+            }
+
             toast.error(message);
         }
     }, [deleteVideoMutation]);
@@ -237,30 +293,38 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
         try {
             const params = await getSignedUrlTrigger(videoId).unwrap();
+            console.log("🎬 Received Signed Params:", params);
 
-            if (params && params.token && params.expires && params.videoId) {
-                // Build the correct Bunny CDN embed URL
+            if (!params) {
+                throw new Error("لم يتم استلام بيانات من السيرفر");
+            }
+
+            // Case 1: Standard Bunny CDN params (token, expires, videoId)
+            if (params.token && params.expires && params.videoId) {
                 const libraryId = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
                 if (!libraryId) {
                     console.error("NEXT_PUBLIC_BUNNY_LIBRARY_ID is missing");
                     toast.error("⚠️ إعدادات المشغل غير مكتملة (Library ID missing)");
                     return undefined;
                 }
-
-                const playerUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${params.videoId}?token=${params.token}&expires=${params.expires}`;
-                console.log("Constructed Player URL:", playerUrl);
-                return playerUrl;
+                return `https://iframe.mediadelivery.net/embed/${libraryId}/${params.videoId}?token=${params.token}&expires=${params.expires}`;
             }
 
-            console.error("Invalid signedUrlParams received:", params);
-            toast.error("⚠️ فشل بناء رابط المشغل");
+            // Case 2: Direct URL from backend
+            if (params.signedUrl || params.url) {
+                return params.signedUrl || params.url;
+            }
+
+            // Case 3: If params itself is a string (rare but possible)
+            if (typeof params === 'string' && params.startsWith('http')) {
+                return params;
+            }
+
+            console.error("⚠️ Incomplete signedUrlParams:", params);
+            toast.error("⚠️ بيانات تشغيل الفيديو غير مكتملة");
             return undefined;
         } catch (error: any) {
-            console.error("Get signed URL error details:", {
-                status: error?.status,
-                data: error?.data,
-                message: error?.message
-            });
+            console.error("❌ Get signed URL error:", error);
             const message = error?.data?.message || error?.message || "❌ فشل الحصول على رابط الفيديو";
             toast.error(message);
             return undefined;

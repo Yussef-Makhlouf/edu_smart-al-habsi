@@ -26,7 +26,7 @@ export interface Course {
   _id: string;
   title: string;
   description: string;
-  price: number;
+  price: number | { amount: number; currency: string };
   image?: CourseImage;
   bunnyCollectionId?: string;
   isPublished: boolean;

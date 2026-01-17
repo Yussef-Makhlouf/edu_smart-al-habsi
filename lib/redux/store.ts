@@ -4,6 +4,7 @@ import { coursesReducer } from "./slices/coursesSlice";
 import { enrollmentReducer } from "./slices/enrollmentSlice";
 import { coursesApi } from "@/lib/api/courses/coursesApi";
 import { enrollmentApi } from "@/lib/api/enrollment/enrollmentApi";
+import { usersApi } from "@/lib/api/users/usersApi";
 
 export const store = configureStore({
     reducer: {
@@ -12,11 +13,12 @@ export const store = configureStore({
         enrollment: enrollmentReducer,
         [coursesApi.reducerPath]: coursesApi.reducer,
         [enrollmentApi.reducerPath]: enrollmentApi.reducer,
+        [usersApi.reducerPath]: usersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: false,
-        }).concat(coursesApi.middleware, enrollmentApi.middleware),
+        }).concat(coursesApi.middleware, enrollmentApi.middleware, usersApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -103,8 +103,7 @@ export default function MyCoursesPage() {
         id: course._id || course.id || Math.random().toString(),
         title: course.title || "عنوان غير معروف",
         description: course.description || "",
-        image:
-          course.image?.secure_url || course.image || "/decor2.jpg",
+        image: course.image?.secure_url || course.image || "/decor2.jpg",
         slug: course.slug || course._id || "",
         status,
         progress,
@@ -142,7 +141,7 @@ export default function MyCoursesPage() {
 
         {/* Large decorative text */}
         <div className="absolute bottom-0 right-0 pointer-events-none select-none">
-          <span className="text-[180px] font-bold text-white/[0.02] leading-none">
+          <span className="text-[180px] font-bold text-white/2 leading-none">
             دوراتي
           </span>
         </div>
@@ -180,8 +179,8 @@ export default function MyCoursesPage() {
         </div>
 
         {/* Corner decorative elements */}
-        <div className="absolute bottom-10 left-10 w-px h-16 bg-gradient-to-t from-gold/50 to-transparent" />
-        <div className="absolute bottom-10 left-10 w-16 h-px bg-gradient-to-r from-gold/50 to-transparent" />
+        <div className="absolute bottom-10 left-10 w-px h-16 bg-linear-to-t from-gold/50 to-transparent" />
+        <div className="absolute bottom-10 left-10 w-16 h-px bg-linear-to-r from-gold/50 to-transparent" />
       </section>
 
       {/* Main Content */}
@@ -249,7 +248,7 @@ export default function MyCoursesPage() {
                         }}
                       />
                       {/* Corner accent on image */}
-                      <div className="absolute top-0 left-0 w-0 h-0 border-t-[30px] border-t-gold border-r-[30px] border-r-transparent" />
+                      <div className="absolute top-0 left-0 w-0 h-0 border-t-30 border-t-gold border-r-30 border-r-transparent" />
                     </div>
 
                     {/* Content */}
