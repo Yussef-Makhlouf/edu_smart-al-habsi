@@ -152,15 +152,6 @@ export function Footer() {
               ))}
             </div>
 
-            {/* Working Hours */}
-            <div className="border border-white/10 p-4">
-              <h5 className="text-sm font-bold text-gold mb-2">ساعات العمل</h5>
-              <p className="text-white/60 text-xs leading-relaxed">
-                الأحد - الخميس: 9 صباحاً - 6 مساءً
-                <br />
-                الجمعة والسبت: مغلق
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -172,14 +163,14 @@ export function Footer() {
             {/* Legal Links */}
             <div className="flex items-center gap-6 text-sm">
               <Link
-                href="/privacy"
+                href="#"
                 className="text-white/50 hover:text-gold transition-colors"
               >
                 سياسة الخصوصية
               </Link>
               <span className="w-1 h-1 rounded-full bg-white/20" />
               <Link
-                href="/terms"
+                href="#"
                 className="text-white/50 hover:text-gold transition-colors"
               >
                 الشروط والأحكام

@@ -121,13 +121,7 @@ export function Hero() {
                 </Button>
               </Link>
 
-              <Link
-                href="/about"
-                className="group flex items-center gap-3 text-white/70 hover:text-gold transition-colors font-medium"
-              >
-                <span className="w-8 h-px bg-current transition-all group-hover:w-12" />
-                <span>تعرف علينا</span>
-              </Link>
+           
             </motion.div>
           </div>
 

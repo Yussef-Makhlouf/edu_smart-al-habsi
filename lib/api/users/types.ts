@@ -1,4 +1,5 @@
 import { UserRole } from "@/lib/types";
+export type { UserRole };
 
 export interface UserImage {
     secure_url: string;

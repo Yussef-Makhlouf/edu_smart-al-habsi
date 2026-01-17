@@ -77,7 +77,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
     // Fallback to chapters if the direct array is empty
     const videos: Video[] = responseData?.videos && responseData.videos.length > 0
         ? responseData.videos
-        : (course?.chapters?.flatMap(chapter => chapter.videos) || []);
+        : (course?.chapters?.flatMap(chapter => chapter.lessons) || []);
 
     const isSaving = isCreating || isUpdating || isDeleting || isAddingVideo || isDeletingVideo;
 
@@ -86,23 +86,51 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
         try {
             let body: FormData | CreateCourseDTO;
 
-            const priceValue = typeof data.price === "object" ? (data.price as any).amount : data.price;
-
             if (image instanceof File) {
                 const formData = new FormData();
-                formData.append("title", data.title);
-                formData.append("description", data.description);
-                formData.append("price", priceValue.toString());
-                formData.append("priceValue", priceValue.toString()); // Fallback for some backend versions
+
+                // Add all fields from data to formData
+                Object.entries(data).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        // Backend often expects values to be JSON stringified in FormData to preserve types
+                        // or to be parsed consistently. If the backend is throwing "is not valid JSON",
+                        // it's likely because it tries to JSON.parse() every field.
+                        if (typeof value === 'object' || Array.isArray(value)) {
+                            formData.append(key, JSON.stringify(value));
+                        } else {
+                            // Even simple strings might need to be stringified if the backend expects JSON.parse()
+                            // But usually, we send them as strings. Let's send them as strings but handle price specifically.
+                            formData.append(key, value.toString());
+                        }
+                    }
+                });
+
+                // Ensure priceValue is sent in a format the backend expects
+                const priceVal = data.priceAmount || data.price;
+                if (priceVal !== undefined) {
+                    formData.append("priceValue", priceVal.toString());
+                    formData.append("price", priceVal.toString());
+                }
+
                 formData.append("image", image);
                 body = formData;
             } else {
-                body = {
-                    ...data,
-                    price: priceValue,
-                    // @ts-ignore - priceValue might be expected by backend
-                    priceValue: priceValue
-                };
+                // When sending JSON, the backend still seems to expect some fields to be stringified JSON strings
+                // because it likely calls JSON.parse() on them.
+                const jsonBody = { ...data } as any;
+
+                Object.entries(jsonBody).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        if (Array.isArray(value) || (typeof value === 'object' && key !== 'price' && key !== 'image' && key !== 'category')) {
+                            jsonBody[key] = JSON.stringify(value);
+                        }
+                    }
+                });
+
+                // Ensure priceValue is there if needed
+                jsonBody.priceValue = data.priceAmount || data.price;
+
+                body = jsonBody;
             }
 
             const result = await createCourseMutation(body).unwrap();
@@ -134,35 +162,43 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 // Add all fields from data to formData
                 Object.entries(data).forEach(([key, value]) => {
                     if (value !== undefined && value !== null) {
-                        // If value is a price object, extract amount
-                        const finalValue = (key === "price" && typeof value === "object" && value !== null)
-                            ? (value as any).amount
-                            : value;
-                        formData.append(key, finalValue.toString());
+                        if (Array.isArray(value) || (typeof value === 'object' && key !== 'price' && key !== 'image')) {
+                            formData.append(key, JSON.stringify(value));
+                        } else {
+                            formData.append(key, value.toString());
+                        }
                     }
                 });
 
-                if (priceValue !== undefined) {
-                    formData.append("priceValue", priceValue.toString());
+                const priceVal = data.priceAmount || data.price;
+                if (priceVal !== undefined) {
+                    formData.append("priceValue", priceVal.toString());
                 }
 
                 formData.append("image", image);
                 body = formData;
-
-                // Debug: Log FormData content
-                console.log(`🚀 Updating course ${courseId} via FormData`);
-                for (let [key, val] of (formData as any).entries()) {
-                    console.log(`📦 Field [${key}]:`, val instanceof File ? `File Object: ${val.name}` : val);
-                }
             } else {
-                body = {
-                    ...data,
-                    price: priceValue,
-                    // @ts-ignore
-                    priceValue: priceValue,
-                    image: course?.image?.secure_url
-                } as UpdateCourseDTO;
-                console.log(`🚀 Updating course ${courseId} via JSON (with existing image):`, body);
+                // When sending JSON, the backend still seems to expect some fields to be stringified JSON strings
+                // because it likely calls JSON.parse() on them.
+                const jsonBody = { ...data } as any;
+
+                Object.entries(jsonBody).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        if (Array.isArray(value) || (typeof value === 'object' && key !== 'price' && key !== 'image' && key !== 'category')) {
+                            jsonBody[key] = JSON.stringify(value);
+                        }
+                    }
+                });
+
+                // Use priceAmount if available, otherwise fallback to price
+                jsonBody.priceValue = data.priceAmount || data.price;
+
+                // If we have an existing image URL, don't overwrite it with undefined
+                if (course?.image?.secure_url) {
+                    jsonBody.image = course.image.secure_url;
+                }
+
+                body = jsonBody;
             }
 
             const result = await updateCourseMutation({ id: courseId, data: body }).unwrap();
@@ -173,7 +209,14 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             if (error.data) console.error("Update course error data:", error.data);
 
             const message = error?.data?.message || error?.message || (typeof error === 'string' ? error : "❌ فشل تحديث الدورة");
-            toast.error(message);
+
+            // Special handling for JSON parsing errors which often indicate a field mismatch
+            if (message.includes("is not valid JSON") || message.includes("Unexpected token")) {
+                console.error("🚨 JSON Parsing Error Detected. Check backend requirements for field types.");
+                toast.error("⚠️ خطأ في معالجة البيانات على السيرفر. يرجى التواصل مع الإدارة.");
+            } else {
+                toast.error(message);
+            }
             return undefined;
         }
     }, [courseId, updateCourseMutation]);
@@ -197,41 +240,28 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
     }, [courseId, deleteCourseMutation]);
 
     // Add video
-    const addVideo = useCallback(async (title: string, chapterId?: string) => {
+    const addVideo = useCallback(async (title: string, chapterTitle?: string) => {
         if (!courseId) {
             toast.error("⚠️ لا يوجد معرف للدورة");
             return undefined;
         }
 
-        // Fix: Ensure we always send a chapterId to avoid backend "undefined length" crash
-        const targetChapterId = chapterId || course?.chapters?.[0]?._id;
-
-        if (!targetChapterId) {
-            console.error("❌ No chapter found for this course:", course);
-            toast.error("⚠️ يجب أن تحتوي الدورة على قسم واحد على الأقل لإضافة دروس");
-            return undefined;
-        }
-
         try {
+            // Generate unique chapter title for each video
+            // Use provided chapterTitle or create one based on video title
+            const uniqueChapterTitle = chapterTitle || `${title} - Chapter`;
+
             const payload = {
                 courseId,
                 title,
-                chapterId: targetChapterId,
-                // Redundant/Alternative field names for compatibility
-                course_id: courseId,
-                chapter_id: targetChapterId,
-                video: {
-                    title,
-                    courseId,
-                    chapterId: targetChapterId
-                }
+                chapterTitle: uniqueChapterTitle,  // ✅ Each video gets its own chapter
+                isPreview: false
             };
 
-            console.log("🎬 Adding video with robust params:", payload);
+            console.log("🎬 Adding video in new chapter:", payload);
             const result = await addVideoMutation(payload).unwrap();
 
             console.log("✅ Add video API response:", result);
-            // ... (rest of the validation remains the same)
 
             // Validate the response structure
             if (!result || !result.video || !result.bunnyUploadDetails) {
@@ -247,15 +277,16 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 return undefined;
             }
 
+            toast.success(`✅ تم إنشاء الدرس "${title}" في قسم جديد`);
             return result;
+
         } catch (error: any) {
             console.error("Add video error:", error);
             const message = error?.data?.message || error?.message || "❌ فشل إضافة الدرس";
             toast.error(message);
             return undefined;
         }
-    }, [courseId, addVideoMutation, course]);
-
+    }, [courseId, addVideoMutation]);
     // Delete video
     const deleteVideo = useCallback(async (videoId: string): Promise<void> => {
         if (!videoId) {
@@ -285,7 +316,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
     }, [deleteVideoMutation]);
 
     // Get signed video URL
-    const getSignedVideoUrl = useCallback(async (videoId: string): Promise<string | undefined> => {
+    const getSignedVideoUrl = useCallback(async (videoId: string, bunnyVideoId?: string): Promise<string | undefined> => {
         if (!videoId) {
             toast.error("⚠️ معرف الفيديو غير موجود");
             return undefined;
@@ -299,15 +330,36 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 throw new Error("لم يتم استلام بيانات من السيرفر");
             }
 
-            // Case 1: Standard Bunny CDN params (token, expires, videoId)
-            if (params.token && params.expires && params.videoId) {
-                const libraryId = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
-                if (!libraryId) {
-                    console.error("NEXT_PUBLIC_BUNNY_LIBRARY_ID is missing");
-                    toast.error("⚠️ إعدادات المشغل غير مكتملة (Library ID missing)");
-                    return undefined;
+            // Fallback strategy to get Bunny IDs if missing from response
+            let activeVideoId = params.videoId || bunnyVideoId;
+            let activeLibraryId = params.libraryId;
+
+            // If still missing, search in our local course state
+            if (!activeVideoId || !activeLibraryId) {
+                console.log("🔍 Searching fallback metadata for:", videoId);
+                const chapters = course?.chapters || [];
+                const allLessons = chapters.flatMap(c => c.lessons || []);
+                const videoData = allLessons.find(v => v._id === videoId);
+
+                if (videoData?.bunny) {
+                    activeVideoId = activeVideoId || videoData.bunny.videoId;
+                    activeLibraryId = activeLibraryId || videoData.bunny.libraryId;
+                    console.log("✅ Found metadata in state:", { activeVideoId, activeLibraryId });
+                } else {
+                    console.warn("❌ Could not find video metadata in course state", {
+                        chaptersCount: chapters.length,
+                        lessonsCount: allLessons.length
+                    });
                 }
-                return `https://iframe.mediadelivery.net/embed/${libraryId}/${params.videoId}?token=${params.token}&expires=${params.expires}`;
+            }
+
+            // Final fallback for library ID
+            activeLibraryId = activeLibraryId || process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
+
+            // Case 1: Standard Bunny CDN params (token, expires)
+            if (params.token && params.expires && activeVideoId && activeLibraryId) {
+                console.log("🛠️ Building Final URL:", { activeLibraryId, activeVideoId });
+                return `https://iframe.mediadelivery.net/embed/${activeLibraryId}/${activeVideoId}?token=${params.token}&expires=${params.expires}&autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
             }
 
             // Case 2: Direct URL from backend
@@ -329,7 +381,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             toast.error(message);
             return undefined;
         }
-    }, [getSignedUrlTrigger]);
+    }, [getSignedUrlTrigger, course]);
 
     // Upload to Bunny CDN
     const uploadToBunny = useCallback(async (file: File, bunnyDetails: BunnyUploadDetails): Promise<void> => {

@@ -178,8 +178,12 @@ export default function EnrollmentsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-navy">الاشتراكات</h1>
-          <p className="text-gray-500 mt-1">إدارة اشتراكات الطلاب في الدورات</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-navy">
+            الاشتراكات
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            إدارة اشتراكات الطلاب في الدورات
+          </p>
         </div>
         <Button
           onClick={() => setIsEnrollFormOpen(true)}
@@ -220,8 +224,8 @@ export default function EnrollmentsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 flex-wrap bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="relative flex-1 w-full max-w-sm">
           <Search
             size={16}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -237,7 +241,7 @@ export default function EnrollmentsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-10 px-4 rounded-lg border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold/20 text-sm outline-none"
+          className="h-10 px-4 w-full md:w-auto rounded-lg border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold/20 text-sm outline-none"
         >
           <option value="all">جميع الحالات</option>
           <option value="active">نشط</option>

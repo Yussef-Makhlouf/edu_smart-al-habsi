@@ -9,17 +9,24 @@ export interface Video {
   _id: string;
   title: string;
   courseId: string;
-  bunnyVideoId: string;
+  chapterId?: string;
+  bunny?: {
+    videoId: string;
+    libraryId: string;
+  };
   order: number;
   isPreview: boolean;
+  status?: string;
   duration?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Chapter {
   _id: string;
   title: string;
   order: number;
-  videos: Video[];
+  lessons: Video[];
 }
 
 export interface Course {
@@ -31,6 +38,8 @@ export interface Course {
   bunnyCollectionId?: string;
   isPublished: boolean;
   chapters: Chapter[];
+  category?: string | { _id: string; name: string };
+  studentsCount?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -40,15 +49,29 @@ export interface Course {
 export interface CreateCourseDTO {
   title: string;
   description: string;
-  price: number;
+  price?: number; // Keep for compatibility if needed elsewhere
+  priceAmount?: number;
+  currency?: string;
+  categoryId?: string;
+  totalDuration?: number;
+  whatYouWillLearn?: string[];
+  requirements?: string[];
+  level?: string;
 }
 
 export interface UpdateCourseDTO {
   title?: string;
   description?: string;
   price?: number;
+  priceAmount?: number;
+  currency?: string;
   isPublished?: boolean;
   image?: string;
+  categoryId?: string;
+  totalDuration?: number;
+  whatYouWillLearn?: string[];
+  requirements?: string[];
+  level?: string;
 }
 
 export interface CreateVideoDTO {

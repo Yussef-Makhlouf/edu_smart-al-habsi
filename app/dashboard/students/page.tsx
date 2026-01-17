@@ -80,7 +80,9 @@ export default function UsersPage() {
   const [bulkDeleteUsers, { isLoading: isBulkDeleting }] =
     useBulkDeleteUsersMutation();
 
-  const users = usersResponse?.users || [];
+  const users = (usersResponse?.users || []).filter(
+    (user) => user.role === "Student"
+  );
   const stats = statsResponse?.users;
   console.log(users);
   // Filter logic
@@ -204,9 +206,11 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-navy">إدارة المستخدمين</h1>
-          <p className="text-gray-500 mt-1">
-            عرض وإدارة جميع المستخدمين (الطلاب، المدربين، والإدارة)
+          <h1 className="text-2xl md:text-3xl font-bold text-navy">
+            إدارة الطلاب
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            عرض وإدارة جميع الطلاب المسجلين
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -222,14 +226,14 @@ export default function UsersPage() {
           )}
           <Button onClick={handleAdd} variant="gold" className="gap-2">
             <Plus size={18} />
-            إضافة مستخدم
+            إضافة طالب جديد
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {isStatsLoading ? (
+        {isUsersLoading ? (
           [1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)
         ) : (
           <>
@@ -239,9 +243,7 @@ export default function UsersPage() {
                   <Users size={20} className="text-gold" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-navy">
-                    {stats?.totalStudents || 0}
-                  </p>
+                  <p className="text-2xl font-bold text-navy">{users.length}</p>
                   <p className="text-sm text-gray-500">إجمالي الطلاب</p>
                 </div>
               </div>
@@ -253,7 +255,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-navy">
-                    {stats?.activeStudents || 0}
+                    {users.filter((u) => !u.isBlocked).length}
                   </p>
                   <p className="text-sm text-gray-500">طلاب نشطين</p>
                 </div>
@@ -266,7 +268,10 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-navy">
-                    {stats?.totalEnrollments || 0}
+                    {users.reduce(
+                      (sum, u) => sum + (u.enrollments?.length || 0),
+                      0
+                    )}
                   </p>
                   <p className="text-sm text-gray-500">إجمالي التسجيلات</p>
                 </div>
@@ -278,8 +283,8 @@ export default function UsersPage() {
 
       {/* Search and Table */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-sm">
+        <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 w-full max-w-sm">
             <Search
               size={16}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -293,7 +298,7 @@ export default function UsersPage() {
             />
           </div>
           <div className="text-sm text-gray-500">
-            العدد: {filteredUsers.length} مستخدم
+            العدد: {filteredUsers.length} طالب
           </div>
         </div>
 
@@ -339,18 +344,6 @@ export default function UsersPage() {
                       className="hover:bg-transparent px-0 font-bold text-navy"
                     >
                       الدورات
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </th>
-                <th className="text-center px-6 py-4 text-sm font-bold text-navy">
-                  <div className="flex justify-center">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("role")}
-                      className="hover:bg-transparent px-0 font-bold text-navy"
-                    >
-                      الدور
                       <ArrowUpDown className="mr-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -456,15 +449,7 @@ export default function UsersPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleBadgeColor(
-                          user.role
-                        )}`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
+
                     <td className="px-6 py-4 text-center text-sm text-gray-500">
                       {new Date(user.createdAt).toLocaleDateString("ar-SA")}
                     </td>

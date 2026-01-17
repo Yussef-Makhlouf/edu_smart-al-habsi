@@ -50,7 +50,7 @@ export default function LoginPage() {
   React.useEffect(() => {
     if (!isAuthLoading && user) {
       if (user.role.toLowerCase() === "admin") {
-        router.push("/dashboard");
+        router.push("/dashboard/courses");
       } else {
         router.push("/my-courses");
       }
@@ -282,7 +282,7 @@ export default function LoginPage() {
                     href="/contact"
                     className="font-bold text-gold hover:underline"
                   >
-                    إنشاء حساب
+                    تسجيل في المنصة
                   </Link>
                 </div>
               </form>

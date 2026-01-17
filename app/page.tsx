@@ -141,13 +141,6 @@ export default function Home() {
                   ))}
                 </ul>
 
-                {/* CTA */}
-                <Link href="/about" className="group inline-flex items-center gap-4">
-                  <Button variant="outline-dark" size="lg" className="px-8">
-                    اقرأ المزيد عن فلسفتنا
-                  </Button>
-                  <ArrowLeft className="w-5 h-5 text-navy group-hover:-translate-x-2 transition-transform" />
-                </Link>
               </div>
             </motion.div>
           </div>

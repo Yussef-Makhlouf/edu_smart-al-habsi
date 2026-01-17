@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
                     <p className="text-sm text-gray-500">الدورات المنشورة</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
+                {/* <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                             <TrendingUp size={20} className="text-purple-600" />
@@ -67,13 +67,13 @@ export default function AnalyticsPage() {
                     </div>
                     <p className="text-2xl font-bold text-navy">82%</p>
                     <p className="text-sm text-gray-500">معدل الإكمال</p>
-                </div>
+                </div> */}
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
+                {/* <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-navy">الإيرادات الشهرية</h3>
                         <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
@@ -94,10 +94,10 @@ export default function AnalyticsPage() {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div> */}
 
                 {/* Students Growth Chart */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 ">
+                {/* <div className="bg-white p-6 rounded-xl border border-gray-100 ">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-navy">نمو الطلاب</h3>
                         <select className="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* Popular Courses */}

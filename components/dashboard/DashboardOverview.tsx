@@ -44,12 +44,6 @@ export function DashboardOverview() {
           label="الدورات النشطة"
           value={coursesCount.toString()}
         />
-        <StatCard
-          icon={TrendingUp}
-          label="نسبة الإكمال"
-          value="68%"
-          trend="+2%"
-        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

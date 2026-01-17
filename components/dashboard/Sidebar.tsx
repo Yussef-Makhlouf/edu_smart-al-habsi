@@ -16,8 +16,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { useDispatch } from "react-redux";
 import { logout } from "@/lib/redux/slices/authSlice";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -28,17 +37,15 @@ export function DashboardSidebar() {
   };
 
   const links = [
-    { name: "الرئيسية", icon: LayoutDashboard, href: "/dashboard" },
     { name: "إدارة الدورات", icon: Book, href: "/dashboard/courses" },
+    { name: "التصنيفات", icon: BarChart3, href: "/dashboard/categories" },
     { name: "الطلاب", icon: Users, href: "/dashboard/students" },
     { name: "الاشتراكات", icon: CreditCard, href: "/dashboard/enrollments" },
-    { name: "الإحصائيات", icon: BarChart3, href: "/dashboard/analytics" },
     { name: "الملف الشخصي", icon: User, href: "/dashboard/profile" },
-    { name: "الإعدادات", icon: Settings, href: "/dashboard/settings" },
   ];
 
-  return (
-    <aside className="w-64 bg-navy text-white min-h-screen fixed right-0 top-0 border-l border-white/10 hidden lg:flex flex-col z-50">
+  const content = (
+    <>
       <div className="p-8 border-b border-white/10">
         <Link href="/">
           <Logo className="text-white" />
@@ -72,6 +79,36 @@ export function DashboardSidebar() {
           تسجيل الخروج
         </button>
       </div>
+    </>
+  );
+
+  if (mobile) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="lg:hidden text-navy">
+            <Menu size={24} />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="right"
+          className="p-0 bg-navy border-l-white/10 w-64"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>قائمة التنقل الجانبية</SheetTitle>
+            <SheetDescription>
+              استخدم هذه القائمة للتنقل بين أقسام لوحة التحكم المختلفة
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col h-full">{content}</div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <aside className="w-64 bg-navy text-white min-h-screen fixed right-0 top-0 border-l border-white/10 hidden lg:flex flex-col z-40">
+      {content}
     </aside>
   );
 }

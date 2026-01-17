@@ -33,7 +33,7 @@ export default function CheckoutPage() {
         // If not logged in, redirect to login with return url
         router.push("/login");
       } else if (user.role === "admin") {
-        router.push("/dashboard");
+        router.push("/dashboard/courses");
       }
     }
   }, [user, isInitializing, router]);

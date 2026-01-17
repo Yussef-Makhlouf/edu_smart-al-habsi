@@ -5,7 +5,7 @@ import type { Course } from "../courses/types";
 export const enrollmentApi = createApi({
     reducerPath: "enrollmentApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Enrollment", "Users"],
+    tagTypes: ["Enrollment", "Users", "Course"],
     endpoints: (builder) => ({
         getMyCourses: builder.query<Course[], void>({
             query: () => "/enroll/my-courses",
@@ -25,7 +25,7 @@ export const enrollmentApi = createApi({
                 method: "POST",
                 body,
             }),
-            invalidatesTags: ["Enrollment", "Users"],
+            invalidatesTags: ["Enrollment", "Users", "Course"],
         }),
     }),
 });

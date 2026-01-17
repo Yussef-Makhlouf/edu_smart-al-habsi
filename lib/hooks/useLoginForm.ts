@@ -47,7 +47,7 @@ export function useLoginForm() {
 
             // Redirect
             if (user.role === "Admin") {
-                router.push("/dashboard");
+                router.push("/dashboard/courses");
             } else {
                 router.push("/my-courses");
             }

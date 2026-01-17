@@ -59,7 +59,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
   const navItems = [
     {
       name: "الرئيسية",
-      href: user && user.role !== "Student" ? "/dashboard" : "/",
+      href: user && user.role !== "Student" ? "/dashboard/courses" : "/",
     },
     // { name: "عن الدكتور", href: "/about" },
     { name: "الدورات", href: "/courses" },
@@ -79,7 +79,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
         <div className="container mx-auto px-6 h-full flex items-center justify-between">
           {/* Logo */}
           <Link
-            href={user && user.role !== "Student" ? "/dashboard" : "/"}
+            href={user && user.role !== "Student" ? "/dashboard/courses" : "/my-courses"}
             className="relative z-50"
           >
             <Logo
@@ -177,13 +177,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                             <BookOpen size={18} className="text-gold" />
                             <span className="font-semibold">دوراتي</span>
                           </Link>
-                          <Link
-                            href="/my-certificates"
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gold/5 transition-colors border-b border-gray-100"
-                          >
-                            <Award size={18} className="text-gold" />
-                            <span className="font-semibold">شهاداتي</span>
-                          </Link>
+                          
                         </>
                       )}
 
@@ -306,16 +300,7 @@ export function Navbar({ lightVariant = false }: NavbarProps) {
                             </span>
                           </Link>
 
-                          <Link
-                            href="/my-certificates"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md p-4 border border-gold/20"
-                          >
-                            <Award size={24} className="text-gold" />
-                            <span className="text-xs font-bold text-white">
-                              شهاداتي
-                            </span>
-                          </Link>
+                          
                         </>
                       )}
 

@@ -14,7 +14,7 @@ import type {
 export const coursesApi = createApi({
     reducerPath: "coursesApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Course", "Video"],
+    tagTypes: ["Course", "Video", "Enrollment", "Users"],
     endpoints: (builder) => ({
         // Get all courses
         getCourses: builder.query<Course[], void>({
@@ -39,13 +39,17 @@ export const coursesApi = createApi({
                 // Try to find course in various common response structures
                 const course = response.course || response.data || (response._id ? response : null);
 
-                // Try to find videos in response or embedded in course
-                const rawVideos = response.videos || (course && course.videos) || [];
+                // Try to find videos in response, embedded in course, or in chapters' lessons
+                let rawVideos = response.videos || (course && course.videos) || [];
 
-                // Normalize videos to ensure they have _id
+                if (rawVideos.length === 0 && course?.chapters) {
+                    rawVideos = course.chapters.flatMap((chapter: any) => chapter.lessons || []);
+                }
+
+                // Normalize videos to ensure they have _id and correct fields
                 const videos = rawVideos.map((v: any) => ({
                     ...v,
-                    _id: v._id || v.id || v.bunnyVideoId
+                    _id: v._id || v.id,
                 }));
 
                 console.log("📦 Parsed Course:", course);
@@ -67,7 +71,7 @@ export const coursesApi = createApi({
                 const result = response.course || response.data || response;
                 return result;
             },
-            invalidatesTags: [{ type: "Course", id: "LIST" }],
+            invalidatesTags: [{ type: "Course", id: "LIST" }, "Enrollment", "Users"],
         }),
 
         // Update course
@@ -84,7 +88,9 @@ export const coursesApi = createApi({
             },
             invalidatesTags: (result, error, { id }) => [
                 { type: "Course", id },
-                { type: "Course", id: "LIST" }
+                { type: "Course", id: "LIST" },
+                "Enrollment",
+                "Users"
             ],
         }),
 
@@ -97,6 +103,8 @@ export const coursesApi = createApi({
             invalidatesTags: (result, error, id) => [
                 { type: "Course", id },
                 { type: "Course", id: "LIST" },
+                "Enrollment",
+                "Users"
             ],
         }),
 
@@ -108,6 +116,7 @@ export const coursesApi = createApi({
                 body: data,
             }),
             transformResponse: (response: any) => {
+                console.log("🚀 Server Response (Add Video):", response);
                 // Backend may return wrapped response
                 let video = response.video || response.data;
                 const bunnyUploadDetails = response.bunnyUploadDetails;

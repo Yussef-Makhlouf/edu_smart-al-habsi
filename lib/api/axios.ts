@@ -32,9 +32,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.data) {
-            console.error("API Error Response Data:", error.response.data);
-        }
         const rawMessage = error.response?.data?.message || error.message;
         const message = translateError(rawMessage);
 

@@ -18,10 +18,13 @@ import {
   ArrowRight,
   ArrowLeft,
   Trash2,
+  Users,
 } from "lucide-react";
 import { useCourseManager } from "@/lib/hooks/useCourseManager";
 import { ConfirmModal } from "@/components/dashboard/ConfirmModal";
 import { toast } from "sonner";
+import { useGetCategoriesQuery } from "@/lib/api/categories/categoriesApi";
+import { motion } from "framer-motion";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();
@@ -48,13 +51,25 @@ export default function CoursesPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [courseImage, setCourseImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"content" | "files" | "settings">(
     "content"
   );
 
+  // New Fields
+  const [currency, setCurrency] = useState("SAR");
+  const [totalDuration, setTotalDuration] = useState("");
+  const [level, setLevel] = useState("متوسط");
+  const [whatYouWillLearn, setWhatYouWillLearn] = useState<string[]>([]);
+  const [requirements, setRequirements] = useState<string[]>([]);
+
+  const [learnInput, setLearnInput] = useState("");
+  const [reqInput, setReqInput] = useState("");
+
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const { data: categories } = useGetCategoriesQuery();
 
   // Handle form state based on mode (Edit vs Add)
   useEffect(() => {
@@ -69,6 +84,20 @@ export default function CoursesPage() {
           : course.price;
 
       setPrice(currentPrice?.toString() ?? "0");
+
+      const cat = course.category || (course as any).categoryId;
+      const currentCatId =
+        cat && typeof cat === "object" ? (cat as any)._id : cat;
+      console.log("📂 Setting Category ID:", currentCatId);
+      setCategoryId(currentCatId?.toString() || "");
+
+      // Load new fields
+      setCurrency((course as any).currency || "SAR");
+      setTotalDuration((course as any).totalDuration?.toString() || "");
+      setLevel((course as any).level || "متوسط");
+      setWhatYouWillLearn((course as any).whatYouWillLearn || []);
+      setRequirements((course as any).requirements || []);
+
       setImagePreview(course.image?.secure_url || "");
       setCourseImage(null); // Clear any pending image upload from previous course
     } else if (!courseId) {
@@ -76,6 +105,12 @@ export default function CoursesPage() {
       setTitle("");
       setDescription("");
       setPrice("");
+      setCategoryId("");
+      setCurrency("SAR");
+      setTotalDuration("");
+      setLevel("متوسط");
+      setWhatYouWillLearn([]);
+      setRequirements([]);
       setCourseImage(null);
       setImagePreview("");
       setActiveTab("content");
@@ -105,6 +140,16 @@ export default function CoursesPage() {
       return;
     }
 
+    if (whatYouWillLearn.length === 0) {
+      toast.error("يرجى إضافة عنصر واحد على الأقل في قسم 'ماذا ستتعلم'");
+      return;
+    }
+
+    if (requirements.length === 0) {
+      toast.error("يرجى إضافة عنصر واحد على الأقل في قسم 'متطلبات الدورة'");
+      return;
+    }
+
     const priceValue = parseFloat(price);
     if (isNaN(priceValue) || priceValue < 0) {
       toast.error("يرجى إدخال سعر صحيح");
@@ -114,7 +159,13 @@ export default function CoursesPage() {
     const courseData = {
       title: title.trim(),
       description: description.trim(),
-      price: priceValue,
+      priceAmount: priceValue,
+      currency,
+      categoryId: categoryId || undefined,
+      totalDuration: parseInt(totalDuration) || 0,
+      whatYouWillLearn,
+      requirements,
+      level,
     };
 
     if (courseId) {
@@ -145,16 +196,21 @@ export default function CoursesPage() {
       return;
     }
 
-    if (hasChanges()) {
-      toast.error("يرجى حفظ التعديلات الجديدة أولاً قبل تغيير حالة النشر");
-      return;
-    }
+    const isCurrentlyPublished = course?.isPublished;
 
-    const newStatus = !course?.isPublished;
+    const newStatus = !isCurrentlyPublished;
+    const priceValue = parseFloat(price);
+
     const result = await updateCourse({
       title: title.trim(),
       description: description.trim(),
-      price: parseFloat(price),
+      priceAmount: isNaN(priceValue) ? 0 : priceValue,
+      currency,
+      categoryId: categoryId || undefined,
+      totalDuration: parseInt(totalDuration) || 0,
+      whatYouWillLearn,
+      requirements,
+      level,
       isPublished: newStatus,
     });
 
@@ -193,9 +249,34 @@ export default function CoursesPage() {
         : course.price;
 
     const priceChanged = price !== (currentPrice?.toString() ?? "0");
+
+    const cat = course.category;
+    const currentCatId = typeof cat === "object" ? cat._id : cat;
+    const categoryChanged = categoryId !== (currentCatId || "");
+    const currencyChanged = currency !== ((course as any).currency || "SAR");
+    const durationChanged =
+      totalDuration !== ((course as any).totalDuration?.toString() || "");
+    const levelChanged = level !== ((course as any).level || "متوسط");
+    const learnChanged =
+      JSON.stringify(whatYouWillLearn) !==
+      JSON.stringify((course as any).whatYouWillLearn || []);
+    const reqsChanged =
+      JSON.stringify(requirements) !==
+      JSON.stringify((course as any).requirements || []);
     const imageChanged = courseImage !== null;
 
-    return titleChanged || descriptionChanged || priceChanged || imageChanged;
+    return (
+      titleChanged ||
+      descriptionChanged ||
+      priceChanged ||
+      categoryChanged ||
+      currencyChanged ||
+      durationChanged ||
+      levelChanged ||
+      learnChanged ||
+      reqsChanged ||
+      imageChanged
+    );
   };
 
   // If no course is selected and we are not in add mode, show the grid
@@ -225,119 +306,109 @@ export default function CoursesPage() {
           </div>
         ) : courses && courses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((c) => (
-              <div
+            {courses.map((c, index) => (
+              <motion.div
                 key={c._id}
-                className="group relative bg-white overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col border border-gray-100"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm flex flex-col h-full"
               >
-                {/* Top decorative accent - Golden corner appearing on hover */}
-                <div className="absolute top-0 right-0 w-0 h-0 border-t-[50px] border-t-gold border-l-[50px] border-l-transparent z-20 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-
-                {/* Left decorative accent - Golden line on hover */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gold transition-colors duration-300 z-20" />
-
-                {/* Image & Status Section */}
+                {/* Image Section */}
                 <div className="aspect-video relative overflow-hidden bg-navy/5">
                   {c.image?.secure_url ? (
                     <img
                       src={c.image.secure_url}
                       alt={c.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <ImagePlus size={48} strokeWidth={1.5} />
+                    <div className="w-full h-full flex items-center justify-center text-navy/20">
+                      <ImagePlus size={40} strokeWidth={1} />
                     </div>
                   )}
 
-                  {/* High-end Gradient Overlay */}
-                  <div className="absolute inset-0 bg-linear-to-t from-navy/90 via-navy/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
-
-                  {/* Floating Status Badge (Top Right) */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <span
-                      className={`px-3 py-1 rounded-sm text-[10px] font-black uppercase tracking-widest shadow-lg ${
+                  {/* High-Contrast Status Badge */}
+                  <div className="absolute top-4 left-4">
+                    <div
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg ${
                         c.isPublished
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-400 text-white"
+                          ? "bg-emerald-500 text-white"
+                          : "bg-stone-500 text-white"
                       }`}
                     >
+                      {c.isPublished && (
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-100"></span>
+                        </span>
+                      )}
                       {c.isPublished ? "منشور" : "مسودة"}
-                    </span>
+                    </div>
                   </div>
 
-                  {/* Floating Price Tag (Bottom Right) */}
-                  <div className="absolute bottom-4 right-4 z-10 bg-navy/90 backdrop-blur-md px-4 py-2 border-r-2 border-gold shadow-xl">
-                    <span className="text-gold text-xs font-black tracking-tight">
-                      {(() => {
-                        const p = c.price;
-                        if (
-                          p === 0 ||
-                          (typeof p === "object" &&
-                            p !== null &&
-                            (p as any).amount === 0)
-                        ) {
-                          return "مجاني";
-                        }
-                        const amount =
-                          typeof p === "object" && p !== null
-                            ? (p as any).amount
-                            : p;
-                        return `${amount ?? 0} ر.س`;
-                      })()}
-                    </span>
+                  {/* Floating Price Badge */}
+                  <div className="absolute bottom-4 right-4 bg-navy text-gold px-4 py-2 rounded-2xl text-sm font-black border border-white/10 shadow-xl">
+                    {(() => {
+                      const p = c.price;
+                      if (
+                        p === 0 ||
+                        (typeof p === "object" && (p as any)?.amount === 0)
+                      )
+                        return "مجاني";
+                      const amount =
+                        typeof p === "object" ? (p as any)?.amount : p;
+                      return `${amount ?? 0} ر.س`;
+                    })()}
                   </div>
-
-                  {/* Floating Delete Button (Top Left - Appears on Hover) */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCourseToDelete({ id: c._id, title: c.title });
-                    }}
-                    className="absolute top-4 left-4 z-30 w-10 h-10 bg-white/10 hover:bg-red-500 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 shadow-2xl overflow-hidden group/del"
-                    title="حذف الدورة"
-                  >
-                    <Trash2
-                      size={18}
-                      className="group-hover/del:animate-pulse"
-                    />
-                  </button>
                 </div>
 
                 {/* Content Section */}
                 <div className="p-6 flex-1 flex flex-col bg-white">
-                  <h3 className="font-bold text-xl text-navy mb-3 line-clamp-2 leading-tight group-hover:text-gold transition-colors duration-300">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="px-2 py-0.5 bg-gold/10 text-gold text-[10px] font-bold rounded-md">
+                      {(c.category as any)?.name || "عام"}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-gray-400">
+                      <Users size={14} className="text-gray-300" />
+                      <span className="text-xs font-medium">
+                        {c.studentsCount || 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-extrabold text-navy text-lg mb-2 line-clamp-1 group-hover:text-gold transition-colors duration-300">
                     {c.title}
                   </h3>
-                  <p className="text-gray-500 text-sm line-clamp-2 flex-1 leading-relaxed">
+
+                  <p className="text-gray-400 text-xs line-clamp-2 leading-relaxed mb-6">
                     {c.description}
                   </p>
-                </div>
 
-                {/* Edit Button Action Section - Edge to Edge */}
-                <button
-                  onClick={() => router.push(`/dashboard/courses?id=${c._id}`)}
-                  className="w-full relative bg-navy text-white font-bold py-5 px-8 transition-all duration-300 flex items-center justify-between group-hover:bg-gold group-hover:text-navy group/edit overflow-hidden"
-                >
-                  <div className="flex items-center gap-3 z-10">
-                    <Settings2
-                      size={18}
-                      className="group-hover/edit:rotate-90 transition-transform duration-500"
-                    />
-                    <span className="tracking-wide">تعديل محتوى الدورة</span>
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    <Button
+                      onClick={() =>
+                        router.push(`/dashboard/courses?id=${c._id}`)
+                      }
+                      className="flex-1 h-11 bg-navy hover:bg-navy/90 text-white font-bold rounded-2xl gap-2 shadow-sm transition-all active:scale-95"
+                    >
+                      <Settings2 size={16} />
+                      تعديل المحتوى
+                    </Button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCourseToDelete({ id: c._id, title: c.title });
+                      }}
+                      className="w-11 h-11 flex items-center justify-center rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90"
+                      title="حذف"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                  <ArrowLeft
-                    size={20}
-                    className="z-10 group-hover:-translate-x-2 transition-transform duration-300"
-                  />
-
-                  {/* Animated Background Slide (Subtle) */}
-                  <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
-
-                  {/* Animated Underline */}
-                  <div className="absolute bottom-0 left-0 w-0 h-1 bg-gold transition-all duration-500 group-hover:w-full" />
-                </button>
-              </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         ) : (
@@ -385,43 +456,34 @@ export default function CoursesPage() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => {
               router.push("/dashboard/courses");
             }}
-            className="rounded-full hover:bg-navy/5 text-navy"
+            className="rounded-full hover:bg-navy/5 text-navy shrink-0"
           >
             <ArrowRight size={24} />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-navy">
+            <h1 className="text-2xl md:text-3xl font-bold text-navy">
               {courseId ? "تعديل الدورة" : "إنشاء دورة جديدة"}
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {courseId
                 ? "قم بتحديث محتوى وإعدادات دورتك التدريبية."
                 : "ابدأ ببناء دورتك التدريبية الجديدة وشارك خبرتك."}
             </p>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={handlePreview}
-            variant="outline"
-            className="gap-2 border-navy/20 text-navy hover:bg-navy/5 transition-all"
-            disabled={!courseId}
-          >
-            <Eye size={16} />
-            معاينة
-          </Button>
+        <div className="flex gap-3 w-full md:w-auto">
           <Button
             onClick={handleSave}
             disabled={isSaving || isLoading || !hasChanges()}
-            className="gap-2 bg-gold hover:bg-gold-dim text-navy font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 md:flex-none gap-2 bg-gold hover:bg-gold-dim text-navy font-bold disabled:opacity-50 disabled:cursor-not-allowed h-11"
           >
             {isSaving ? (
               <>
@@ -450,7 +512,7 @@ export default function CoursesPage() {
         >
           المحتوى والأقسام
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab("files")}
           className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
             activeTab === "files"
@@ -459,7 +521,7 @@ export default function CoursesPage() {
           }`}
         >
           الملفات والمرفقات
-        </button>
+        </button> */}
         <button
           onClick={() => setActiveTab("settings")}
           className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
@@ -522,7 +584,7 @@ export default function CoursesPage() {
             </>
           )}
 
-          {activeTab === "files" && <FileUploadSection />}
+          {/* {activeTab === "files" && <FileUploadSection />} */}
 
           {activeTab === "settings" && (
             <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-6">
@@ -550,28 +612,184 @@ export default function CoursesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-navy font-bold">التصنيف</Label>
-                  <select className="w-full h-10 px-3 rounded-md border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold/20 text-sm">
-                    <option>القيادة</option>
-                    <option>ريادة الأعمال</option>
-                    <option>المالية</option>
-                    <option>التسويق</option>
-                    <option>التطوير الشخصي</option>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full h-10 px-3 rounded-md border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold/20 text-sm outline-none"
+                  >
+                    <option value="">اختر تصنيف...</option>
+                    {categories?.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label className="text-navy font-bold">مستوى الدورة</Label>
                 <div className="flex gap-3">
-                  <button className="flex-1 p-3 rounded-lg border-2 border-gold bg-gold/5 text-navy font-medium text-sm">
-                    مبتدئ
-                  </button>
-                  <button className="flex-1 p-3 rounded-lg border border-gray-200 text-gray-500 hover:border-gold hover:bg-gold/5 transition-colors text-sm">
-                    متوسط
-                  </button>
-                  <button className="flex-1 p-3 rounded-lg border border-gray-200 text-gray-500 hover:border-gold hover:bg-gold/5 transition-colors text-sm">
-                    متقدم
-                  </button>
+                  {["مبتدئ", "متوسط", "متقدم"].map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setLevel(l)}
+                      className={`flex-1 p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                        level === l
+                          ? "border-gold bg-gold/5 text-navy"
+                          : "border-gray-100 text-gray-500 hover:border-gold/30"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total Duration and Currency */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-navy font-bold">
+                    مدة الدورة (بالساعات)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={totalDuration}
+                    onChange={(e) => setTotalDuration(e.target.value)}
+                    placeholder="مثال: 12"
+                    className="border-gray-200 focus:border-gold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-navy font-bold">العملة</Label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full h-10 px-3 rounded-md border border-gray-200 focus:border-gold focus:ring-1 focus:ring-gold/20 text-sm outline-none"
+                  >
+                    <option value="SAR">SAR (ريال سعودي)</option>
+                    <option value="USD">USD (دولار أمريكي)</option>
+                    <option value="EGP">EGP (جنيه مصري)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* What You Will Learn */}
+              <div className="space-y-4 pt-4 border-t border-gray-50">
+                <Label className="text-navy font-bold">
+                  ماذا ستتعلم في هذه الدورة؟{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={learnInput}
+                    onChange={(e) => setLearnInput(e.target.value)}
+                    placeholder="مثال: إدارة الفرق، بناء الرؤية..."
+                    className="flex-1 border-gray-200 focus:border-gold"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (learnInput.trim()) {
+                          setWhatYouWillLearn([
+                            ...whatYouWillLearn,
+                            learnInput.trim(),
+                          ]);
+                          setLearnInput("");
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (learnInput.trim()) {
+                        setWhatYouWillLearn([
+                          ...whatYouWillLearn,
+                          learnInput.trim(),
+                        ]);
+                        setLearnInput("");
+                      }
+                    }}
+                    className="bg-navy text-white hover:bg-navy-dim"
+                  >
+                    إضافة
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {whatYouWillLearn.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-gold/10 text-navy px-3 py-1 rounded-full text-sm flex items-center gap-2 group"
+                    >
+                      {tag}
+                      <button
+                        onClick={() =>
+                          setWhatYouWillLearn(
+                            whatYouWillLearn.filter((_, i) => i !== idx)
+                          )
+                        }
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Requirements */}
+              <div className="space-y-4 pt-4 border-t border-gray-50">
+                <Label className="text-navy font-bold">
+                  متطلبات الدورة <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={reqInput}
+                    onChange={(e) => setReqInput(e.target.value)}
+                    placeholder="مثال: رغبة في التطوير، حاسوب..."
+                    className="flex-1 border-gray-200 focus:border-gold"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (reqInput.trim()) {
+                          setRequirements([...requirements, reqInput.trim()]);
+                          setReqInput("");
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (reqInput.trim()) {
+                        setRequirements([...requirements, reqInput.trim()]);
+                        setReqInput("");
+                      }
+                    }}
+                    className="bg-navy text-white hover:bg-navy-dim"
+                  >
+                    إضافة
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {requirements.map((req, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    >
+                      {req}
+                      <button
+                        onClick={() =>
+                          setRequirements(
+                            requirements.filter((_, i) => i !== idx)
+                          )
+                        }
+                        className="text-blue-400 hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -622,12 +840,14 @@ export default function CoursesPage() {
                 </span>
                 <span
                   className={`text-xs font-bold px-2 py-1 rounded-full ${
-                    isPublished
+                    !courseId
+                      ? "bg-blue-100 text-blue-700"
+                      : isPublished
                       ? "bg-green-100 text-green-700"
                       : "bg-amber-100 text-amber-700"
                   }`}
                 >
-                  {isPublished ? "منشور" : "مسودة"}
+                  {!courseId ? "دورة جديدة" : isPublished ? "منشور" : "مسودة"}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -635,47 +855,77 @@ export default function CoursesPage() {
                   الرؤية
                 </span>
                 <span className="text-sm text-navy font-medium">
-                  {isPublished ? "عام" : "خاص"}
+                  {!courseId ? "غير محدد" : isPublished ? "عام" : "خاص"}
                 </span>
               </div>
             </div>
             <Button
               onClick={handlePublish}
-              disabled={
-                !courseId ||
-                isSaving ||
-                isLoading ||
-                (hasChanges() && courseId !== undefined)
-              }
-              variant="outline"
-              className={`w-full font-bold transition-all ${
+              disabled={!courseId || isSaving || isLoading}
+              variant={isPublished ? "outline" : "gold"}
+              className={`w-full font-bold h-11 rounded-xl transition-all gap-2 ${
                 isPublished
-                  ? "border-amber-500 text-amber-600 hover:bg-amber-50"
-                  : "border-green-500 text-green-600 hover:bg-green-50"
+                  ? "border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200"
               } disabled:opacity-50 disabled:grayscale`}
-              title={hasChanges() ? "يرجى حفظ التعديلات أولاً" : ""}
+              title={
+                !courseId
+                  ? "يرجى حفظ الدورة أولاً"
+                  : hasChanges()
+                  ? "يرجى حفظ التعديلات أولاً"
+                  : ""
+              }
             >
               {isSaving ? (
-                <Loader2 size={16} className="animate-spin ml-2" />
-              ) : null}
-              {isPublished ? "إلغاء النشر" : "نشر الدورة"}
+                <Loader2 size={16} className="animate-spin" />
+              ) : !courseId ? (
+                <Save size={16} />
+              ) : isPublished ? (
+                <Eye size={16} />
+              ) : (
+                <Save size={16} />
+              )}
+              {!courseId
+                ? "حفظ الدورة أولاً"
+                : isPublished
+                ? "إلغاء النشر (تحويل لمسودة)"
+                : "نشر الدورة الآن"}
             </Button>
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-navy rounded-xl p-6 text-white space-y-4">
-            <h3 className="font-bold">إحصائيات سريعة</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/10 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-gold">0</div>
-                <div className="text-xs text-gray-300">الطلاب</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-gold">0</div>
-                <div className="text-xs text-gray-300">المبيعات</div>
+          {courseId && (
+            <div className="bg-navy rounded-xl p-6 text-white space-y-4">
+              <h3 className="font-bold">إحصائيات سريعة</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-gold">
+                    {course?.studentsCount || 0}
+                  </div>
+                  <div className="text-xs text-gray-300">الطلاب</div>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-gold">
+                    {(() => {
+                      const count = course?.studentsCount || 0;
+                      const priceData = course?.price;
+                      const amount =
+                        typeof priceData === "object"
+                          ? priceData.amount
+                          : priceData || 0;
+                      const total = count * amount;
+                      const currencySymbol =
+                        typeof priceData === "object"
+                          ? priceData.currency
+                          : "ر.س";
+                      return `${total} ${currencySymbol}`;
+                    })()}
+                  </div>
+                  <div className="text-xs text-gray-300">المبيعات</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -715,9 +715,9 @@ export default function CoursePage() {
                     </button>
                   </div>
 
-                  <div className="absolute bottom-4 right-4 text-white text-xs font-bold bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10">
+                  {/* <div className="absolute bottom-4 right-4 text-white text-xs font-bold bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10">
                     معاينة الدورة
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="p-8">
@@ -757,13 +757,13 @@ export default function CoursePage() {
                         >
                           اشترك الآن
                         </Button>
-                        <Button
+                        {/* <Button
                           onClick={handleFreeTrial}
                           variant="outline"
                           className="w-full border-2 border-navy text-navy font-bold h-14 rounded-xl hover:bg-navy hover:text-white transition-colors"
                         >
                           تجربة مجانية
-                        </Button>
+                        </Button> */}
                       </>
                     )}
                   </div>

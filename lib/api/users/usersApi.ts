@@ -13,7 +13,7 @@ import {
 export const usersApi = createApi({
     reducerPath: "usersApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Users", "User"],
+    tagTypes: ["Users", "User", "Enrollment"],
     endpoints: (builder) => ({
         // 1. Get All Users
         getAllUsers: builder.query<GetAllUsersResponse, void>({
@@ -40,7 +40,7 @@ export const usersApi = createApi({
                 method: "POST",
                 body: formData,
             }),
-            invalidatesTags: ["Users"],
+            invalidatesTags: ["Users", "Enrollment"],
         }),
 
         // 5. Update User
@@ -59,7 +59,7 @@ export const usersApi = createApi({
                 url: `/auth/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Users"],
+            invalidatesTags: ["Users", "Enrollment"],
         }),
 
         // 7. Bulk Delete Users

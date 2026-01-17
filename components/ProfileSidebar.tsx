@@ -32,11 +32,11 @@ export function ProfileSidebar() {
     //   label: "شركات محمد",
     //   icon: Briefcase,
     // },
-    {
-      href: "/my-certificates",
-      label: "شهاداتي",
-      icon: BookOpen,
-    },
+    // {
+    //   href: "/my-certificates",
+    //   label: "شهاداتي",
+    //   icon: BookOpen,
+    // },
     // {
     //   href: "/profile",
     //   label: "تغيير كلمة المرور",

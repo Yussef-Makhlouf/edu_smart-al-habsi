@@ -113,7 +113,8 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
   };
 
   const handlePlayVideo = async (video: VideoType) => {
-    const signedUrl = await getSignedVideoUrl(video._id);
+    const signedUrl = await getSignedVideoUrl(video._id, video.bunny?.videoId);
+    console.log("🚀 Signed URL:", signedUrl);
     if (signedUrl) {
       setVideoPreview({
         isOpen: true,
@@ -276,7 +277,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {video.bunnyVideoId && (
+                      {video.bunny?.videoId && (
                         <button
                           onClick={() => handlePlayVideo(video)}
                           className="p-2 rounded-md bg-gold/10 text-gold hover:bg-gold hover:text-navy transition-colors"

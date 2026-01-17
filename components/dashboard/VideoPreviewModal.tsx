@@ -221,13 +221,22 @@ export function VideoPreviewModal({
                   playsInline
                 />
               ) : (
-                <iframe
-                  ref={iframeRef}
-                  src={videoEmbed?.embedUrl}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                <div style={{ position: "relative", paddingTop: "56.25%" }}>
+                  <iframe
+                    ref={iframeRef}
+                    src={videoEmbed?.embedUrl}
+                    loading="lazy"
+                    style={{
+                      border: 0,
+                      position: "absolute",
+                      top: 0,
+                      height: "100%",
+                      width: "100%",
+                    }}
+                    allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
+                    allowFullScreen={true}
+                  />
+                </div>
               )
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-500 italic">

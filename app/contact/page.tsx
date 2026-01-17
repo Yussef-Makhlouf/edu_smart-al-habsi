@@ -86,12 +86,12 @@ export default function ContactPage() {
                                 value="+966 50 000 0000"
                                 detail="الأحد - الخميس: 9ص - 5م"
                             />
-                            <ContactCard
+                            {/* <ContactCard
                                 icon={<MapPin className="w-5 h-5" />}
                                 title="العنوان"
                                 value="برج الفيصلية"
                                 detail="الرياض، المملكة العربية السعودية"
-                            />
+                            /> */}
 
                             {/* WhatsApp Box */}
                             <div className="relative overflow-hidden">
@@ -147,7 +147,7 @@ export default function ContactPage() {
                                                     <select className="w-full bg-gray-50 border border-gray-200 px-4 py-3 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors appearance-none cursor-pointer">
                                                         <option>استفسار عام</option>
                                                         <option>حجز دورة خاصة</option>
-                                                        <option>استشارة أعمال</option>
+                                                        <option>تسجيل في المنصة</option>
                                                         <option>شراكة / رعاية</option>
                                                     </select>
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
