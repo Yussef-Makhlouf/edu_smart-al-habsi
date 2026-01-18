@@ -22,6 +22,33 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (formData.name.trim().length < 3) {
+      toast.error("يرجى إدخال الاسم الكامل (3 أحرف على الأقل)");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("يرجى إدخال بريد إلكتروني صحيح");
+      return;
+    }
+
+    const phoneRegex = /^[0-9]+$/;
+    if (
+      formData.phone.trim().length < 8 ||
+      !phoneRegex.test(formData.phone.trim())
+    ) {
+      toast.error("يرجى إدخال رقم هاتف صحيح (أرقام فقط)");
+      return;
+    }
+
+    if (formData.message.trim().length < 10) {
+      toast.error("يرجى كتابة رسالة توضح استفسارك (10 أحرف على الأقل)");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -240,9 +267,11 @@ export default function ContactPage() {
                           placeholder="+966 50..."
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            setFormData({ ...formData, phone: value });
+                          }}
+                          required
                         />
                         <div>
                           <label className="block text-sm font-bold text-navy mb-2">
