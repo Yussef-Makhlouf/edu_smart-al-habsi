@@ -60,6 +60,41 @@ export const coursesApi = createApi({
             providesTags: (result, error, id) => [{ type: "Course", id }],
         }),
 
+        // Public: Get all courses for users (Landing Page)
+        getPublicCourses: builder.query<Course[], void>({
+            query: () => "/courses/for/users/",
+            transformResponse: (response: any) => {
+                const courses = response.courses || response.data || response;
+                console.log("courses", courses);
+                return Array.isArray(courses) ? courses : [];
+            },
+            providesTags: (result) =>
+                result
+                    ? [...result.map(({ _id }) => ({ type: "Course" as const, id: _id })), { type: "Course", id: "LIST" }]
+                    : [{ type: "Course", id: "LIST" }],
+        }),
+
+        // Public: Get single course details for users (Landing Page)
+        getPublicCourse: builder.query<{ course: Course; videos: Video[] }, string>({
+            query: (id) => `/courses/for/users/${id}`,
+            transformResponse: (response: any) => {
+                const course = response.course || response.data || (response._id ? response : null);
+                let rawVideos = response.videos || (course && course.videos) || [];
+
+                if (rawVideos.length === 0 && course?.chapters) {
+                    rawVideos = course.chapters.flatMap((chapter: any) => chapter.lessons || []);
+                }
+
+                const videos = rawVideos.map((v: any) => ({
+                    ...v,
+                    _id: v._id || v.id,
+                }));
+
+                return { course, videos };
+            },
+            providesTags: (result, error, id) => [{ type: "Course", id }],
+        }),
+
         // Create course
         createCourse: builder.mutation<Course, FormData | CreateCourseDTO>({
             query: (formData) => ({
@@ -176,4 +211,6 @@ export const {
     useDeleteVideoMutation,
     useGetSignedVideoUrlQuery,
     useLazyGetSignedVideoUrlQuery,
+    useGetPublicCoursesQuery,
+    useGetPublicCourseQuery,
 } = coursesApi;

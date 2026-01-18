@@ -29,7 +29,7 @@ export interface AuthState {
 
 
 export interface Course {
-    id: number;
+    id: number | string;
     slug: string;
     category: string;
     title: string;
@@ -50,7 +50,7 @@ export interface Course {
 }
 
 export interface Enrollment {
-    courseId: number;
+    courseId: number | string;
     progress: number;
     lastAccessed: string;
 }

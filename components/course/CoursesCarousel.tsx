@@ -18,6 +18,7 @@ interface Course {
   description: string;
   image: string;
   href: string;
+  category?: string;
   variant?: "blue" | "purple" | "gradient";
 }
 
@@ -55,8 +56,10 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
         centeredSlides={false}
         pagination={{
           clickable: true,
-          bulletClass: "swiper-pagination-bullet !bg-white/30 !w-2 !h-2 !rounded-none !rotate-45",
-          bulletActiveClass: "swiper-pagination-bullet-active !bg-gold !w-3 !h-3",
+          bulletClass:
+            "swiper-pagination-bullet !bg-white/30 !w-2 !h-2 !rounded-none !rotate-45",
+          bulletActiveClass:
+            "swiper-pagination-bullet-active !bg-gold !w-3 !h-3",
         }}
         autoplay={{
           delay: 5000,
@@ -90,6 +93,7 @@ export function CoursesCarousel({ courses }: CoursesCarouselProps) {
               description={course.description}
               image={course.image}
               href={course.href}
+              category={course.category}
               variant={course.variant}
             />
           </SwiperSlide>

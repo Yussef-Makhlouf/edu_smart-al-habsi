@@ -14,17 +14,21 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { useGetPublicCoursesQuery } from "@/lib/api/courses/coursesApi";
+
 export function Footer() {
   const [isHovered, setIsHovered] = useState<string | null>(null);
+  const { data: allCourses = [], isLoading } = useGetPublicCoursesQuery();
+
+  const courses = allCourses
+    .filter((c) => c.isPublished)
+    .slice(0, 4)
+    .map((c) => ({
+      name: c.title,
+      href: `/courses/${c._id}`,
+    }));
 
   const currentYear = new Date().getFullYear();
-
-  const courses = [
-    { name: "دورة الملك الحقيقي", href: "/courses" },
-    { name: "دورة المستوى الاحترافي للأعمال - 2", href: "/courses" },
-    { name: "دورة المستوى الاحترافي للأعمال", href: "/courses" },
-    { name: "البرنامج الداخلي للأعمال والثراء", href: "/courses" },
-  ];
 
   const quickLinks = [
     { name: "جميع الدورات", href: "/courses" },
@@ -49,7 +53,6 @@ export function Footer() {
       {/* Main Footer Content */}
       <div className="relative container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-
           {/* Column 1: Brand & About */}
           <div className="lg:col-span-1 space-y-6">
             <div>
@@ -59,16 +62,23 @@ export function Footer() {
               <div className="section-line" />
             </div>
             <p className="text-white/60 leading-relaxed text-sm">
-              منصة تعليمية رائدة تهدف إلى تمكين القادة ورواد الأعمال من خلال معرفة استثنائية وأدوات عملية لبناء المستقبل.
+              منصة تعليمية رائدة تهدف إلى تمكين القادة ورواد الأعمال من خلال
+              معرفة استثنائية وأدوات عملية لبناء المستقبل.
             </p>
 
             {/* Contact Info */}
             <div className="space-y-3 pt-2">
-              <a href="mailto:info@alhabsi.com" className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm">
+              <a
+                href="mailto:info@alhabsi.com"
+                className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm"
+              >
                 <Mail size={14} className="text-gold" />
                 <span>info@alhabsi.com</span>
               </a>
-              <a href="tel:+966500000000" className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm">
+              <a
+                href="tel:+966500000000"
+                className="flex items-center gap-3 text-white/60 hover:text-gold transition-colors text-sm"
+              >
                 <Phone size={14} className="text-gold" />
                 <span dir="ltr">+966 50 000 0000</span>
               </a>
@@ -96,7 +106,11 @@ export function Footer() {
                   >
                     <ArrowUpRight
                       size={14}
-                      className={`transition-opacity ${isHovered === `course-${index}` ? 'opacity-100' : 'opacity-0'}`}
+                      className={`transition-opacity ${
+                        isHovered === `course-${index}`
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }`}
                     />
                     <span>{course.name}</span>
                   </Link>
@@ -122,7 +136,11 @@ export function Footer() {
                   >
                     <ArrowUpRight
                       size={14}
-                      className={`transition-opacity ${isHovered === `link-${index}` ? 'opacity-100' : 'opacity-0'}`}
+                      className={`transition-opacity ${
+                        isHovered === `link-${index}`
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }`}
                     />
                     <span>{link.name}</span>
                   </Link>
@@ -151,7 +169,6 @@ export function Footer() {
                 </a>
               ))}
             </div>
-
           </div>
         </div>
       </div>

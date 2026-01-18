@@ -32,14 +32,36 @@ export interface Chapter {
 export interface Course {
   _id: string;
   title: string;
+  slug: string;
   description: string;
   price: number | { amount: number; currency: string };
   image?: CourseImage;
+  rating?: {
+    average: number;
+    count: number;
+  };
+  features?: {
+    certificate: boolean;
+    lifetimeAccess: boolean;
+    downloadableResources: boolean;
+    practicalApplications: boolean;
+    mobileAccess: boolean;
+  };
+  instructorId?: {
+    _id: string;
+    userName: string;
+    image?: { secure_url: string; public_id?: string };
+  };
+  categoryId?: string | { _id: string; name: string };
+  category?: string | { _id: string; name: string };
+  totalDuration?: number;
+  studentsCount?: number;
+  whatYouWillLearn?: string[];
+  requirements?: string[];
   bunnyCollectionId?: string;
   isPublished: boolean;
+  customId?: string;
   chapters: Chapter[];
-  category?: string | { _id: string; name: string };
-  studentsCount?: number;
   createdAt: string;
   updatedAt?: string;
 }
