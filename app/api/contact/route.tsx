@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { ContactEmailTemplate } from "@/components/email/ContactEmailTemplate";
 import { NextResponse } from "next/server";
+import { render } from "@react-email/render";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,19 +17,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const emailHtml = await render(
+      <ContactEmailTemplate
+        name={name}
+        email={email}
+        phone={phone}
+        type={type}
+        message={message}
+      />
+    );
+
     const data = await resend.emails.send({
-      from: "Smart Al-Habsi <onboarding@resend.dev>", // ملاحظة: يجب تغيير هذا لبريد موثق في الإنتاج
+      from: "Contact <onboarding@resend.dev>",
       to: "amer140106@gmail.com",
       subject: `استفسار جديد: ${type} - من ${name}`,
-      react: (
-        <ContactEmailTemplate
-          name={name}
-          email={email}
-          phone={phone}
-          type={type}
-          message={message}
-        />
-      ),
+      html: emailHtml,
     });
 
     return NextResponse.json({ success: true, data });
