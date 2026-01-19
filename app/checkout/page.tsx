@@ -20,17 +20,19 @@ import { RootState } from "@/lib/redux/store";
 import { clearCart } from "@/lib/redux/slices/enrollmentSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useEnrollUserMutation } from "@/lib/api/enrollment/enrollmentApi";
 import Image from "next/image";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const { user, isInitializing } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
   const { cartCourse } = useSelector((state: RootState) => state.enrollment);
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const [enrollUser] = useEnrollUserMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -69,17 +71,32 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!user?._id || !cartCourse?._id) {
+      toast.error("بيانات الطلب غير مكتملة");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call for now as requested
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const formData = new FormData();
+      formData.append("userId", user._id);
+      formData.append("courseId", cartCourse._id);
+      formData.append("billImage", selectedFile);
+
+      await enrollUser(formData).unwrap();
+
       toast.success(
-        "تم إرسال طلب الاشتراك بنجاح. سيتم مراجعته من قبل الإدارة."
+        "تم إرسال طلب الاشتراك بنجاح. سيتم مراجعته من قبل الإدارة.",
       );
       dispatch(clearCart());
       router.push("/courses");
-    }, 2000);
+    } catch (error: any) {
+      console.error("Enrollment error:", error);
+      toast.error(error?.data?.message || "فشل إرسال طلب الاشتراك");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isInitializing || !user) return null;
@@ -176,8 +193,8 @@ export default function CheckoutPage() {
                     size={18}
                   />
                   <p>
-                    سيتم تفعيل الدورة في حسابك فور مراجعة صورة التحويل 
-                    والتأكد من العملية.
+                    سيتم تفعيل الدورة في حسابك فور مراجعة صورة التحويل والتأكد
+                    من العملية.
                   </p>
                 </div>
               </div>

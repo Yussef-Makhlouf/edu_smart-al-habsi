@@ -15,7 +15,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Attempt to restore session on mount (covers Refresh)
-    console.log("🚀 AuthInitializer mounted, dispatching hydrate...");
+    // console.log("🚀 AuthInitializer mounted, dispatching hydrate...");
     dispatch(hydrate());
   }, [dispatch]);
 

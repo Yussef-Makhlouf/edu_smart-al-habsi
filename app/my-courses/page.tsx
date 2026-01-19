@@ -35,7 +35,7 @@ const calculateTotalVideos = (course: { sections?: { lessons: any[] }[] }) => {
   if (!course.sections) return 0;
   return course.sections.reduce(
     (total, section) => total + (section.lessons?.length || 0),
-    0
+    0,
   );
 };
 
@@ -55,7 +55,7 @@ const getCourseButton = (course: CourseDisplay) => {
 
 export default function MyCoursesPage() {
   const { user, isLoading: isAuthLoading } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   // Use the new RTK Query hook
@@ -80,7 +80,13 @@ export default function MyCoursesPage() {
   const displayCourses = useMemo((): CourseDisplay[] => {
     if (!myCourses || !Array.isArray(myCourses)) return [];
 
-    return myCourses.map((item: any): CourseDisplay => {
+    // Filter only active enrollments
+    const activeEnrollments = myCourses.filter((item: any) => {
+      const status = item.status || "Active";
+      return status.toLowerCase() === "active";
+    });
+
+    return activeEnrollments.map((item: any): CourseDisplay => {
       // The item might be the course itself OR an enrollment object containing a course property
       const course = item.courseId || item.course || item;
 
@@ -88,7 +94,7 @@ export default function MyCoursesPage() {
       const totalVideos =
         course.chapters?.reduce(
           (acc: number, cap: any) => acc + (cap.videos?.length || 0),
-          0
+          0,
         ) || 0;
 
       const progress = item.progress || course.progress || 0;
@@ -103,7 +109,11 @@ export default function MyCoursesPage() {
         id: course._id || course.id || Math.random().toString(),
         title: course.title || "عنوان غير معروف",
         description: course.description || "",
-        image: course.image?.secure_url || course.image || "/decor2.jpg",
+        image:
+          course.image?.secure_url ||
+          course.image?.url ||
+          course.image ||
+          "/decor2.jpg",
         slug: course.slug || course._id || "",
         status,
         progress,

@@ -14,13 +14,13 @@ interface VideoPreviewModalProps {
 
 // Helper function to extract video ID and platform
 function getVideoEmbed(
-  url: string
+  url: string,
 ): { type: "youtube" | "vimeo" | "bunny" | "direct"; embedUrl: string } | null {
   if (!url) return null;
 
   // YouTube patterns
   const youtubeMatch = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
   );
   if (youtubeMatch) {
     return {
@@ -168,7 +168,7 @@ export function VideoPreviewModal({
         "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all duration-500",
         isOpen
           ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
+          : "opacity-0 pointer-events-none",
       )}
       onClick={onClose}
     >
@@ -233,8 +233,7 @@ export function VideoPreviewModal({
                       height: "100%",
                       width: "100%",
                     }}
-                    allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
-                    allowFullScreen={true}
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
                   />
                 </div>
               )

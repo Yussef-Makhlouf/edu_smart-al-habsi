@@ -53,25 +53,32 @@ export default function CoursePage() {
     skip: !user,
   });
 
-  const enrolled = useMemo(() => {
+  const enrollmentStatus = useMemo(() => {
     const courseId = data?.course?._id;
-    if (!courseId) return false;
+    if (!courseId) return "none";
 
-    // Check Redux state first (fast)
+    // Check API data first (more reliable)
+    if (myCourses && Array.isArray(myCourses)) {
+      const enrollment = myCourses.find((item: any) => {
+        const c = item.courseId || item.course || item;
+        return c._id === id || c.id === id || c._id === courseId;
+      });
+      if (enrollment) return enrollment.status?.toLowerCase() || "active";
+    }
+
+    // Fallback to Redux state (might be useful during transitions)
     if (
       enrollments.some(
-        (e: any) => e.courseId === courseId || e.course === courseId
+        (e: any) => e.courseId === courseId || e.course === courseId,
       )
     )
-      return true;
+      return "active";
 
-    // Check API data (reliable)
-    if (!myCourses) return false;
-    return myCourses.some((item: any) => {
-      const c = item.courseId || item.course || item;
-      return c._id === id || c.id === id || c._id === courseId;
-    });
+    return "none";
   }, [enrollments, myCourses, id, data?.course?._id]);
+
+  const isEnrolled = enrollmentStatus === "active";
+  const isPending = enrollmentStatus === "pending";
 
   if (isLoading) {
     return (
@@ -212,7 +219,8 @@ export default function CoursePage() {
                 <span className="text-gold text-sm font-bold tracking-wider">
                   {(() => {
                     const cat = course.categoryId || course.category;
-                    if (typeof cat === "object" && cat !== null) return (cat as any).name;
+                    if (typeof cat === "object" && cat !== null)
+                      return (cat as any).name;
                     if (typeof cat === "string") return cat;
                     return "دورة تدريبية";
                   })()}
@@ -502,13 +510,20 @@ export default function CoursePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-navy to-transparent" />
                 </div>
 
-                <div className="p-8 text-center">
+                <div className="p-8 text-center text-navy">
                   <div className="mb-8">
-                    {enrolled ? (
+                    {isEnrolled ? (
                       <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-full border border-green-100 mb-6 mx-auto">
                         <CheckCircle2 size={16} />
                         <span className="text-sm font-bold">
                           أنت مشترك بالفعل في هذه الدورة
+                        </span>
+                      </div>
+                    ) : isPending ? (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 rounded-full border border-amber-100 mb-6 mx-auto">
+                        <Clock size={16} />
+                        <span className="text-sm font-bold">
+                          طلب الاشتراك بانتظار المراجعة
                         </span>
                       </div>
                     ) : (
@@ -520,7 +535,7 @@ export default function CoursePage() {
                         </span>
                       </div>
                     )}
-                    {!enrolled && (
+                    {!isEnrolled && !isPending && (
                       <p className="text-gray-500 text-sm">
                         شامل ضريبة القيمة المضافة
                       </p>
@@ -528,13 +543,20 @@ export default function CoursePage() {
                   </div>
 
                   <div className="space-y-3 mb-8">
-                    {enrolled ? (
+                    {isEnrolled ? (
                       <Button
                         onClick={handleGoToCourse}
                         className="w-full bg-navy hover:bg-navy-light text-white font-bold h-12 rounded-xl text-md flex items-center justify-center gap-2 transition-all duration-300"
                       >
                         <ArrowLeft size={18} />
                         <span>ابدأ التعلم الآن</span>
+                      </Button>
+                    ) : isPending ? (
+                      <Button
+                        disabled
+                        className="w-full bg-gray-100 text-gray-400 font-bold h-12 rounded-xl text-md flex items-center justify-center gap-2 cursor-not-allowed"
+                      >
+                        <span>قيد المراجعة...</span>
                       </Button>
                     ) : (
                       <Button

@@ -14,13 +14,13 @@ export const coursesService = {
 
     getCourse: async (id: string): Promise<any> => {
         const response = await axiosInstance.get(`/courses/${id}`);
-        console.log(response.data);
+        // console.log(response.data);
         return response.data;
     },
 
     getAllCourses: async (): Promise<any[]> => {
         const response = await axiosInstance.get("/courses");
-        console.log(response.data);
+        // console.log(response.data);
         return response.data;
     },
 

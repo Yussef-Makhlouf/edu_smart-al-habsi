@@ -55,7 +55,7 @@ export default function CoursesPage() {
   const [courseImage, setCourseImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"content" | "files" | "settings">(
-    "content"
+    "content",
   );
 
   // New Fields
@@ -88,7 +88,7 @@ export default function CoursesPage() {
       const cat = course.category || (course as any).categoryId;
       const currentCatId =
         cat && typeof cat === "object" ? (cat as any)._id : cat;
-      console.log("📂 Setting Category ID:", currentCatId);
+      // console.log("📂 Setting Category ID:", currentCatId);
       setCategoryId(currentCatId?.toString() || "");
 
       // Load new fields
@@ -175,7 +175,7 @@ export default function CoursesPage() {
       // Create new course
       const newCourse = await createCourse(
         courseData,
-        courseImage || undefined
+        courseImage || undefined,
       );
       if (newCourse) {
         // Redirect to edit page with new course ID
@@ -218,7 +218,7 @@ export default function CoursesPage() {
       toast.success(
         newStatus
           ? " تم نشر الدورة بنجاح، هي الآن متاحة للطلاب"
-          : "📁 تم تحويل الدورة إلى مسودة"
+          : "📁 تم تحويل الدورة إلى مسودة",
       );
     }
   };
@@ -725,7 +725,7 @@ export default function CoursesPage() {
                       <button
                         onClick={() =>
                           setWhatYouWillLearn(
-                            whatYouWillLearn.filter((_, i) => i !== idx)
+                            whatYouWillLearn.filter((_, i) => i !== idx),
                           )
                         }
                         className="text-gray-400 hover:text-red-500"
@@ -781,7 +781,7 @@ export default function CoursesPage() {
                       <button
                         onClick={() =>
                           setRequirements(
-                            requirements.filter((_, i) => i !== idx)
+                            requirements.filter((_, i) => i !== idx),
                           )
                         }
                         className="text-blue-400 hover:text-red-500"
@@ -843,8 +843,8 @@ export default function CoursesPage() {
                     !courseId
                       ? "bg-blue-100 text-blue-700"
                       : isPublished
-                      ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-amber-100 text-amber-700"
                   }`}
                 >
                   {!courseId ? "دورة جديدة" : isPublished ? "منشور" : "مسودة"}
@@ -872,8 +872,8 @@ export default function CoursesPage() {
                 !courseId
                   ? "يرجى حفظ الدورة أولاً"
                   : hasChanges()
-                  ? "يرجى حفظ التعديلات أولاً"
-                  : ""
+                    ? "يرجى حفظ التعديلات أولاً"
+                    : ""
               }
             >
               {isSaving ? (
@@ -888,8 +888,8 @@ export default function CoursesPage() {
               {!courseId
                 ? "حفظ الدورة أولاً"
                 : isPublished
-                ? "إلغاء النشر (تحويل لمسودة)"
-                : "نشر الدورة الآن"}
+                  ? "إلغاء النشر (تحويل لمسودة)"
+                  : "نشر الدورة الآن"}
             </Button>
           </div>
 

@@ -7,6 +7,7 @@ export interface CourseImage {
 
 export interface Video {
   _id: string;
+  videoId?: string;
   title: string;
   courseId: string;
   chapterId?: string;
@@ -18,6 +19,7 @@ export interface Video {
   isPreview: boolean;
   status?: string;
   duration?: number;
+  videoUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }

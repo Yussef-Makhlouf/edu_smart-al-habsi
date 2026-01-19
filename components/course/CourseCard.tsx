@@ -23,7 +23,7 @@ export function CourseCard({
   return (
     <div className="group relative max-w-[320px] bg-white overflow-hidden transition-all duration-300">
       {/* Corner accent - Top right */}
-      <div className="absolute top-0 right-0 w-0 h-0 border-t-[50px] border-t-gold border-l-[50px] border-l-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute top-0 right-0 w-0 h-0 border-t-50 border-t-gold border-l-50 border-l-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       {/* Image Section */}
       <div className="relative h-[200px] overflow-hidden">
@@ -31,10 +31,11 @@ export function CourseCard({
           src={image}
           alt={title}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-navy/80 via-navy/20 to-transparent" />
 
         {/* Floating tag */}
         <div className="absolute bottom-4 right-4 bg-navy/90 px-4 py-2 border-r-2 border-gold">

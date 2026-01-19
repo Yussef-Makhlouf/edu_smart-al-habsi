@@ -74,40 +74,56 @@ const CourseSidebar = ({
 
       {courseChapters?.map((chapter, chapterIdx) => (
         <div key={chapter._id} className="border-b border-gray-200">
-          <div className="bg-gray-100 text-navy p-3 flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors">
+          {/* <div className="bg-gray-100 text-navy p-3 flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors">
             <div className="flex flex-col items-start text-right">
               <span className="font-bold text-sm">{chapter.title}</span>
               <span className="text-[10px] text-gray-500 mt-0.5">
                 {chapter.lessons?.length || 0} دروس
               </span>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white">
             {chapter.lessons?.map((lesson, lessonIdx) => {
-              const isActive = activeLesson?._id === lesson._id || activeLesson?.videoId === lesson.videoId;
+              const isActive =
+                activeLesson?._id === lesson._id ||
+                (activeLesson?.videoId &&
+                  lesson.videoId &&
+                  activeLesson.videoId === lesson.videoId) ||
+                (activeLesson?.bunny?.videoId &&
+                  lesson.bunny?.videoId &&
+                  activeLesson.bunny.videoId === lesson.bunny.videoId);
+
               const globalIdx = getLessonGlobalIndex(chapterIdx, lessonIdx);
               const isLocked = !enrolled && (!isTrial || globalIdx >= 2);
-              
+
               // Check if lesson has video
-              const hasVideo = !!(lesson.bunny?.videoId || (lesson as any).videoUrl);
+              const hasVideo = !!(
+                lesson.bunny?.videoId ||
+                lesson.videoUrl ||
+                lesson.videoId
+              );
 
               return (
                 <div
-                  key={lesson._id || lesson.videoId}
+                  key={
+                    lesson._id ||
+                    lesson.videoId ||
+                    `lesson-${chapterIdx}-${lessonIdx}`
+                  }
                   onClick={() => !isLocked && onLessonSelect(lesson)}
                   className={cn(
                     "p-3 border-b border-gray-50 flex gap-3 cursor-pointer transition-all duration-200 relative group",
                     isActive
                       ? "bg-navy text-white"
                       : "hover:bg-gray-50 text-navy",
-                    isLocked ? "opacity-60 cursor-not-allowed" : ""
+                    isLocked ? "opacity-60 cursor-not-allowed" : "",
                   )}
                 >
                   <div
                     className={cn(
                       "w-16 h-10 rounded shrink-0 relative overflow-hidden flex items-center justify-center bg-gray-200",
-                      isActive ? "bg-white/10" : ""
+                      isActive ? "bg-white/10" : "",
                     )}
                   >
                     {isLocked ? (
@@ -121,7 +137,9 @@ const CourseSidebar = ({
                     ) : (
                       <AlertCircle
                         size={14}
-                        className={isActive ? "text-orange-400" : "text-orange-500"}
+                        className={
+                          isActive ? "text-orange-400" : "text-orange-500"
+                        }
                       />
                     )}
                   </div>
@@ -129,18 +147,18 @@ const CourseSidebar = ({
                     <h4 className="text-[11px] font-bold line-clamp-2 leading-tight">
                       {lesson.title}
                     </h4>
-                    <span
+                    {/* <span
                       className={cn(
                         "text-[9px] mt-1",
-                        isActive ? "text-white/60" : "text-gray-400"
+                        isActive ? "text-white/60" : "text-gray-400",
                       )}
                     >
                       {!hasVideo
                         ? "بدون فيديو"
                         : lesson.duration
-                        ? `${lesson.duration} دقيقة`
-                        : "فيديو"}
-                    </span>
+                          ? `${lesson.duration} دقيقة`
+                          : "فيديو"}
+                    </span> */}
                   </div>
                 </div>
               );
@@ -192,46 +210,114 @@ export default function CourseLearnPage() {
 
   // Create a merged list of lessons with complete data
   const mergedChapters = useMemo(() => {
-    if (!data?.course?.chapters || !data?.videos) return data?.course?.chapters || [];
+    if (!data?.course) {
+      // console.log("ℹ️ No course data available yet");
+      return [];
+    }
 
-    console.log("🔄 Merging chapters with video data");
-    console.log("📦 Videos from API:", data.videos);
+    if (!data.course.chapters) {
+      console.warn("⚠️ Course data has no chapters field:", data.course);
+      return [];
+    }
 
-    return data.course.chapters.map((chapter) => ({
-      ...chapter,
-      lessons: chapter.lessons.map((lesson) => {
-        // Find the corresponding video from the videos array
-        const videoData = data.videos.find(
-          (v: any) => v._id === lesson.videoId || v._id === lesson._id
-        );
+    // console.log(
+    //   "🔄 Merging chapters with video data. Chapters count:",
+    //   data.course.chapters.length,
+    // );
+    const videos = data.videos || [];
+    // console.log("📦 Videos from API:", videos.length, videos);
 
-        if (videoData) {
-          console.log("✅ Merged lesson with video data:", {
-            lessonTitle: lesson.title,
-            videoId: videoData._id,
-            bunny: videoData.bunny,
-          });
+    const result = data.course.chapters.map((chapter) => {
+      // Find lessons that belong to this chapter
+      // Case 1: Lessons are already listed in the chapter
+      // Case 2: Lessons are flat in data.videos and linked via chapterId
+      let chapterLessons = [...(chapter.lessons || [])];
 
-          return {
-            ...lesson,
-            ...videoData,
-            _id: videoData._id, // Use video's _id as primary
-            bunny: videoData.bunny, // Ensure bunny data is present
-          };
-        }
+      const flatVideosForChapter = videos.filter(
+        (v: Video) => v.chapterId === chapter._id,
+      );
 
-        console.warn("⚠️ No video data found for lesson:", lesson.title);
-        return lesson;
-      }),
-    }));
+      // If chapter.lessons is empty, use flatVideosForChapter
+      if (chapterLessons.length === 0 && flatVideosForChapter.length > 0) {
+        chapterLessons = flatVideosForChapter;
+      }
+
+      return {
+        ...chapter,
+        lessons: chapterLessons
+          .map((lesson) => {
+            // Find core video data to enrich the lesson
+            const videoData = videos.find(
+              (v: Video) =>
+                v._id === lesson.videoId ||
+                v._id === lesson._id ||
+                (v.videoId && v.videoId === lesson.videoId),
+            );
+
+            if (videoData) {
+              return {
+                ...lesson,
+                ...videoData,
+                _id: videoData._id || lesson._id,
+                bunny: videoData.bunny || lesson.bunny,
+              };
+            }
+
+            return lesson;
+          })
+          .filter((lesson) => lesson.bunny)
+          .sort((a, b) => (a.order || 0) - (b.order || 0)),
+      };
+    });
+
+    // console.log("✅ Merged chapters result:", result);
+    return result;
   }, [data]);
 
-  // Set first lesson as default when course data loads
+  // Sync active lesson with latest data and set initial default
   useEffect(() => {
-    if (mergedChapters?.[0]?.lessons?.[0] && !activeLesson) {
-      const firstLesson = mergedChapters[0].lessons[0];
-      console.log("🎬 Setting first lesson as default:", firstLesson);
+    if (!mergedChapters || mergedChapters.length === 0) {
+      // console.log("⏭️ sync effect: mergedChapters is empty");
+      return;
+    }
+
+    const allLessons = mergedChapters.flatMap((c) => c.lessons || []);
+    // console.log("📚 sync effect: total lessons found:", allLessons.length);
+
+    if (allLessons.length === 0) {
+      // console.log("⏭️ sync effect: No lessons in any chapters");
+      return;
+    }
+
+    if (!activeLesson) {
+      const firstLesson = allLessons[0];
+      // console.log(
+      //   "🎬 Setting initial default lesson:",
+      //   firstLesson.title,
+      //   firstLesson._id,
+      // );
       setActiveLesson(firstLesson);
+    } else {
+      // Find the updated version of the current active lesson
+      const latestData = allLessons.find(
+        (l) =>
+          l._id === activeLesson._id ||
+          (l.videoId && l.videoId === activeLesson.videoId) ||
+          (l.bunny?.videoId && l.bunny.videoId === activeLesson.bunny?.videoId),
+      );
+
+      // If we found the lesson in the new data, and it's actually different (e.g. now has bunny data), update it
+      if (
+        latestData &&
+        ((!activeLesson.bunny?.videoId && latestData.bunny?.videoId) ||
+          (!activeLesson.videoUrl && latestData.videoUrl))
+      ) {
+        // console.log(
+        //   "🔄 Syncing active lesson with enriched video data:",
+        //   latestData.title,
+        // );
+        setActiveLesson(latestData);
+      }
     }
   }, [mergedChapters, activeLesson]);
 
@@ -239,18 +325,18 @@ export default function CourseLearnPage() {
   useEffect(() => {
     const handleVideoPlay = async () => {
       if (!activeLesson) {
-        console.log("⏸️ No active lesson");
+        // console.log("⏸️ No active lesson");
         setActiveVideoUrl(null);
         setVideoError(null);
         return;
       }
 
-      console.log("🎥 Processing video for lesson:", {
-        title: activeLesson.title,
-        _id: activeLesson._id,
-        bunny: activeLesson.bunny,
-        videoUrl: (activeLesson as any).videoUrl,
-      });
+      // console.log("🎥 Processing video for lesson:", {
+      //   title: activeLesson.title,
+      //   _id: activeLesson._id,
+      //   bunny: activeLesson.bunny,
+      //   videoUrl: (activeLesson as any).videoUrl,
+      // });
 
       setIsLoadingVideo(true);
       setActiveVideoUrl(null);
@@ -258,9 +344,9 @@ export default function CourseLearnPage() {
 
       try {
         // 1. Check for YouTube URL
-        const youtubeId = getYouTubeVideoId((activeLesson as any).videoUrl);
+        const youtubeId = getYouTubeVideoId(activeLesson.videoUrl);
         if (youtubeId) {
-          console.log("▶️ YouTube video detected:", youtubeId);
+          // console.log("▶️ YouTube video detected:", youtubeId);
           const youtubeUrl = `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&autoplay=1`;
           setActiveVideoUrl(youtubeUrl);
           setIsLoadingVideo(false);
@@ -269,23 +355,23 @@ export default function CourseLearnPage() {
 
         // 2. Bunny CDN (Protected - requires signing)
         if (activeLesson.bunny?.videoId) {
-          console.log("🐰 Bunny CDN detected:", {
-            videoId: activeLesson.bunny.videoId,
-            libraryId: activeLesson.bunny.libraryId,
-            lessonId: activeLesson._id,
-          });
+          // console.log("🐰 Bunny CDN detected:", {
+          //   videoId: activeLesson.bunny.videoId,
+          //   libraryId: activeLesson.bunny.libraryId,
+          //   lessonId: activeLesson._id,
+          // });
 
           if (!enrolled) {
-            console.log("🔒 Video locked - user not enrolled");
+            // console.log("🔒 Video locked - user not enrolled");
             setVideoError("يجب الاشتراك في الدورة لمشاهدة هذا الفيديو");
             setIsLoadingVideo(false);
             return;
           }
 
-          console.log("🔐 Requesting signed URL for:", activeLesson._id);
+          // console.log("🔐 Requesting signed URL for:", activeLesson._id);
           try {
             const response = await triggerSign(activeLesson._id).unwrap();
-            console.log("✅ Signed Video Response:", response);
+            // console.log("✅ Signed Video Response:", response);
 
             // Normalize response structure
             const params = response.data || response;
@@ -300,7 +386,7 @@ export default function CourseLearnPage() {
                   : null);
 
               if (directUrl) {
-                console.log("✅ Using direct signed URL");
+                // console.log("✅ Using direct signed URL");
                 setActiveVideoUrl(directUrl);
                 setIsLoadingVideo(false);
                 return;
@@ -313,16 +399,16 @@ export default function CourseLearnPage() {
                 process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID;
               const videoId = params.videoId || activeLesson.bunny.videoId;
 
-              console.log("🔨 URL Construction params:", {
-                libraryId,
-                videoId,
-                hasToken: !!params.token,
-                expires: params.expires,
-              });
+              // console.log("🔨 URL Construction params:", {
+              //   libraryId,
+              //   videoId,
+              //   hasToken: !!params.token,
+              //   expires: params.expires,
+              // });
 
               if (params.token && libraryId && videoId) {
                 const constructedUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${params.token}&expires=${params.expires}&autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
-                console.log("✅ Constructed Bunny URL successfully");
+                // console.log("✅ Constructed Bunny URL successfully");
                 setActiveVideoUrl(constructedUrl);
                 setIsLoadingVideo(false);
                 return;
@@ -336,7 +422,7 @@ export default function CourseLearnPage() {
           } catch (err: any) {
             console.error("❌ Failed to sign video:", err);
             setVideoError(
-              err?.data?.message || "فشل في الحصول على رابط الفيديو الآمن"
+              err?.data?.message || "فشل في الحصول على رابط الفيديو الآمن",
             );
             toast.error("فشل تحضير الفيديو");
             setIsLoadingVideo(false);
@@ -345,20 +431,20 @@ export default function CourseLearnPage() {
         }
 
         // 3. Direct video URL (fallback)
-        if ((activeLesson as any).videoUrl) {
-          console.log("🔗 Using direct video URL");
-          setActiveVideoUrl((activeLesson as any).videoUrl);
+        if (activeLesson.videoUrl) {
+          // console.log("🔗 Using direct video URL");
+          setActiveVideoUrl(activeLesson.videoUrl);
           setIsLoadingVideo(false);
           return;
         }
 
         // 4. No video URL found
         console.warn("❌ No video URL available for this lesson");
-        console.log("📋 Lesson structure:", {
-          hasVideoUrl: !!(activeLesson as any).videoUrl,
-          hasBunny: !!activeLesson.bunny,
-          bunnyVideoId: activeLesson.bunny?.videoId,
-        });
+        // console.log("📋 Lesson structure:", {
+        //   hasVideoUrl: !!activeLesson.videoUrl,
+        //   hasBunny: !!activeLesson.bunny,
+        //   bunnyVideoId: activeLesson.bunny?.videoId,
+        // });
         setVideoError("هذا الدرس لا يحتوي على فيديو حالياً");
         setIsLoadingVideo(false);
       } catch (err) {
@@ -375,7 +461,7 @@ export default function CourseLearnPage() {
   useEffect(() => {
     if (!isLoading && !data) return;
     if (!enrolled && !isTrial && !isLoading) {
-      console.log("🚫 Access denied - redirecting to course page");
+      // console.log("🚫 Access denied - redirecting to course page");
       router.push(`/courses/${id}`);
     }
   }, [enrolled, isTrial, id, router, isLoading, data]);
@@ -490,7 +576,6 @@ export default function CourseLearnPage() {
                   className="w-full h-full"
                   title={activeLesson?.title || "Video Player"}
                   allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowFullScreen
                 />
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-navy/90">
@@ -504,9 +589,14 @@ export default function CourseLearnPage() {
                         يرجى التواصل مع الدعم الفني إذا استمرت المشكلة
                       </p>
                       {activeLesson && (
-                        <div className="bg-white/5 rounded-lg p-4 text-xs text-white/60 max-w-md text-right" dir="rtl">
-                          <p className="mb-2">📋 <strong>معلومات تقنية:</strong></p>
-                          <p>• معرف الدرس: {activeLesson._id}</p>
+                        <div
+                          className="rounded-lg  text-xs text-white/60 text-right"
+                          dir="rtl"
+                        >
+                          {/* <p className="mb-2">
+                            📋 <strong>معلومات تقنية:</strong>
+                          </p> */}
+                          {/* <p>• معرف الدرس: {activeLesson._id}</p>
                           <p>• عنوان الدرس: {activeLesson.title}</p>
                           <p>
                             • Bunny Video ID:{" "}
@@ -515,14 +605,16 @@ export default function CourseLearnPage() {
                           <p>
                             • Bunny Library ID:{" "}
                             {activeLesson.bunny?.libraryId || "غير موجود"}
-                          </p>
+                          </p> */}
                         </div>
                       )}
                     </>
                   ) : enrolled ? (
                     <>
                       <PlayCircle className="w-20 h-20 text-gold/20 mb-4" />
-                      <p className="text-white/60">اختر درساً للبدء في المشاهدة</p>
+                      <p className="text-white/60">
+                        اختر درساً للبدء في المشاهدة
+                      </p>
                     </>
                   ) : (
                     <>
@@ -559,7 +651,11 @@ export default function CourseLearnPage() {
                       القسم الحالي:{" "}
                       {
                         mergedChapters.find((c) =>
-                          c.lessons.some((l) => l._id === activeLesson._id)
+                          c.lessons.some(
+                            (l) =>
+                              l._id === activeLesson._id ||
+                              (l.videoId && l.videoId === activeLesson.videoId),
+                          ),
                         )?.title
                       }
                     </p>

@@ -81,15 +81,15 @@ export default function UsersPage() {
     useBulkDeleteUsersMutation();
 
   const users = (usersResponse?.users || []).filter(
-    (user) => user.role === "Student"
+    (user) => user.role === "Student",
   );
   const stats = statsResponse?.users;
-  console.log(users);
+  // console.log(users);
   // Filter logic
   const filteredUsers = users.filter(
     (user) =>
       user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Sorting Logic
@@ -120,7 +120,7 @@ export default function UsersPage() {
   const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
   const paginatedUsers = sortedUsers.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleSort = (key: string) => {
@@ -270,7 +270,7 @@ export default function UsersPage() {
                   <p className="text-2xl font-bold text-navy">
                     {users.reduce(
                       (sum, u) => sum + (u.enrollments?.length || 0),
-                      0
+                      0,
                     )}
                   </p>
                   <p className="text-sm text-gray-500">إجمالي التسجيلات</p>

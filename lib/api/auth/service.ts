@@ -3,7 +3,7 @@ import { User, LoginResponse } from "@/lib/types";
 
 export const authService = {
     async login(credentials: any): Promise<LoginResponse> {
-        console.log("Login credentials being sent:", credentials);
+        // console.log("Login credentials being sent:", credentials);
         const response = await axiosInstance.post<LoginResponse>("/auth/login", credentials);
         return response.data;
     },

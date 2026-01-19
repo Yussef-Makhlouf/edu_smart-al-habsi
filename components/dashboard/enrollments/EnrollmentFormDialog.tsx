@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGetAllUsersQuery } from "@/lib/api/users/usersApi";
 import { useGetCoursesQuery } from "@/lib/api/courses/coursesApi";
-import { useEnrollUserMutation } from "@/lib/api/enrollment/enrollmentApi";
+import { useAdminEnrollUserMutation } from "@/lib/api/enrollment/enrollmentApi";
 
 const enrollmentSchema = z.object({
   userId: z.string().min(1, "يرجى اختيار الطالب"),
@@ -58,7 +58,8 @@ export function EnrollmentFormDialog({
 }: EnrollmentFormDialogProps) {
   const { data: usersResponse } = useGetAllUsersQuery();
   const { data: courses } = useGetCoursesQuery();
-  const [enrollUser, { isLoading: isSubmitting }] = useEnrollUserMutation();
+  const [enrollUser, { isLoading: isSubmitting }] =
+    useAdminEnrollUserMutation();
 
   const users = usersResponse?.users || [];
   const coursesList = (courses || []).filter((course) => course.isPublished);
@@ -68,7 +69,7 @@ export function EnrollmentFormDialog({
   // Generally, usually only students are enrolled, but let's stick to all users to be safe or filter by 'Student' role if strict.
   // Let's filter for visual clarity but maybe allow all.
   const students = users.filter(
-    (u) => u.role === "Student" || u.role === "User"
+    (u) => u.role === "Student" || u.role === "User",
   );
 
   const [openUser, setOpenUser] = useState(false);
@@ -139,7 +140,7 @@ export function EnrollmentFormDialog({
                           aria-expanded={openUser}
                           className={cn(
                             "w-full justify-between text-right font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value
@@ -183,7 +184,7 @@ export function EnrollmentFormDialog({
                                       "h-4 w-4 text-navy",
                                       user._id === field.value
                                         ? "opacity-100"
-                                        : "opacity-0"
+                                        : "opacity-0",
                                     )}
                                   />
                                   <div className="flex flex-col text-right">
@@ -222,12 +223,12 @@ export function EnrollmentFormDialog({
                           aria-expanded={openCourse}
                           className={cn(
                             "w-full justify-between text-right font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value
                             ? coursesList.find(
-                                (course) => course._id === field.value
+                                (course) => course._id === field.value,
                               )?.title
                             : "اختر الدورة"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -263,7 +264,7 @@ export function EnrollmentFormDialog({
                                       "h-4 w-4 text-navy",
                                       course._id === field.value
                                         ? "opacity-100"
-                                        : "opacity-0"
+                                        : "opacity-0",
                                     )}
                                   />
                                   <div className="flex flex-col text-right">
@@ -271,7 +272,8 @@ export function EnrollmentFormDialog({
                                       {course.title}
                                     </span>
                                     <span className="text-[10px] text-muted-foreground">
-                                      ({(course.category as any)?.name || "عام"})
+                                      ({(course.category as any)?.name || "عام"}
+                                      )
                                     </span>
                                   </div>
                                 </div>

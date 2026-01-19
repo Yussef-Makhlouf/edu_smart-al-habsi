@@ -258,10 +258,10 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 isPreview: false
             };
 
-            console.log("🎬 Adding video in new chapter:", payload);
+            // console.log("🎬 Adding video in new chapter:", payload);
             const result = await addVideoMutation(payload).unwrap();
 
-            console.log("✅ Add video API response:", result);
+            // console.log("✅ Add video API response:", result);
 
             // Validate the response structure
             if (!result || !result.video || !result.bunnyUploadDetails) {
@@ -324,7 +324,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
         try {
             const params = await getSignedUrlTrigger(videoId).unwrap();
-            console.log("🎬 Received Signed Params:", params);
+            // console.log("🎬 Received Signed Params:", params);
 
             if (!params) {
                 throw new Error("لم يتم استلام بيانات من السيرفر");
@@ -336,7 +336,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
             // If still missing, search in our local course state
             if (!activeVideoId || !activeLibraryId) {
-                console.log("🔍 Searching fallback metadata for:", videoId);
+                // console.log("🔍 Searching fallback metadata for:", videoId);
                 const chapters = course?.chapters || [];
                 const allLessons = chapters.flatMap(c => c.lessons || []);
                 const videoData = allLessons.find(v => v._id === videoId);
@@ -344,7 +344,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 if (videoData?.bunny) {
                     activeVideoId = activeVideoId || videoData.bunny.videoId;
                     activeLibraryId = activeLibraryId || videoData.bunny.libraryId;
-                    console.log("✅ Found metadata in state:", { activeVideoId, activeLibraryId });
+                    // console.log("✅ Found metadata in state:", { activeVideoId, activeLibraryId });
                 } else {
                     console.warn("❌ Could not find video metadata in course state", {
                         chaptersCount: chapters.length,
@@ -358,7 +358,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
 
             // Case 1: Standard Bunny CDN params (token, expires)
             if (params.token && params.expires && activeVideoId && activeLibraryId) {
-                console.log("🛠️ Building Final URL:", { activeLibraryId, activeVideoId });
+                // console.log("🛠️ Building Final URL:", { activeLibraryId, activeVideoId });
                 return `https://iframe.mediadelivery.net/embed/${activeLibraryId}/${activeVideoId}?token=${params.token}&expires=${params.expires}&autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
             }
 
@@ -404,13 +404,13 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 return;
             }
 
-            console.log("Uploading to Bunny CDN:", {
-                uploadUrl,
-                videoLibraryId: bunnyDetails.videoLibraryId,
-                guid: bunnyDetails.guid,
-                fileSize: file.size,
-                fileName: file.name,
-            });
+            // console.log("Uploading to Bunny CDN:", {
+            //     uploadUrl,
+            //     videoLibraryId: bunnyDetails.videoLibraryId,
+            //     guid: bunnyDetails.guid,
+            //     fileSize: file.size,
+            //     fileName: file.name,
+            // });
 
             dispatch(setIsUploadingVideo(true));
             dispatch(setUploadProgress(0));

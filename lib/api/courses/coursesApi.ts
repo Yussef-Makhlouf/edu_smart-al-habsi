@@ -34,7 +34,7 @@ export const coursesApi = createApi({
         getCourse: builder.query<{ course: Course; videos: Video[] }, string>({
             query: (id) => `/courses/${id}`,
             transformResponse: (response: any) => {
-                console.log("🔍 Raw Server Response (getCourse):", response);
+                // console.log("🔍 Raw Server Response (getCourse):", response);
 
                 // Try to find course in various common response structures
                 const course = response.course || response.data || (response._id ? response : null);
@@ -52,8 +52,8 @@ export const coursesApi = createApi({
                     _id: v._id || v.id,
                 }));
 
-                console.log("📦 Parsed Course:", course);
-                console.log("🎥 Parsed Videos:", videos);
+                // console.log("📦 Parsed Course:", course);
+                // console.log("🎥 Parsed Videos:", videos);
 
                 return { course, videos };
             },
@@ -65,7 +65,7 @@ export const coursesApi = createApi({
             query: () => "/courses/for/users/",
             transformResponse: (response: any) => {
                 const courses = response.courses || response.data || response;
-                console.log("courses", courses);
+                // console.log("courses", courses);
                 return Array.isArray(courses) ? courses : [];
             },
             providesTags: (result) =>
@@ -117,7 +117,7 @@ export const coursesApi = createApi({
                 body: data,
             }),
             transformResponse: (response: any) => {
-                console.log("🚀 Server Response (Update):", response);
+                // console.log("🚀 Server Response (Update):", response);
                 const result = response.course || response.data || response;
                 return result;
             },
@@ -151,7 +151,7 @@ export const coursesApi = createApi({
                 body: data,
             }),
             transformResponse: (response: any) => {
-                console.log("🚀 Server Response (Add Video):", response);
+                // console.log("🚀 Server Response (Add Video):", response);
                 // Backend may return wrapped response
                 let video = response.video || response.data;
                 const bunnyUploadDetails = response.bunnyUploadDetails;
@@ -185,7 +185,7 @@ export const coursesApi = createApi({
         getSignedVideoUrl: builder.query<any, string>({
             query: (videoId) => `/courses/video/${videoId}/sign`,
             transformResponse: (response: any) => {
-                console.log("🔑 Signed URL Response:", response);
+                // console.log("🔑 Signed URL Response:", response);
                 // The backend has inconsistent response structures
                 if (response?.signedUrlParams) return response.signedUrlParams;
                 if (response?.data?.signedUrlParams) return response.data.signedUrlParams;

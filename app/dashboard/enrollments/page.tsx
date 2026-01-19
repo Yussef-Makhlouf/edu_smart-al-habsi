@@ -14,8 +14,14 @@ import {
   Download,
   ZoomIn,
 } from "lucide-react";
+import {
+  useGetPendingEnrollmentsQuery,
+  useApproveEnrollmentMutation,
+  useRejectEnrollmentMutation,
+} from "@/lib/api/enrollment/enrollmentApi";
 import { useGetAllUsersQuery } from "@/lib/api/users/usersApi";
 import { User } from "@/lib/api/users/types";
+import { toast } from "sonner";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,48 +80,37 @@ export default function EnrollmentsPage() {
   const { data: usersResponse, isLoading, refetch } = useGetAllUsersQuery();
   const users = usersResponse?.users || [];
 
-  // Flatten Data: User -> Enrollments -> Rows
+  const [approveEnrollment, { isLoading: isApproving }] =
+    useApproveEnrollmentMutation();
+  const [rejectEnrollment, { isLoading: isRejecting }] =
+    useRejectEnrollmentMutation();
+  const [processingEnrollmentId, setProcessingEnrollmentId] = useState<
+    string | null
+  >(null);
+
+  // Flatten Data: Users (Students) -> Enrollments -> Rows
   const allEnrollments: EnrollmentRow[] = useMemo(() => {
-    const fetchedEnrollments = users.flatMap((user) => {
-      if (!user.enrollments || user.enrollments.length === 0) return [];
-      return user.enrollments.map((enrollment: any) => ({
-        id: enrollment._id,
-        user: user,
-        courseTitle: enrollment.courseId?.title || "غير معروف",
-        courseImage: enrollment.courseId?.image?.secure_url || "",
-        price:
-          typeof enrollment.courseId?.price === "object"
-            ? enrollment.courseId.price.amount
-            : enrollment.courseId?.price || 0,
-        enrolledAt: enrollment.enrolledAt || enrollment.createdAt,
-        status: enrollment.status || "Active",
-        fullEnrollmentData: enrollment,
-      }));
-    });
-
-    // STATIC TEST DATA FOR ADMIN REVIEW
-    const staticTestEnrollment: EnrollmentRow = {
-      id: "static_test_pending_01",
-      user: {
-        _id: "static_user_01",
-        userName: "أحمد (تجربة انتظار)",
-        email: "ahmed.test@example.com",
-        role: "Student",
-        isBlocked: false,
-        image: null,
-      } as any,
-      courseTitle: "تأسيس القدرات (تجريبي)",
-      courseImage: "",
-      price: 199,
-      enrolledAt: new Date().toISOString(),
-      status: "Pending",
-      fullEnrollmentData: {
-        receipt: "/images/Mockup.jpg", // Test image for zoom/download
-        _id: "static_enrollment_01",
-      },
-    };
-
-    return [...fetchedEnrollments, staticTestEnrollment];
+    return users
+      .filter((u: any) => u.role === "Student")
+      .flatMap((user: any) => {
+        if (!user.enrollments || user.enrollments.length === 0) return [];
+        return user.enrollments.map((enrollment: any) => ({
+          id: enrollment._id,
+          user: user,
+          courseTitle: enrollment.courseId?.title || "غير معروف",
+          courseImage:
+            enrollment.courseId?.image?.secure_url ||
+            enrollment.courseId?.image?.url ||
+            "",
+          price:
+            typeof enrollment.courseId?.price === "object"
+              ? enrollment.courseId.price.amount
+              : enrollment.courseId?.price || 0,
+          enrolledAt: enrollment.enrolledAt || enrollment.createdAt,
+          status: enrollment.status || "Pending",
+          fullEnrollmentData: enrollment,
+        }));
+      });
   }, [users]);
 
   // Filter Logic
@@ -125,7 +120,10 @@ export default function EnrollmentsPage() {
       row.courseTitle.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       statusFilter === "all" ||
-      row.status.toLowerCase() === statusFilter.toLowerCase();
+      row.status.toLowerCase() === statusFilter.toLowerCase() ||
+      (statusFilter === "cancelled" &&
+        row.status.toLowerCase() === "rejected") ||
+      (statusFilter === "rejected" && row.status.toLowerCase() === "cancelled");
     return matchesSearch && matchesStatus;
   });
 
@@ -214,6 +212,40 @@ export default function EnrollmentsPage() {
     document.body.removeChild(link);
   };
 
+  const handleApproveEnrollment = async (enrollment: EnrollmentRow) => {
+    try {
+      setProcessingEnrollmentId(enrollment.id);
+
+      await approveEnrollment(enrollment.id).unwrap();
+
+      toast.success("تم الموافقة وتفعيل الاشتراك بنجاح");
+      refetch();
+      setIsDetailsOpen(false);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "فشل تفعيل الاشتراك");
+      console.error("Enrollment approval error:", error);
+    } finally {
+      setProcessingEnrollmentId(null);
+    }
+  };
+
+  const handleRejectEnrollment = async (enrollment: EnrollmentRow) => {
+    try {
+      setProcessingEnrollmentId(enrollment.id);
+
+      await rejectEnrollment(enrollment.id).unwrap();
+
+      toast.success("تم رفض الطلب بنجاح");
+      refetch();
+      setIsDetailsOpen(false);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "فشل رفض الطلب");
+      console.error("Enrollment rejection error:", error);
+    } finally {
+      setProcessingEnrollmentId(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -223,22 +255,44 @@ export default function EnrollmentsPage() {
       case "pending":
         return "bg-amber-100 text-amber-600";
       case "cancelled":
+      case "rejected":
         return "bg-red-100 text-red-600";
       default:
         return "bg-gray-100 text-gray-600";
     }
   };
 
-  // Stats Calculation
-  const totalRevenue = allEnrollments.reduce(
-    (acc, curr) => acc + Number(curr.price || 0),
-    0,
-  );
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "نشط";
+      case "completed":
+        return "مكتمل";
+      case "pending":
+        return "بانتظار المراجعة";
+      case "cancelled":
+      case "rejected":
+        return "مرفوض";
+      default:
+        return status;
+    }
+  };
+
+  // Stats Calculation: Only count confirmed (Active) payments for revenue
+  const totalRevenue = allEnrollments
+    .filter((e) => e.status.toLowerCase() === "active")
+    .reduce((acc, curr) => {
+      const price =
+        typeof curr.price === "number"
+          ? curr.price
+          : parseFloat(String(curr.price)) || 0;
+      return acc + price;
+    }, 0);
   const activeCount = allEnrollments.filter(
     (e) => e.status.toLowerCase() === "active",
   ).length;
-  const completedCount = allEnrollments.filter(
-    (e) => e.status.toLowerCase() === "completed",
+  const pendingCount = allEnrollments.filter(
+    (e) => e.status.toLowerCase() === "pending",
   ).length;
 
   return (
@@ -281,8 +335,8 @@ export default function EnrollmentsPage() {
           <p className="text-2xl font-bold text-green-600">{activeCount}</p>
         </div>
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">المكتملة</p>
-          <p className="text-2xl font-bold text-blue-600">{completedCount}</p>
+          <p className="text-sm text-gray-500 mb-1">بانتظار المراجعة</p>
+          <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
         </div>
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">إجمالي الإيرادات</p>
@@ -314,9 +368,8 @@ export default function EnrollmentsPage() {
         >
           <option value="all">جميع الحالات</option>
           <option value="active">نشط</option>
-          <option value="completed">مكتمل</option>
-          <option value="pending">معلق</option>
-          <option value="cancelled">ملغي</option>
+          <option value="pending">بانتظار المراجعة</option>
+          <option value="cancelled">مرفوض</option>
         </select>
       </div>
 
@@ -468,7 +521,7 @@ export default function EnrollmentsPage() {
                           row.status,
                         )}`}
                       >
-                        {row.status}
+                        {getStatusLabel(row.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -652,7 +705,7 @@ export default function EnrollmentsPage() {
                           selectedEnrollment.status,
                         )}`}
                       >
-                        {selectedEnrollment.status}
+                        {getStatusLabel(selectedEnrollment.status)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-50">
@@ -675,12 +728,15 @@ export default function EnrollmentsPage() {
                   selectedEnrollment.status.toLowerCase() === "active";
                 const isCancelled =
                   selectedEnrollment.status.toLowerCase() === "cancelled";
-                const hasReceipt =
-                  !!selectedEnrollment.fullEnrollmentData?.receipt;
+                const billImageUrl =
+                  selectedEnrollment.fullEnrollmentData?.billImage
+                    ?.secure_url ||
+                  selectedEnrollment.fullEnrollmentData?.billImage?.url;
+                const hasBillImage = !!billImageUrl;
 
-                // Hide section if it's not pending (already processed) and has no receipt
-                // This covers manual admin enrollments which likely don't have receipts
-                if (!isPending && !hasReceipt) return null;
+                // Hide section if it's not pending (already processed) and has no bill image
+                // This covers manual admin enrollments which likely don't have bill images
+                if (!isPending && !hasBillImage) return null;
 
                 return (
                   <div
@@ -738,13 +794,11 @@ export default function EnrollmentsPage() {
                               : "border-gray-200"
                           }`}
                         >
-                          {selectedEnrollment.fullEnrollmentData?.receipt ? (
+                          {hasBillImage ? (
                             <>
                               <Image
-                                src={
-                                  selectedEnrollment.fullEnrollmentData.receipt
-                                }
-                                alt="Receipt"
+                                src={billImageUrl}
+                                alt="Bill Image"
                                 fill
                                 className="object-cover"
                               />
@@ -753,8 +807,7 @@ export default function EnrollmentsPage() {
                                 <button
                                   onClick={() =>
                                     handleImageZoom(
-                                      selectedEnrollment.fullEnrollmentData
-                                        .receipt,
+                                      billImageUrl,
                                       selectedEnrollment.user.userName,
                                       selectedEnrollment.enrolledAt,
                                     )
@@ -767,8 +820,7 @@ export default function EnrollmentsPage() {
                                 <button
                                   onClick={() =>
                                     handleImageDownload(
-                                      selectedEnrollment.fullEnrollmentData
-                                        .receipt,
+                                      billImageUrl,
                                       selectedEnrollment.user.userName,
                                       selectedEnrollment.enrolledAt,
                                     )
@@ -789,7 +841,7 @@ export default function EnrollmentsPage() {
                             </div>
                           )}
                         </div>
-                        {selectedEnrollment.fullEnrollmentData?.receipt && (
+                        {hasBillImage && (
                           <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
                             <span>
                               تاريخ الرفع:{" "}
@@ -817,16 +869,58 @@ export default function EnrollmentsPage() {
                             </div>
 
                             <div className="space-y-3">
-                              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 gap-2 shadow-sm">
-                                <CheckCircle size={18} />
-                                الموافقـة وتفعيـل الاشتراك
+                              <Button
+                                onClick={() =>
+                                  handleApproveEnrollment(selectedEnrollment)
+                                }
+                                disabled={
+                                  processingEnrollmentId ===
+                                  selectedEnrollment.id
+                                }
+                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 gap-2 shadow-sm"
+                              >
+                                {processingEnrollmentId ===
+                                selectedEnrollment.id ? (
+                                  <>
+                                    <Loader2
+                                      size={18}
+                                      className="animate-spin"
+                                    />
+                                    جاري التفعيل...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle size={18} />
+                                    الموافقـة وتفعيـل الاشتراك
+                                  </>
+                                )}
                               </Button>
                               <Button
+                                onClick={() =>
+                                  handleRejectEnrollment(selectedEnrollment)
+                                }
+                                disabled={
+                                  processingEnrollmentId ===
+                                  selectedEnrollment.id
+                                }
                                 variant="outline"
                                 className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold h-12 gap-2"
                               >
-                                <XCircle size={18} />
-                                رفض الطلب
+                                {processingEnrollmentId ===
+                                selectedEnrollment.id ? (
+                                  <>
+                                    <Loader2
+                                      size={18}
+                                      className="animate-spin"
+                                    />
+                                    جاري الرفض...
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle size={18} />
+                                    رفض الطلب
+                                  </>
+                                )}
                               </Button>
                             </div>
                           </>

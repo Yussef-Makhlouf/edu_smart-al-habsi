@@ -45,6 +45,10 @@ export function useLoginForm() {
                 token
             }));
 
+            // Invalidate Enrollment tags to force refetch of my courses
+            const { enrollmentApi } = await import("@/lib/api/enrollment/enrollmentApi");
+            dispatch(enrollmentApi.util.invalidateTags(["Enrollment"]));
+
             // Redirect
             if (user.role === "Admin") {
                 router.push("/dashboard/courses");

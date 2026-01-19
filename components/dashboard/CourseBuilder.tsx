@@ -43,7 +43,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
   } = useCourseManager(courseId);
 
   const { isUploadingVideo, uploadProgress } = useSelector(
-    (state: RootState) => state.courses
+    (state: RootState) => state.courses,
   );
 
   const [videoPreview, setVideoPreview] = useState<{
@@ -114,7 +114,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
 
   const handlePlayVideo = async (video: VideoType) => {
     const signedUrl = await getSignedVideoUrl(video._id, video.bunny?.videoId);
-    console.log("🚀 Signed URL:", signedUrl);
+    // console.log("🚀 Signed URL:", signedUrl);
     if (signedUrl) {
       setVideoPreview({
         isOpen: true,
