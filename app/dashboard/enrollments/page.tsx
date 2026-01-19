@@ -11,6 +11,8 @@ import {
   Loader2,
   ArrowUpDown,
   Plus,
+  Download,
+  ZoomIn,
 } from "lucide-react";
 import { useGetAllUsersQuery } from "@/lib/api/users/usersApi";
 import { User } from "@/lib/api/users/types";
@@ -22,6 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 import { EnrollmentFormDialog } from "@/components/dashboard/enrollments/EnrollmentFormDialog";
 import {
@@ -53,6 +57,11 @@ export default function EnrollmentsPage() {
     useState<EnrollmentRow | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEnrollFormOpen, setIsEnrollFormOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [zoomedImageUrl, setZoomedImageUrl] = useState<string>("");
+  const [zoomedImageStudentName, setZoomedImageStudentName] =
+    useState<string>("");
+  const [zoomedImageDate, setZoomedImageDate] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -62,12 +71,12 @@ export default function EnrollmentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const { data: usersResponse, isLoading } = useGetAllUsersQuery();
+  const { data: usersResponse, isLoading, refetch } = useGetAllUsersQuery();
   const users = usersResponse?.users || [];
 
   // Flatten Data: User -> Enrollments -> Rows
   const allEnrollments: EnrollmentRow[] = useMemo(() => {
-    return users.flatMap((user) => {
+    const fetchedEnrollments = users.flatMap((user) => {
       if (!user.enrollments || user.enrollments.length === 0) return [];
       return user.enrollments.map((enrollment: any) => ({
         id: enrollment._id,
@@ -83,6 +92,30 @@ export default function EnrollmentsPage() {
         fullEnrollmentData: enrollment,
       }));
     });
+
+    // STATIC TEST DATA FOR ADMIN REVIEW
+    const staticTestEnrollment: EnrollmentRow = {
+      id: "static_test_pending_01",
+      user: {
+        _id: "static_user_01",
+        userName: "أحمد (تجربة انتظار)",
+        email: "ahmed.test@example.com",
+        role: "Student",
+        isBlocked: false,
+        image: null,
+      } as any,
+      courseTitle: "تأسيس القدرات (تجريبي)",
+      courseImage: "",
+      price: 199,
+      enrolledAt: new Date().toISOString(),
+      status: "Pending",
+      fullEnrollmentData: {
+        receipt: "/images/Mockup.jpg", // Test image for zoom/download
+        _id: "static_enrollment_01",
+      },
+    };
+
+    return [...fetchedEnrollments, staticTestEnrollment];
   }, [users]);
 
   // Filter Logic
@@ -126,7 +159,7 @@ export default function EnrollmentsPage() {
   const totalPages = Math.ceil(sortedEnrollments.length / itemsPerPage);
   const paginatedEnrollments = sortedEnrollments.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleSort = (key: string) => {
@@ -144,6 +177,41 @@ export default function EnrollmentsPage() {
   const handleShowDetails = (row: EnrollmentRow) => {
     setSelectedEnrollment(row);
     setIsDetailsOpen(true);
+  };
+
+  const handleImageZoom = (
+    imageUrl: string,
+    studentName?: string,
+    date?: string,
+  ) => {
+    setZoomedImageUrl(imageUrl);
+    setZoomedImageStudentName(studentName || "");
+    setZoomedImageDate(date || "");
+    setIsImageZoomOpen(true);
+  };
+
+  const handleImageDownload = (
+    imageUrl: string,
+    studentName?: string,
+    date?: string,
+  ) => {
+    // Create filename from student name and date
+    let filename = "receipt";
+    if (studentName && date) {
+      const formattedDate = new Date(date)
+        .toLocaleDateString("ar-SA")
+        .replace(/\//g, "-");
+      const cleanName = studentName.replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, "");
+      filename = `ايصال_${cleanName}_${formattedDate}`;
+    }
+
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = `${filename}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getStatusColor = (status: string) => {
@@ -164,13 +232,13 @@ export default function EnrollmentsPage() {
   // Stats Calculation
   const totalRevenue = allEnrollments.reduce(
     (acc, curr) => acc + Number(curr.price || 0),
-    0
+    0,
   );
   const activeCount = allEnrollments.filter(
-    (e) => e.status.toLowerCase() === "active"
+    (e) => e.status.toLowerCase() === "active",
   ).length;
   const completedCount = allEnrollments.filter(
-    (e) => e.status.toLowerCase() === "completed"
+    (e) => e.status.toLowerCase() === "completed",
   ).length;
 
   return (
@@ -197,6 +265,7 @@ export default function EnrollmentsPage() {
       <EnrollmentFormDialog
         open={isEnrollFormOpen}
         onOpenChange={setIsEnrollFormOpen}
+        refetch={refetch}
       />
 
       {/* Stats */}
@@ -396,7 +465,7 @@ export default function EnrollmentsPage() {
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                          row.status
+                          row.status,
                         )}`}
                       >
                         {row.status}
@@ -580,7 +649,7 @@ export default function EnrollmentsPage() {
                       <span className="text-gray-500">حالة الاشتراك</span>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                          selectedEnrollment.status
+                          selectedEnrollment.status,
                         )}`}
                       >
                         {selectedEnrollment.status}
@@ -590,16 +659,248 @@ export default function EnrollmentsPage() {
                       <span className="text-gray-500">تاريخ الانضمام</span>
                       <span className="font-medium text-navy dir-ltr">
                         {new Date(selectedEnrollment.enrolledAt).toLocaleString(
-                          "ar-SA"
+                          "ar-SA",
                         )}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Payment Proof Section - Conditional Rendering */}
+              {(() => {
+                const isPending =
+                  selectedEnrollment.status.toLowerCase() === "pending";
+                const isActive =
+                  selectedEnrollment.status.toLowerCase() === "active";
+                const isCancelled =
+                  selectedEnrollment.status.toLowerCase() === "cancelled";
+                const hasReceipt =
+                  !!selectedEnrollment.fullEnrollmentData?.receipt;
+
+                // Hide section if it's not pending (already processed) and has no receipt
+                // This covers manual admin enrollments which likely don't have receipts
+                if (!isPending && !hasReceipt) return null;
+
+                return (
+                  <div
+                    className={`bg-white border rounded-xl overflow-hidden ${
+                      isPending
+                        ? "border-amber-200 shadow-sm"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`p-4 border-b flex items-center justify-between ${
+                        isPending
+                          ? "bg-amber-50/50 border-amber-100"
+                          : "bg-gray-50 border-gray-100"
+                      }`}
+                    >
+                      <h3 className="font-bold text-navy flex items-center gap-2">
+                        <CreditCard
+                          className={
+                            isPending ? "text-amber-500" : "text-gray-400"
+                          }
+                          size={20}
+                        />
+                        إثبات الدفع (تحويل)
+                      </h3>
+                      <div className="flex gap-2">
+                        {isPending && (
+                          <span className="text-xs font-bold px-3 py-1 bg-amber-100 text-amber-700 rounded-full border border-amber-200 shadow-sm">
+                            بانتظار المراجعة
+                          </span>
+                        )}
+                        {isActive && (
+                          <span className="text-xs font-bold px-3 py-1 bg-green-100 text-green-700 rounded-full border border-green-200">
+                            تم اعتماد التحويل
+                          </span>
+                        )}
+                        {isCancelled && (
+                          <span className="text-xs font-bold px-3 py-1 bg-red-100 text-red-700 rounded-full border border-red-200">
+                            مرفوض / ملغي
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Receipt Image with Zoom & Download */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-bold text-gray-500 mb-2">
+                          صورة الإيصال المرفقة
+                        </p>
+                        <div
+                          className={`relative aspect-video w-full bg-gray-50 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors group ${
+                            isPending
+                              ? "border-amber-200 hover:border-amber-400"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          {selectedEnrollment.fullEnrollmentData?.receipt ? (
+                            <>
+                              <Image
+                                src={
+                                  selectedEnrollment.fullEnrollmentData.receipt
+                                }
+                                alt="Receipt"
+                                fill
+                                className="object-cover"
+                              />
+                              {/* Hover Overlay with Zoom & Download */}
+                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <button
+                                  onClick={() =>
+                                    handleImageZoom(
+                                      selectedEnrollment.fullEnrollmentData
+                                        .receipt,
+                                      selectedEnrollment.user.userName,
+                                      selectedEnrollment.enrolledAt,
+                                    )
+                                  }
+                                  className="p-3 bg-white/90 hover:bg-white rounded-lg transition-colors shadow-lg"
+                                  title="تكبير الصورة"
+                                >
+                                  <ZoomIn size={20} className="text-navy" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleImageDownload(
+                                      selectedEnrollment.fullEnrollmentData
+                                        .receipt,
+                                      selectedEnrollment.user.userName,
+                                      selectedEnrollment.enrolledAt,
+                                    )
+                                  }
+                                  className="p-3 bg-white/90 hover:bg-white rounded-lg transition-colors shadow-lg"
+                                  title="تحميل الصورة"
+                                >
+                                  <Download size={20} className="text-navy" />
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 text-gray-400">
+                              <CreditCard size={48} className="opacity-50" />
+                              <span className="text-sm font-medium">
+                                لا توجد صورة مرفقة
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        {selectedEnrollment.fullEnrollmentData?.receipt && (
+                          <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
+                            <span>
+                              تاريخ الرفع:{" "}
+                              {new Date(
+                                selectedEnrollment.enrolledAt,
+                              ).toLocaleDateString("ar-SA")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Panel */}
+                      <div className="flex flex-col justify-center space-y-4">
+                        {isPending ? (
+                          <>
+                            <div className="bg-amber-50 border border-amber-100 p-4 rounded-lg mb-2">
+                              <p className="text-amber-800 text-sm font-medium mb-1 flex items-center gap-2">
+                                <Clock size={16} />
+                                تنبيه إداري
+                              </p>
+                              <p className="text-amber-700/80 text-xs leading-relaxed">
+                                يرجى التأكد من مطابقة المبلغ وتاريخ التحويل مع
+                                البيانات قبل قبول الطلب.
+                              </p>
+                            </div>
+
+                            <div className="space-y-3">
+                              <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 gap-2 shadow-sm">
+                                <CheckCircle size={18} />
+                                الموافقـة وتفعيـل الاشتراك
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold h-12 gap-2"
+                              >
+                                <XCircle size={18} />
+                                رفض الطلب
+                              </Button>
+                            </div>
+                          </>
+                        ) : isActive ? (
+                          <div className="h-full flex flex-col items-center justify-center bg-green-50/50 border border-green-100 p-6 rounded-lg text-center">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                              <CheckCircle className="w-8 h-8 text-green-600" />
+                            </div>
+                            <h4 className="font-bold text-navy text-lg mb-2">
+                              الاشتراك مفعل ونشط
+                            </h4>
+                            <p className="text-sm text-gray-500 max-w-[250px]">
+                              تمت مراجعة عملية الدفع وتفعيل الاشتراك للطالب
+                              بنجاح.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="h-full flex flex-col items-center justify-center bg-red-50/50 border border-red-100 p-6 rounded-lg text-center">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                              <XCircle className="w-8 h-8 text-red-600" />
+                            </div>
+                            <h4 className="font-bold text-navy text-lg mb-2">
+                              الطلب مرفوض
+                            </h4>
+                            <p className="text-sm text-gray-500 max-w-[250px]">
+                              تم رفض طلب الاشتراك هذا.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </DialogContent>
+      </Dialog>
+
+      {/* Image Zoom Dialog with Custom Light Overlay */}
+      <Dialog open={isImageZoomOpen} onOpenChange={setIsImageZoomOpen}>
+        <DialogPortal>
+          {/* Custom lighter overlay */}
+          <DialogOverlay className="bg-black/5" />
+          <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-transparent border-0">
+            <DialogTitle className="sr-only">عرض صورة الإيصال</DialogTitle>
+            <div className="relative w-full h-[85vh] flex items-center justify-center">
+              {zoomedImageUrl && (
+                <>
+                  <Image
+                    src={zoomedImageUrl}
+                    alt="Receipt Zoomed"
+                    fill
+                    className="object-contain"
+                  />
+                  {/* Download Button Overlay */}
+                  <button
+                    onClick={() =>
+                      handleImageDownload(
+                        zoomedImageUrl,
+                        zoomedImageStudentName,
+                        zoomedImageDate,
+                      )
+                    }
+                    className="absolute bottom-6 right-6 p-4 bg-white/90 hover:bg-white rounded-full transition-all shadow-2xl hover:scale-110"
+                    title="تحميل الصورة"
+                  >
+                    <Download size={24} className="text-navy" />
+                  </button>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </DialogPortal>
       </Dialog>
     </div>
   );

@@ -164,6 +164,12 @@ export function UserFormDialog({
         return;
       }
 
+      // Image validation for new users
+      if (!isEditing && !imageFile) {
+        toast.error("الصورة مطلوبة لإضافة مستخدم جديد");
+        return;
+      }
+
       if (imageFile) {
         formData.append("image", imageFile);
       }
@@ -239,6 +245,7 @@ export function UserFormDialog({
                   className="cursor-pointer text-sm text-gold font-bold hover:underline"
                 >
                   {isEditing ? "تغيير الصورة" : "رفع صورة"}
+                  {!isEditing && <span className="text-red-500 mr-1">*</span>}
                 </label>
                 <input
                   id="image-upload"
@@ -255,7 +262,9 @@ export function UserFormDialog({
               name="userName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الاسم الكامل</FormLabel>
+                  <FormLabel>
+                    الاسم الكامل <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="أدخل الاسم" />
                   </FormControl>
@@ -269,7 +278,9 @@ export function UserFormDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>البريد الإلكتروني</FormLabel>
+                  <FormLabel>
+                    البريد الإلكتروني <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -288,7 +299,13 @@ export function UserFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {isEditing ? "كلمة المرور (اختياري)" : "كلمة المرور"}
+                    {isEditing ? (
+                      "كلمة المرور (اختياري)"
+                    ) : (
+                      <>
+                        كلمة المرور <span className="text-red-500">*</span>
+                      </>
+                    )}
                   </FormLabel>
                   <FormControl>
                     <Input {...field} type="password" placeholder="******" />
@@ -303,7 +320,9 @@ export function UserFormDialog({
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الدور (Role)</FormLabel>
+                  <FormLabel>
+                    الدور (Role) <span className="text-red-500">*</span>
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}

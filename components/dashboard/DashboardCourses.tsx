@@ -54,6 +54,7 @@ export function DashboardCourses() {
       title: newCourseDetails.title,
       description: newCourseDetails.description,
       price: priceNum,
+      categoryId: newCourseDetails.category, // Assuming backend takes category ID or name as categoryId for now pending clarification, or mapped in hook
     });
 
     if (newCourse) {
@@ -117,6 +118,21 @@ export function DashboardCourses() {
                   }
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold">التصنيف</label>
+                <input
+                  required
+                  className="w-full p-2 border rounded-lg"
+                  value={newCourseDetails.category}
+                  onChange={(e) =>
+                    setNewCourseDetails({
+                      ...newCourseDetails,
+                      category: e.target.value,
+                    })
+                  }
+                  placeholder="أدخل تصنيف الدورة"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
@@ -170,7 +186,12 @@ export function DashboardCourses() {
                   </div>
                 )}
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-navy uppercase">
-                  دورة تدريبية
+                  {(() => {
+                    const cat = course.categoryId || course.category;
+                    if (typeof cat === "object" && cat !== null) return (cat as any).name;
+                    if (typeof cat === "string") return cat;
+                    return "دورة تدريبية";
+                  })()}
                 </div>
               </div>
               <div className="p-5 flex-1 flex flex-col">

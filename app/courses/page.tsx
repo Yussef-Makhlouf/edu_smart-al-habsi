@@ -147,9 +147,12 @@ export default function CoursesPage() {
             image={course.image?.secure_url || "/images/Mockup.jpg"}
             href={`/courses/${course._id}`}
             category={
-              typeof course.category === "object"
-                ? course.category.name
-                : course.category || "دورة تدريبية"
+              (() => {
+                const cat = course.categoryId || course.category;
+                if (typeof cat === "object" && cat !== null) return (cat as any).name;
+                if (typeof cat === "string") return cat;
+                return "دورة تدريبية";
+              })()
             }
             isReversed={index % 2 !== 0}
             isDark={index % 2 !== 0}

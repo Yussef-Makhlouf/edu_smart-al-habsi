@@ -210,9 +210,12 @@ export default function CoursePage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-gold/30 rounded-full mb-8">
                 <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
                 <span className="text-gold text-sm font-bold tracking-wider">
-                  {typeof course.category === "object"
-                    ? course.category.name
-                    : course.category || "دورة تدريبية"}
+                  {(() => {
+                    const cat = course.categoryId || course.category;
+                    if (typeof cat === "object" && cat !== null) return (cat as any).name;
+                    if (typeof cat === "string") return cat;
+                    return "دورة تدريبية";
+                  })()}
                 </span>
               </div>
 

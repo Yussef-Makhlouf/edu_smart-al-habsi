@@ -65,7 +65,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async () => {
     if (!selectedFile) {
-      toast.error("يرجى إرفاق صورة التحويل البنكي");
+      toast.error("يرجى إرفاق صورة التحويل ");
       return;
     }
 

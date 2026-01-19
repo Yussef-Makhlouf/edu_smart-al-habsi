@@ -48,18 +48,20 @@ type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
 interface EnrollmentFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  refetch?: () => void;
 }
 
 export function EnrollmentFormDialog({
   open,
   onOpenChange,
+  refetch,
 }: EnrollmentFormDialogProps) {
   const { data: usersResponse } = useGetAllUsersQuery();
   const { data: courses } = useGetCoursesQuery();
   const [enrollUser, { isLoading: isSubmitting }] = useEnrollUserMutation();
 
   const users = usersResponse?.users || [];
-  const coursesList = courses || [];
+  const coursesList = (courses || []).filter((course) => course.isPublished);
 
   // Filter only Students (optional, but logical for enrollment)
   // Or show all users if admins can take courses too. Let's show all for flexibility, or maybe filter roles.
@@ -91,6 +93,9 @@ export function EnrollmentFormDialog({
     try {
       await enrollUser(values).unwrap();
       toast.success("تم تسجيل الطالب في الدورة بنجاح");
+      if (refetch) {
+        refetch();
+      }
       onOpenChange(false);
     } catch (error: any) {
       const serverMessage = error?.data?.message;
@@ -165,7 +170,7 @@ export function EnrollmentFormDialog({
                             {students.map((user) => (
                               <CommandItem
                                 key={user._id}
-                                value={`${user.userName} ${user.email}`}
+                                value={`${user.userName} ${user.email} ${user._id}`}
                                 onSelect={() => {
                                   form.setValue("userId", user._id);
                                   setOpenUser(false);
@@ -245,7 +250,7 @@ export function EnrollmentFormDialog({
                             {coursesList.map((course) => (
                               <CommandItem
                                 key={course._id}
-                                value={course.title}
+                                value={`${course.title} ${course._id}`}
                                 onSelect={() => {
                                   form.setValue("courseId", course._id);
                                   setOpenCourse(false);
@@ -261,9 +266,14 @@ export function EnrollmentFormDialog({
                                         : "opacity-0"
                                     )}
                                   />
-                                  <span className="font-medium">
-                                    {course.title}
-                                  </span>
+                                  <div className="flex flex-col text-right">
+                                    <span className="font-medium">
+                                      {course.title}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground">
+                                      ({(course.category as any)?.name || "عام"})
+                                    </span>
+                                  </div>
                                 </div>
                                 {course.price !== undefined && (
                                   <span className="text-xs font-semibold text-navy bg-navy/5 px-2 py-1 rounded-full">

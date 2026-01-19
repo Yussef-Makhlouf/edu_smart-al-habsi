@@ -14,21 +14,28 @@ export function CoursesSection() {
     courses
       ?.filter((c) => c.isPublished)
       .slice(0, 5)
-      .map((course, index) => ({
-        id: index + 1,
-        _id: course._id,
-        title: course.title,
-        description: course.description,
-        image: course.image?.secure_url || "/images/Mockup.jpg",
-        href: `/courses/${course._id}`, // Using _id since the API uses it for details
-        category:
-          typeof course.category === "object"
-            ? course.category.name
-            : course.category || "دورة تدريبية",
-        variant: (index % 3 === 2 ? "purple" : "gradient") as
-          | "purple"
-          | "gradient",
-      })) || [];
+      .map((course, index) => {
+        const categoryObj = course.categoryId || course.category;
+        const categoryName =
+          typeof categoryObj === "object" && categoryObj !== null
+            ? (categoryObj as any).name
+            : typeof categoryObj === "string"
+            ? categoryObj
+            : "دورة تدريبية";
+
+        return {
+          id: index + 1,
+          _id: course._id,
+          title: course.title,
+          description: course.description,
+          image: course.image?.secure_url || "/images/Mockup.jpg",
+          href: `/courses/${course._id}`, // Using _id since the API uses it for details
+          category: categoryName,
+          variant: (index % 3 === 2 ? "purple" : "gradient") as
+            | "purple"
+            | "gradient",
+        };
+      }) || [];
 
   return (
     <section className="relative py-28 bg-navy overflow-hidden">
