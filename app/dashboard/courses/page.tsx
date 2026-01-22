@@ -25,6 +25,15 @@ import { ConfirmModal } from "@/components/dashboard/ConfirmModal";
 import { toast } from "sonner";
 import { useGetCategoriesQuery } from "@/lib/api/categories/categoriesApi";
 import { motion } from "framer-motion";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();
@@ -47,6 +56,9 @@ export default function CoursesPage() {
     id: string;
     title: string;
   } | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -305,9 +317,12 @@ export default function CoursesPage() {
             <p className="text-gray-500">جاري تحميل الدورات...</p>
           </div>
         ) : courses && courses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((c, index) => (
-              <motion.div
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses
+                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                .map((c, index) => (
+                  <motion.div
                 key={c._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -367,7 +382,7 @@ export default function CoursesPage() {
                 <div className="p-6 flex-1 flex flex-col bg-white">
                   <div className="flex items-center gap-3 mb-3">
                     <span className="px-2 py-0.5 bg-gold/10 text-gold text-[10px] font-bold rounded-md">
-                      {(c.category as any)?.name || "عام"}
+                      {(c.categoryId as any)?.name || "عام"}
                     </span>
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <Users size={14} className="text-gray-300" />
@@ -411,7 +426,62 @@ export default function CoursesPage() {
               </motion.div>
             ))}
           </div>
-        ) : (
+
+          {courses.length > ITEMS_PER_PAGE && (
+            <div className="flex justify-center mt-10" dir="ltr">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) {
+                          setCurrentPage(currentPage - 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
+                      }}
+                      href="#"
+                    />
+                  </PaginationItem>
+
+                  {Array.from({
+                    length: Math.ceil(courses.length / ITEMS_PER_PAGE),
+                  }).map((_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === i + 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(i + 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        {(i + 1).toLocaleString("ar-SA")}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (
+                          currentPage < Math.ceil(courses.length / ITEMS_PER_PAGE)
+                        ) {
+                          setCurrentPage(currentPage + 1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
+                      }}
+                      href="#"
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
+      ) : (
           <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-100">
             <div className="bg-gold/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Plus className="text-gold" size={32} />

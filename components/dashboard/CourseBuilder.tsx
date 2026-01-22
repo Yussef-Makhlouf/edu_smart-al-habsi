@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
@@ -30,6 +30,83 @@ interface CourseBuilderProps {
   courseId: string;
 }
 
+function LessonItem({
+  video,
+  index,
+  onPlay,
+  onDelete,
+  isSaving,
+  isUploadingVideo,
+  getBunnyVideoDetails,
+}: {
+  video: VideoType;
+  index: number;
+  onPlay: (v: VideoType) => void;
+  onDelete: (id: string) => void;
+  isSaving: boolean;
+  isUploadingVideo: boolean;
+  getBunnyVideoDetails: (libId: string | number, vId: string) => Promise<any>;
+}) {
+  const [duration, setDuration] = useState<number | undefined>(video.duration);
+
+  useEffect(() => {
+    if (!duration && video.bunny?.videoId && video.bunny?.libraryId) {
+      getBunnyVideoDetails(video.bunny.libraryId, video.bunny.videoId).then(
+        (data) => {
+          if (data && typeof data.length === "number") {
+            setDuration(data.length);
+          }
+        },
+      );
+    }
+  }, [video, duration, getBunnyVideoDetails]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, height: 0 }}
+      className="flex items-center gap-3 p-4 rounded-lg border border-gray-100 hover:border-gold/30 hover:bg-gold/5 transition-colors group bg-white"
+    >
+      <GripVertical size={16} className="text-gray-300 cursor-move" />
+      <span className="text-xs font-bold text-gray-300 w-6">{index + 1}</span>
+
+      <div className="flex-1">
+        <p className="text-sm font-medium text-navy">{video.title}</p>
+        {duration ? (
+          <div className="flex items-center gap-1 text-gray-400 mt-1">
+            <Clock size={12} />
+            <span className="text-xs">
+              {Math.floor(duration / 60)}:
+              {(duration % 60).toString().padStart(2, "0")}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {video.bunny?.videoId && (
+          <button
+            onClick={() => onPlay(video)}
+            className="p-2 rounded-md bg-gold/10 text-gold hover:bg-gold hover:text-navy transition-colors"
+            title="معاينة الفيديو"
+          >
+            <Play size={14} />
+          </button>
+        )}
+
+        <button
+          onClick={() => onDelete(video._id)}
+          disabled={isSaving || isUploadingVideo}
+          className="p-2 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 export function CourseBuilder({ courseId }: CourseBuilderProps) {
   const {
     course,
@@ -38,6 +115,7 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
     deleteVideo,
     getSignedVideoUrl,
     uploadToBunny,
+    getBunnyVideoDetails,
     isLoading,
     isSaving,
   } = useCourseManager(courseId);
@@ -178,14 +256,25 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 bg-gold text-navy px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-gold-dim transition-colors">
-              <Upload size={16} />
-              اختر الفيديو وابدأ الرفع
+            <label
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+                isUploadingVideo || isSaving
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-gold text-navy cursor-pointer hover:bg-gold-dim"
+              }`}
+            >
+              {isUploadingVideo ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Upload size={16} />
+              )}
+              {isUploadingVideo ? "جاري الرفع..." : "اختر الفيديو وابدأ الرفع"}
               <input
                 type="file"
                 accept="video/*"
                 className="hidden"
                 onChange={onFileSelect}
+                disabled={isUploadingVideo || isSaving}
               />
             </label>
             <Button
@@ -194,7 +283,8 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
                 setIsAddingNew(false);
                 setNewLessonTitle("");
               }}
-              className="text-gray-500 hover:text-red-500"
+              disabled={isUploadingVideo || isSaving}
+              className="text-gray-500 hover:text-red-500 disabled:opacity-50"
             >
               إلغاء
             </Button>
@@ -242,60 +332,20 @@ export function CourseBuilder({ courseId }: CourseBuilderProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            <AnimatePresence>
+            <AnimatePresence shadow-none>
               {videos
                 .filter((v) => v._id !== pendingUpload?.videoId)
                 .map((video, index) => (
-                  <motion.div
+                  <LessonItem
                     key={video._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center gap-3 p-4 rounded-lg border border-gray-100 hover:border-gold/30 hover:bg-gold/5 transition-colors group bg-white"
-                  >
-                    <GripVertical
-                      size={16}
-                      className="text-gray-300 cursor-move"
-                    />
-                    <span className="text-xs font-bold text-gray-300 w-6">
-                      {index + 1}
-                    </span>
-
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-navy">
-                        {video.title}
-                      </p>
-                      {video.duration && (
-                        <div className="flex items-center gap-1 text-gray-400 mt-1">
-                          <Clock size={12} />
-                          <span className="text-xs">
-                            {Math.floor(video.duration / 60)}:
-                            {(video.duration % 60).toString().padStart(2, "0")}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {video.bunny?.videoId && (
-                        <button
-                          onClick={() => handlePlayVideo(video)}
-                          className="p-2 rounded-md bg-gold/10 text-gold hover:bg-gold hover:text-navy transition-colors"
-                          title="معاينة الفيديو"
-                        >
-                          <Play size={14} />
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => handleDeleteVideo(video._id)}
-                        disabled={isSaving || isUploadingVideo}
-                        className="p-2 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </motion.div>
+                    video={video}
+                    index={index}
+                    onPlay={handlePlayVideo}
+                    onDelete={handleDeleteVideo}
+                    isSaving={isSaving}
+                    isUploadingVideo={isUploadingVideo}
+                    getBunnyVideoDetails={getBunnyVideoDetails}
+                  />
                 ))}
             </AnimatePresence>
           </div>

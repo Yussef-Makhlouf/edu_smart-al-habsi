@@ -38,8 +38,9 @@ interface UseCourseManagerReturn {
     deleteCourse: (targetCourseId?: string) => Promise<void>;
     addVideo: (title: string, chapterId?: string) => Promise<{ video: Video; bunnyUploadDetails: BunnyUploadDetails } | undefined>;
     deleteVideo: (videoId: string) => Promise<void>;
-    getSignedVideoUrl: (videoId: string) => Promise<string | undefined>;
+    getSignedVideoUrl: (videoId: string, bunnyVideoId?: string) => Promise<string | undefined>;
     uploadToBunny: (file: File, bunnyDetails: BunnyUploadDetails) => Promise<void>;
+    getBunnyVideoDetails: (libraryId: string | number, videoId: string) => Promise<any>;
 
     // States
     isLoading: boolean;
@@ -202,7 +203,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             }
 
             const result = await updateCourseMutation({ id: courseId, data: body }).unwrap();
-            toast.success("✅ تم تحديث بيانات الدورة بنجاح");
+            toast.success("   تم تحديث بيانات الدورة بنجاح");
             return result;
         } catch (error: any) {
             console.error("Update course FULL error object:", error);
@@ -254,14 +255,14 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
             const payload = {
                 courseId,
                 title,
-                chapterTitle: uniqueChapterTitle,  // ✅ Each video gets its own chapter
+                chapterTitle: uniqueChapterTitle,  //    Each video gets its own chapter
                 isPreview: false
             };
 
             // console.log("🎬 Adding video in new chapter:", payload);
             const result = await addVideoMutation(payload).unwrap();
 
-            // console.log("✅ Add video API response:", result);
+            // console.log("   Add video API response:", result);
 
             // Validate the response structure
             if (!result || !result.video || !result.bunnyUploadDetails) {
@@ -277,7 +278,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 return undefined;
             }
 
-            toast.success(`✅ تم إنشاء الدرس "${title}" في قسم جديد`);
+            // toast.success(`   تم إنشاء الدرس "${title}" في قسم جديد`);
             return result;
 
         } catch (error: any) {
@@ -344,7 +345,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
                 if (videoData?.bunny) {
                     activeVideoId = activeVideoId || videoData.bunny.videoId;
                     activeLibraryId = activeLibraryId || videoData.bunny.libraryId;
-                    // console.log("✅ Found metadata in state:", { activeVideoId, activeLibraryId });
+                    // console.log("   Found metadata in state:", { activeVideoId, activeLibraryId });
                 } else {
                     console.warn("❌ Could not find video metadata in course state", {
                         chaptersCount: chapters.length,
@@ -439,6 +440,28 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
         }
     }, [dispatch]);
 
+    // Fetch video details from Bunny CDN
+    const getBunnyVideoDetails = useCallback(async (libraryId: string | number, videoId: string): Promise<any> => {
+        try {
+            const apiKey = process.env.NEXT_PUBLIC_BUNNY_API_KEY;
+            if (!apiKey) return null;
+
+            const response = await axios.get(
+                `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
+                {
+                    headers: {
+                        "AccessKey": apiKey,
+                        "Accept": "application/json",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch Bunny video details:", error);
+            return null;
+        }
+    }, []);
+
     return {
         // Data
         course,
@@ -453,6 +476,7 @@ export function useCourseManager(courseId?: string): UseCourseManagerReturn {
         deleteVideo,
         getSignedVideoUrl,
         uploadToBunny,
+        getBunnyVideoDetails,
 
         // States
         isLoading,

@@ -32,10 +32,9 @@ export default function CheckoutPage() {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const [enrollUser] = useEnrollUserMutation();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Protect Route - wait for initialization
@@ -90,7 +89,8 @@ export default function CheckoutPage() {
         "تم إرسال طلب الاشتراك بنجاح. سيتم مراجعته من قبل الإدارة.",
       );
       dispatch(clearCart());
-      router.push("/courses");
+      setIsSuccess(true);
+      // router.push("/courses"); // Prevent redirection as per user request
     } catch (error: any) {
       console.error("Enrollment error:", error);
       toast.error(error?.data?.message || "فشل إرسال طلب الاشتراك");
@@ -209,77 +209,70 @@ export default function CheckoutPage() {
                   بيانات الطلب
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                      <User size={14} /> اسم المستخدم
-                    </label>
-                    <div className="w-full h-12 flex items-center px-4 bg-gray-50 border border-gray-100 rounded-lg text-navy font-bold">
-                      {user.userName}
+                {isSuccess ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-10"
+                  >
+                    <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle2 className="text-green-500 w-10 h-10" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                      <BookOpen size={14} /> الدورة المختارة
-                    </label>
-                    <div className="w-full h-12 flex items-center px-4 bg-gray-50 border border-gray-100 rounded-lg text-navy font-bold truncate">
-                      {cartCourse.title}
+                    <h2 className="text-2xl font-bold text-navy mb-4">
+                      تم استلام طلبك!
+                    </h2>
+                    <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                      شكراً لإتمام عملية التحويل. سيتم مراجعة طلبك من قبل فريقنا
+                      وتفعيل الدورة في حسابك خلال 24 ساعة.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button
+                        variant="gold"
+                        onClick={() => router.push("/my-courses")}
+                        className="font-bold text-navy"
+                      >
+                        إلى دوراتي
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push("/courses")}
+                      >
+                        تصفح المزيد من الدورات
+                      </Button>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bank Details */}
-              {/* <div className="bg-navy rounded-xl p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-bl-full -mr-16 -mt-16" />
-                <h3 className="font-bold text-xl mb-6 relative z-10 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center text-gold text-sm font-bold">
-                    1
-                  </span>
-                  بيانات التحويل البنكي
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-white/50 text-xs mb-1 uppercase tracking-wider">
-                        اسم البنك
-                      </p>
-                      <p className="font-bold text-lg">مصرف الراجحي</p>
+                  </motion.div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                        <User size={14} /> اسم المستخدم
+                      </label>
+                      <div className="w-full h-12 flex items-center px-4 bg-gray-50 border border-gray-100 rounded-lg text-navy font-bold">
+                        {user.userName}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-white/50 text-xs mb-1 uppercase tracking-wider">
-                        اسم المستفيد
-                      </p>
-                      <p className="font-bold">مؤسسة محمد الحبسي للتدريب</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="group relative">
-                      <p className="text-white/50 text-xs mb-1 uppercase tracking-wider">
-                        رقم الآيبان (IBAN)
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <p
-                          className="font-bold text-gold tracking-wider"
-                          dir="ltr"
-                        >
-                          SA00 0000 0000 0000 0000 0000
-                        </p>
-                        <button
-                          onClick={handleCopyIban}
-                          className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-all"
-                        >
-                          {copied ? <Check size={16} /> : <Copy size={16} />}
-                        </button>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                        <BookOpen size={14} /> الدورة المختارة
+                      </label>
+                      <div className="w-full h-12 flex items-center px-4 bg-gray-50 border border-gray-100 rounded-lg text-navy font-bold truncate">
+                        {cartCourse.title}
                       </div>
                     </div>
                   </div>
-                </div>
-              </div> */}
+                )}
+              </div>
+
+              {/* Bank Details */}
+              {!isSuccess && (
+                <>
+                  {/* Bank Details logic placeholder */}
+                </>
+              )}
 
               {/* Receipt Upload */}
-              <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
+              {!isSuccess && (
+                <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
                 <h3 className="font-bold text-navy text-lg mb-6 flex items-center gap-2">
                   <span className="w-8 h-8 rounded-lg bg-navy/5 flex items-center justify-center text-navy text-sm font-bold">
                     2
@@ -373,7 +366,8 @@ export default function CheckoutPage() {
                     </Button>
                   </div>
                 </div>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

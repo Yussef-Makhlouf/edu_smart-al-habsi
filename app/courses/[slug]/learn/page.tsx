@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useCourseManager } from "@/lib/hooks/useCourseManager";
 import {
   Sheet,
   SheetContent,
@@ -41,6 +42,47 @@ const getYouTubeVideoId = (url: string | undefined): string | null => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
+const LessonDuration = ({
+  lesson,
+  isActive,
+  hasVideo,
+  getBunnyVideoDetails,
+}: {
+  lesson: Video;
+  isActive: boolean;
+  hasVideo: boolean;
+  getBunnyVideoDetails: (libId: string | number, vId: string) => Promise<any>;
+}) => {
+  const [duration, setDuration] = useState<number | undefined>(lesson.duration);
+
+  useEffect(() => {
+    if (!duration && lesson.bunny?.videoId && lesson.bunny?.libraryId) {
+      getBunnyVideoDetails(lesson.bunny.libraryId, lesson.bunny.videoId).then(
+        (data) => {
+          if (data && typeof data.length === "number") {
+            setDuration(data.length);
+          }
+        },
+      );
+    }
+  }, [lesson, duration, getBunnyVideoDetails]);
+
+  return (
+    <span
+      className={cn(
+        "text-[9px] mt-1",
+        isActive ? "text-white/60" : "text-gray-400",
+      )}
+    >
+      {!hasVideo
+        ? "بدون فيديو"
+        : duration
+          ? `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, "0")}`
+          : "فيديو"}
+    </span>
+  );
+};
+
 // Sidebar Component
 const CourseSidebar = ({
   activeLesson,
@@ -48,12 +90,14 @@ const CourseSidebar = ({
   courseChapters,
   enrolled,
   isTrial,
+  getBunnyVideoDetails,
 }: {
   activeLesson: Video | null;
   onLessonSelect: (lesson: Video) => void;
   courseChapters: Chapter[];
   enrolled: boolean;
   isTrial: boolean;
+  getBunnyVideoDetails: (libId: string | number, vId: string) => Promise<any>;
 }) => {
   // Calculate global lesson index for trial check
   const getLessonGlobalIndex = (chapterIdx: number, lessonIdx: number) => {
@@ -147,18 +191,12 @@ const CourseSidebar = ({
                     <h4 className="text-[11px] font-bold line-clamp-2 leading-tight">
                       {lesson.title}
                     </h4>
-                    {/* <span
-                      className={cn(
-                        "text-[9px] mt-1",
-                        isActive ? "text-white/60" : "text-gray-400",
-                      )}
-                    >
-                      {!hasVideo
-                        ? "بدون فيديو"
-                        : lesson.duration
-                          ? `${lesson.duration} دقيقة`
-                          : "فيديو"}
-                    </span> */}
+                    <LessonDuration
+                      lesson={lesson}
+                      isActive={isActive}
+                      hasVideo={hasVideo}
+                      getBunnyVideoDetails={getBunnyVideoDetails}
+                    />
                   </div>
                 </div>
               );
@@ -207,6 +245,8 @@ export default function CourseLearnPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+
+  const { getBunnyVideoDetails } = useCourseManager(id);
 
   // Create a merged list of lessons with complete data
   const mergedChapters = useMemo(() => {
@@ -270,7 +310,7 @@ export default function CourseLearnPage() {
       };
     });
 
-    // console.log("✅ Merged chapters result:", result);
+    // console.log("   Merged chapters result:", result);
     return result;
   }, [data]);
 
@@ -371,7 +411,7 @@ export default function CourseLearnPage() {
           // console.log("🔐 Requesting signed URL for:", activeLesson._id);
           try {
             const response = await triggerSign(activeLesson._id).unwrap();
-            // console.log("✅ Signed Video Response:", response);
+            // console.log("   Signed Video Response:", response);
 
             // Normalize response structure
             const params = response.data || response;
@@ -386,7 +426,7 @@ export default function CourseLearnPage() {
                   : null);
 
               if (directUrl) {
-                // console.log("✅ Using direct signed URL");
+                // console.log("   Using direct signed URL");
                 setActiveVideoUrl(directUrl);
                 setIsLoadingVideo(false);
                 return;
@@ -408,7 +448,7 @@ export default function CourseLearnPage() {
 
               if (params.token && libraryId && videoId) {
                 const constructedUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${params.token}&expires=${params.expires}&autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
-                // console.log("✅ Constructed Bunny URL successfully");
+                // console.log("   Constructed Bunny URL successfully");
                 setActiveVideoUrl(constructedUrl);
                 setIsLoadingVideo(false);
                 return;
@@ -519,7 +559,7 @@ export default function CourseLearnPage() {
           <div className="flex items-center justify-center gap-4 text-white/60 text-sm">
             <span>{course.instructorId?.userName || "د. محمد الحبسي"}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-            <span>{mergedChapters?.length || 0} أقسام</span>
+            <span>{mergedChapters?.length || 0} دروس</span>
           </div>
         </div>
       </div>
@@ -554,6 +594,7 @@ export default function CourseLearnPage() {
                   courseChapters={mergedChapters}
                   enrolled={enrolled}
                   isTrial={isTrial}
+                  getBunnyVideoDetails={getBunnyVideoDetails}
                 />
               </div>
             </SheetContent>
@@ -647,7 +688,7 @@ export default function CourseLearnPage() {
                     <h2 className="text-2xl font-bold text-navy mb-1">
                       {activeLesson.title}
                     </h2>
-                    <p className="text-gray-400 text-sm font-medium">
+                    {/* <p className="text-gray-400 text-sm font-medium">
                       القسم الحالي:{" "}
                       {
                         mergedChapters.find((c) =>
@@ -658,7 +699,7 @@ export default function CourseLearnPage() {
                           ),
                         )?.title
                       }
-                    </p>
+                    </p> */}
                   </div>
                 </div>
                 {/* {enrolled && (
@@ -693,6 +734,7 @@ export default function CourseLearnPage() {
             courseChapters={mergedChapters}
             enrolled={enrolled}
             isTrial={isTrial}
+            getBunnyVideoDetails={getBunnyVideoDetails}
           />
         </aside>
       </div>

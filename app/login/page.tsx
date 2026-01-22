@@ -146,7 +146,10 @@ export default function LoginPage() {
           <div className="p-8 md:p-10">
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  form.handleSubmit(onSubmit)(e);
+                }}
                 className="space-y-6"
               >
                 {/* Error Message */}
@@ -318,9 +321,10 @@ export default function LoginPage() {
             </DialogHeader>
             <Form {...forgetPasswordForm}>
               <form
-                onSubmit={forgetPasswordForm.handleSubmit(
-                  onForgetPasswordSubmit
-                )}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  forgetPasswordForm.handleSubmit(onForgetPasswordSubmit)(e);
+                }}
                 className="space-y-4 mt-4"
               >
                 <FormField
